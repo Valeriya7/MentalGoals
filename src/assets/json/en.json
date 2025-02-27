@@ -1,0 +1,123 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "Select your gender",
+      "options": [
+        "Female",
+        "Male",
+        "Other"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "How often do you feel tired even after resting?",
+      "options": [
+        "Never",
+        "Sometimes",
+        "Often",
+        "Always"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Do you feel a loss of interest in things that used to bring you joy?",
+      "options": [
+        "No, everything is as before",
+        "A little less interest",
+        "Significantly less",
+        "Completely lost interest"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "How often do you feel anxious or tense?",
+      "options": [
+        "Almost never",
+        "Sometimes",
+        "Often",
+        "Constantly"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "Do you have difficulty concentrating?",
+      "options": [
+        "Never",
+        "Sometimes",
+        "Often",
+        "Always"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "How would you rate the quality of your sleep?",
+      "options": [
+        "Excellent",
+        "Satisfactory",
+        "Average",
+        "Poor"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "Do you feel physical weakness or low energy during the day?",
+      "options": [
+        "Never",
+        "Sometimes",
+        "Often",
+        "Constantly"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "Do you feel overwhelmed with work or responsibilities?",
+      "options": [
+        "Never",
+        "Sometimes",
+        "Often",
+        "Constantly"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "How often do you avoid social interactions?",
+      "options": [
+        "Never",
+        "Sometimes",
+        "Often",
+        "Constantly"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "Do you feel emotionally exhausted?",
+      "options": [
+        "Never",
+        "Sometimes",
+        "Often",
+        "Always"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "Do you feel hopeless or a loss of meaning?",
+      "options": [
+        "Never",
+        "Sometimes",
+        "Often",
+        "Constantly"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "How would you describe your mood over the past two weeks?",
+      "options": [
+        "Mostly good",
+        "Mixed",
+        "Mostly bad",
+        "Very bad"
+      ]
+    }
+  ]
+}

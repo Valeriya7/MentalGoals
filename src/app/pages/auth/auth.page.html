@@ -1,0 +1,21 @@
+<!--<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>auth</ion-title>
+  </ion-toolbar>
+</ion-header>-->
+
+<ion-content [fullscreen]="true">
+  <div class="auth-screen">
+    <div class="center-image">
+
+      <div [ngStyle]="{'background-image': 'url(../assets/images/auth.jpg)'}" class="top-cover"></div>
+    </div>
+    <ion-label class="title">Let's you in</ion-label>
+
+
+    <ion-button expand="full" color="primary" (click)="googleLogin()" >
+      Login with Google
+    </ion-button>
+
+  </div>
+</ion-content>

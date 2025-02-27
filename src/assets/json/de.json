@@ -1,0 +1,123 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "Wählen Sie Ihr Geschlecht",
+      "options": [
+        "Weiblich",
+        "Männlich",
+        "Andere"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Wie oft fühlen Sie sich müde, selbst nach dem Ausruhen?",
+      "options": [
+        "Nie",
+        "Manchmal",
+        "Oft",
+        "Immer"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Haben Sie das Interesse an Dingen verloren, die Ihnen früher Freude bereitet haben?",
+      "options": [
+        "Nein, alles ist wie vorher",
+        "Etwas weniger Interesse",
+        "Deutlich weniger",
+        "Völlig das Interesse verloren"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Wie oft fühlen Sie sich ängstlich oder angespannt?",
+      "options": [
+        "Fast nie",
+        "Manchmal",
+        "Oft",
+        "Ständig"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "Haben Sie Konzentrationsschwierigkeiten?",
+      "options": [
+        "Nie",
+        "Manchmal",
+        "Oft",
+        "Immer"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "Wie würden Sie die Qualität Ihres Schlafes bewerten?",
+      "options": [
+        "Ausgezeichnet",
+        "Zufriedenstellend",
+        "Durchschnittlich",
+        "Schlecht"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "Fühlen Sie sich tagsüber körperlich schwach oder energielos?",
+      "options": [
+        "Nie",
+        "Manchmal",
+        "Oft",
+        "Ständig"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "Fühlen Sie sich von Arbeit oder Verpflichtungen überfordert?",
+      "options": [
+        "Nie",
+        "Manchmal",
+        "Oft",
+        "Ständig"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "Wie oft vermeiden Sie soziale Interaktionen?",
+      "options": [
+        "Nie",
+        "Manchmal",
+        "Oft",
+        "Ständig"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "Fühlen Sie sich emotional erschöpft?",
+      "options": [
+        "Nie",
+        "Manchmal",
+        "Oft",
+        "Immer"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "Fühlen Sie sich hoffnungslos oder ohne Sinn?",
+      "options": [
+        "Nie",
+        "Manchmal",
+        "Oft",
+        "Ständig"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "Wie würden Sie Ihre Stimmung in den letzten zwei Wochen beschreiben?",
+      "options": [
+        "Überwiegend gut",
+        "Gemischt",
+        "Überwiegend schlecht",
+        "Sehr schlecht"
+      ]
+    }
+  ]
+}
