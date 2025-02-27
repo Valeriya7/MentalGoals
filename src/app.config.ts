@@ -1,8 +1,8 @@
 export const APP_CONFIG = {
   DEFAULT_LANGUAGE: 'en',
 
-  // Spirit-Academy API
-  DOMAIN: 'https://spirit-academy.tv',
+  // Mntal Goals API
+  DOMAIN: 'https://mental-goals.com',
 
   GOOGLE_CLIENT_ID: 'your-google-client-id', // Google Client ID для авторизації
 
