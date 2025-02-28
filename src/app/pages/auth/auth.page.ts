@@ -2,10 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular'; // Додаємо модулі Ionic
 import { CommonModule } from '@angular/common';
 import { Device } from '@capacitor/device';
-
+import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Capacitor } from '@capacitor/core';
 import { Router } from '@angular/router';
+import { APP_CONFIG } from '../../../../src/app.config';
 @Component({
   selector: 'app-auth',
   standalone: true, // Це standalone компонент
@@ -22,7 +23,8 @@ export class AuthPage implements OnInit {
     web: '629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com'
   };
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) {
+  }
 
   ngOnInit() {
     this.initGoogleAuth();
@@ -39,7 +41,7 @@ export class AuthPage implements OnInit {
     console.log('platform: ', googleClientIdsPlatform);
 
     GoogleAuth.initialize({
-      clientId: googleClientIdsPlatform ,
+      clientId: googleClientIdsPlatform,
       scopes: ['profile', 'email'],
       forceCodeForRefreshToken: true
     });
@@ -67,9 +69,37 @@ export class AuthPage implements OnInit {
       serverAuthCode : undefined
        */
       // Перевірка на наявність необхідних даних
-      if (this.user && this.user.idToken) {
+      if (this.user && this.user.authentication.idToken) {
+        console.log("idToken:", this.user.authentication.idToken);
+        console.log("accessToken:", this.user.authentication.accessToken);
+
+        // Відправляємо idToken на бекенд для логіну
+        /*
+        await fetch("https://your-backend.com/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ this.user.idToken })
+        });*/
+
+        const idToken = this.user.authentication.idToken;
+        const accessToken = this.user.authentication.accessToken;
+        const email = this.user.email;
+        const name = this.user.name;
+
+        console.log("name:", name);
+
+        APP_CONFIG.ID_TOKEN = idToken;
+        // Збереження даних
+        await Preferences.set({key: 'idToken', value: idToken});
+        await Preferences.set({key: 'accessToken', value: accessToken});
+        await Preferences.set({key: 'email', value: email});
+        await Preferences.set({key: 'name', value: name});
+
         // Якщо вхід успішний, перенаправляємо на головну сторінку
         this.router.navigate(['/home']);
+
       } else {
         console.error('Google login failed: No token received');
       }

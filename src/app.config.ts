@@ -10,6 +10,8 @@ export const APP_CONFIG = {
   API_BASE: '/wp-json/api/v1/',
   API_WP_BASE: '/wp-json/wp/v2/',
 
+  ID_TOKEN: '',
+
   PLATFORM: {
     IOS: 'ios-specific-value',
     ANDROID: 'android-specific-value',
