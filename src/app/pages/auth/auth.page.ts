@@ -98,7 +98,7 @@ export class AuthPage implements OnInit {
         await Preferences.set({key: 'name', value: name});
 
         // Якщо вхід успішний, перенаправляємо на головну сторінку
-        this.router.navigate(['/home']);
+        this.router.navigate(['/tabs/home']);
 
       } else {
         console.error('Google login failed: No token received');
