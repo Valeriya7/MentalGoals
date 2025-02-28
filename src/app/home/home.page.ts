@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { UtilService } from 'src/app/services/util.service';
+import { Preferences } from '@capacitor/preferences';
+import { NavigationExtras } from '@angular/router';
+//import { register } from 'swiper/element';
 
 @Component({
   selector: 'app-home',
@@ -7,7 +11,28 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class HomePage {
+  userName: any = '';
 
-  constructor() {}
+  constructor(
+    public util: UtilService
+  ) {
+  }
 
+  ngOnInit() {
+    this.getUserData();
+  }
+
+  onPage(name: string) {
+    this.util.navigateToPage(name);
+  }
+
+  async getUserData() {
+    const name = await Preferences.get({key: 'name'});
+    console.log('name:', name);
+    if (name)
+      this.userName = name.value;
+
+    console.log('userName:', this.userName);
+    return name;
+  }
 }

@@ -1,8 +1,25 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar mode="md" color="primary">
+    <ion-buttons slot="start">
+      <ion-avatar slot="start">
+        <img src="assets/images/avatar/4.jpg" />
+      </ion-avatar>
+    </ion-buttons>
     <ion-title>
-      Blank
+      <ion-label class="inbox-status">Good Morning 👋 </ion-label>
+      <ion-label class="inbox-name">{{userName}}</ion-label>
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="light" (click)="onPage('notifications')">
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+      </ion-button>
+      <ion-button color="light" (click)="onPage('bookmarks')">
+        <ion-icon slot="icon-only" name="reader-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar class="ion-no-border">
+    <ion-searchbar placeholder="Search" inputmode="text" type="text" mode="ios"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
