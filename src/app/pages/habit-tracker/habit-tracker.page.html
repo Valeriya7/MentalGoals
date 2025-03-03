@@ -1,0 +1,61 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Трекер звичок
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="calendar-section">
+    <h2>{{ selectedDate | date:'MMMM yyyy' }}</h2>
+    <div class="calendar-grid">
+      <div class="calendar-header">
+        <div>Пн</div>
+        <div>Вт</div>
+        <div>Ср</div>
+        <div>Чт</div>
+        <div>Пт</div>
+        <div>Сб</div>
+        <div>Нд</div>
+      </div>
+      <div class="calendar-days">
+        <div *ngFor="let date of currentMonth" 
+             class="calendar-day"
+             [class.today]="isToday(date)">
+          {{ date.getDate() }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="habits-section">
+    <h2>Мої звички</h2>
+    <ion-list>
+      <ion-item *ngFor="let habit of habits" class="habit-item">
+        <ion-label>
+          <h2>{{ habit.name }}</h2>
+          <p>Поточна серія: {{ habit.currentStreak }} днів</p>
+          <p>Найкраща серія: {{ habit.bestStreak }} днів</p>
+        </ion-label>
+        <div class="habit-progress">
+          <div class="progress-bar">
+            <div class="progress" 
+                 [style.width.%]="(habit.currentStreak / habit.target) * 100">
+            </div>
+          </div>
+          <span class="progress-text">{{ habit.currentStreak }}/{{ habit.target }}</span>
+        </div>
+        <ion-button slot="end" (click)="toggleHabitCompletion(habit, selectedDate)">
+          <ion-icon name="checkmark"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content> 

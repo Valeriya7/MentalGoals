@@ -1,0 +1,101 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Виклики</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Виклики</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Поточний виклик -->
+  <div class="current-challenge">
+    <h2>Поточний виклик</h2>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>День 15 з 40</ion-card-subtitle>
+        <ion-card-title>40 Днів Здорових Звичок</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="progress-bar">
+          <div class="progress" [style.width.%]="(15/40)*100"></div>
+        </div>
+
+        <div class="tasks">
+          <h3>Щоденні завдання:</h3>
+          <ion-list>
+            <ion-item *ngFor="let task of currentChallenge.tasks">
+              <ion-icon [name]="task.icon" slot="start" [color]="task.completed ? 'success' : 'medium'"></ion-icon>
+              <ion-label>
+                <h3>{{task.name}}</h3>
+                <p>{{task.description}}</p>
+              </ion-label>
+              <ion-badge slot="end" [color]="task.completed ? 'success' : 'medium'">
+                {{task.completed ? 'Виконано' : 'Не виконано'}}
+              </ion-badge>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <div class="rewards">
+          <h3>Винагороди:</h3>
+          <ion-list>
+            <ion-item>
+              <ion-icon name="trophy-outline" slot="start" color="warning"></ion-icon>
+              <ion-label>
+                <h3>40 балів</h3>
+                <p>За успішне завершення виклику</p>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-icon name="gift-outline" slot="start" color="success"></ion-icon>
+              <ion-label>
+                <h3>Знижки від партнерів</h3>
+                <p>Adidas 15%, Garmin 15%, Nike 15$</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Майбутні виклики -->
+  <div class="upcoming-challenges">
+    <h2>Наступні виклики</h2>
+    
+    <ion-card>
+      <img src="assets/images/auth.jpg" />
+      <ion-card-header>
+        <ion-card-subtitle>40 днів</ion-card-subtitle>
+        <ion-card-title>Режим сну</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p><strong>Умова:</strong> Лягайте спати до 23:00 і прокидайтеся о 6:00-7:00 щодня протягом місяця.</p>
+        
+        <div class="rewards-preview">
+          <h4>Винагороди:</h4>
+          <ul>
+            <li>1 бал за кожен день</li>
+            <li>+5 бонусних балів за повне виконання</li>
+            <li>Знижки: Adidas 15%, Garmin 15%, Nike 15$</li>
+          </ul>
+        </div>
+
+        <div class="integration-note">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <p>Дані будуть синхронізуватися з Garmin, Samsung Health або Apple Health</p>
+        </div>
+
+        <ion-button expand="block" (click)="startChallenge('sleep')">
+          Почати виклик
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

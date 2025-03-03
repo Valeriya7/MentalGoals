@@ -1,0 +1,214 @@
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--ion-color-dark);
+  margin: 20px 0;
+}
+
+.current-challenge {
+  ion-card {
+    margin: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+
+    ion-card-header {
+      padding: 20px;
+
+      ion-card-subtitle {
+        font-size: 14px;
+        color: var(--ion-color-success);
+      }
+
+      ion-card-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--ion-color-dark);
+      }
+    }
+
+    ion-card-content {
+      padding: 0 20px 20px;
+
+      .progress-bar {
+        height: 8px;
+        background: var(--ion-color-light);
+        border-radius: 4px;
+        margin: 10px 0 20px;
+        overflow: hidden;
+
+        .progress {
+          height: 100%;
+          background: var(--ion-color-success);
+          border-radius: 4px;
+          transition: width 0.3s ease;
+        }
+      }
+
+      .tasks {
+        h3 {
+          font-size: 18px;
+          color: var(--ion-color-dark);
+          margin-bottom: 15px;
+        }
+
+        ion-item {
+          --padding-start: 0;
+          --inner-padding-end: 0;
+          --background: transparent;
+          margin-bottom: 10px;
+
+          ion-icon {
+            font-size: 24px;
+            margin-right: 15px;
+          }
+
+          ion-label {
+            h3 {
+              font-size: 16px;
+              font-weight: 500;
+              margin: 0;
+            }
+
+            p {
+              font-size: 14px;
+              color: var(--ion-color-medium);
+            }
+          }
+
+          ion-badge {
+            font-size: 12px;
+            padding: 4px 8px;
+          }
+        }
+      }
+
+      .rewards {
+        margin-top: 20px;
+
+        h3 {
+          font-size: 18px;
+          color: var(--ion-color-dark);
+          margin-bottom: 15px;
+        }
+
+        ion-item {
+          --padding-start: 0;
+          --inner-padding-end: 0;
+          --background: transparent;
+
+          ion-icon {
+            font-size: 24px;
+            margin-right: 15px;
+          }
+
+          ion-label {
+            h3 {
+              font-size: 16px;
+              font-weight: 500;
+              margin: 0;
+            }
+
+            p {
+              font-size: 14px;
+              color: var(--ion-color-medium);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.upcoming-challenges {
+  ion-card {
+    margin: 0 0 20px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    ion-card-header {
+      padding: 20px;
+
+      ion-card-subtitle {
+        font-size: 14px;
+        color: var(--ion-color-primary);
+      }
+
+      ion-card-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--ion-color-dark);
+      }
+    }
+
+    ion-card-content {
+      padding: 0 20px 20px;
+
+      p {
+        font-size: 16px;
+        color: var(--ion-color-dark);
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+
+      .rewards-preview {
+        background: var(--ion-color-light);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+
+        h4 {
+          font-size: 16px;
+          color: var(--ion-color-dark);
+          margin: 0 0 10px;
+        }
+
+        ul {
+          margin: 0;
+          padding-left: 20px;
+
+          li {
+            font-size: 14px;
+            color: var(--ion-color-medium);
+            margin-bottom: 5px;
+          }
+        }
+      }
+
+      .integration-note {
+        display: flex;
+        align-items: center;
+        background: var(--ion-color-warning-light);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 20px;
+
+        ion-icon {
+          font-size: 24px;
+          color: var(--ion-color-warning);
+          margin-right: 10px;
+        }
+
+        p {
+          font-size: 14px;
+          color: var(--ion-color-dark);
+          margin: 0;
+        }
+      }
+
+      ion-button {
+        margin: 0;
+      }
+    }
+  }
+}

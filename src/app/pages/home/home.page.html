@@ -6,32 +6,75 @@
       </ion-avatar>
     </ion-buttons>
     <ion-title>
-      <ion-label class="inbox-status">Good Morning 👋 </ion-label>
-      <ion-label class="inbox-name">{{userName}}</ion-label>
+      <ion-label class="inbox-status">Вітаємо 👋</ion-label>
+      <ion-label class="inbox-name">{{userName || 'Користувач'}}</ion-label>
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button color="light" (click)="onPage('notifications')">
+      <ion-button (click)="goToNotifications()">
         <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
       </ion-button>
-      <ion-button color="light" (click)="onPage('bookmarks')">
-        <ion-icon slot="icon-only" name="reader-outline"></ion-icon>
+      <ion-button (click)="goToBookmarks()">
+        <ion-icon slot="icon-only" name="bookmark-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar class="ion-no-border">
-    <ion-searchbar placeholder="Search" inputmode="text" type="text" mode="ios"></ion-searchbar>
-  </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <!-- Календар -->
+  <div class="calendar-strip" (click)="goToCalendar()">
+    <div class="week-days">
+      <div *ngFor="let day of weekDays" 
+           class="day-item" 
+           [class.current]="isCurrentDay(day.date)"
+           [class.marked]="day.marked">
+        <span class="day-name">{{ day.name }}</span>
+        <span class="day-number">{{ day.date }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Челендж -->
+  <div class="challenge-phase">
+    <div class="phase-circle">
+      <h2>Current Challenge</h2>
+      <h1>40 DAYS CHALLENGE</h1>
+      <p>Day 15 of 40</p>
+      <div class="challenge-tasks">
+        <div class="task-item" [class.completed]="task.completed" *ngFor="let task of dailyTasks">
+          <ion-icon [name]="task.icon"></ion-icon>
+          <span>{{ task.name }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Статистика -->
+  <div class="stats-grid">
+    <div class="stat-item" (click)="goToHabit('steps')">
+      <ion-icon name="footsteps-outline"></ion-icon>
+      <h3>Steps</h3>
+      <h2>12,345</h2>
+    </div>
+    <div class="stat-item" (click)="goToHabit('sleep')">
+      <ion-icon name="moon-outline"></ion-icon>
+      <h3>Sleep</h3>
+      <h2>7:30 Hr</h2>
+    </div>
+    <div class="stat-item" (click)="goToHabit('water')">
+      <ion-icon name="water-outline"></ion-icon>
+      <h3>Water</h3>
+      <h2>1.5 L</h2>
+    </div>
+  </div>
+
+  <!-- Статус гідратації -->
+  <div class="status-card hydration" (click)="goToHabit('water')">
+    <ion-icon name="water-outline"></ion-icon>
+    <div class="status-info">
+      <h3>Hydration Level: 25%</h3>
+      <p>You need to drink more water.</p>
+    </div>
   </div>
 </ion-content>

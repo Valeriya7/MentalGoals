@@ -1,13 +1,149 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>profile</ion-title>
+    <ion-title>Профіль</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">profile</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <!-- Профіль користувача -->
+  <div class="profile-header">
+    <ion-avatar>
+      <img src="../../../assets/images/avatar/4.jpg" />
+    </ion-avatar>
+    <h2>{{userName}}</h2>
+    <div class="points">
+      <ion-icon name="trophy"></ion-icon>
+      <span>{{totalPoints}} балів</span>
+    </div>
+  </div>
+
+  <!-- Основні налаштування -->
+  <ion-list>
+    <ion-item-group>
+      <ion-item-divider>
+        <ion-label>Особисті дані</ion-label>
+      </ion-item-divider>
+      
+      <ion-item button (click)="editProfile()">
+        <ion-icon slot="start" name="person-outline"></ion-icon>
+        <ion-label>
+          <h3>Редагувати профіль</h3>
+          <p>Змініть ваші особисті дані</p>
+        </ion-label>
+        <ion-icon slot="end" name="chevron-forward"></ion-icon>
+      </ion-item>
+    </ion-item-group>
+
+    <!-- Інтеграції -->
+    <ion-item-group>
+      <ion-item-divider>
+        <ion-label>Інтеграції</ion-label>
+      </ion-item-divider>
+      
+      <ion-item button (click)="connectDevice('garmin')">
+        <ion-icon slot="start" name="watch-outline"></ion-icon>
+        <ion-label>
+          <h3>Garmin Connect</h3>
+          <p>{{isConnected.garmin ? 'Підключено' : 'Не підключено'}}</p>
+        </ion-label>
+        <ion-icon slot="end" [name]="isConnected.garmin ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
+      </ion-item>
+
+      <ion-item button (click)="connectDevice('samsung')">
+        <ion-icon slot="start" name="watch-outline"></ion-icon>
+        <ion-label>
+          <h3>Samsung Health</h3>
+          <p>{{isConnected.samsung ? 'Підключено' : 'Не підключено'}}</p>
+        </ion-label>
+        <ion-icon slot="end" [name]="isConnected.samsung ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
+      </ion-item>
+
+      <ion-item button (click)="connectDevice('apple')">
+        <ion-icon slot="start" name="watch-outline"></ion-icon>
+        <ion-label>
+          <h3>Apple Health</h3>
+          <p>{{isConnected.apple ? 'Підключено' : 'Не підключено'}}</p>
+        </ion-label>
+        <ion-icon slot="end" [name]="isConnected.apple ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
+      </ion-item>
+    </ion-item-group>
+
+    <!-- Дані про здоров'я -->
+    <ion-item-group *ngIf="healthData">
+      <ion-item-divider>
+        <ion-label>Дані про здоров'я</ion-label>
+        <ion-note slot="end">Оновлено: {{healthData.lastSync | date:'short'}}</ion-note>
+      </ion-item-divider>
+
+      <!-- Сон -->
+      <ion-item>
+        <ion-icon slot="start" name="moon-outline" color="primary"></ion-icon>
+        <ion-label>
+          <h3>Сон</h3>
+          <p>Тривалість: {{healthData.sleep.duration / 60 | number:'1.0-1'}} годин</p>
+          <p>Якість: {{healthData.sleep.quality}}%</p>
+        </ion-label>
+      </ion-item>
+
+      <!-- Активність -->
+      <ion-item>
+        <ion-icon slot="start" name="footsteps-outline" color="success"></ion-icon>
+        <ion-label>
+          <h3>Активність</h3>
+          <p>Кроки: {{healthData.activity.steps | number}} ({{healthData.activity.distance / 1000 | number:'1.1-1'}} км)</p>
+          <p>Активні хвилини: {{healthData.activity.activeMinutes}}</p>
+        </ion-label>
+      </ion-item>
+
+      <!-- Пульс -->
+      <ion-item>
+        <ion-icon slot="start" name="heart-outline" color="danger"></ion-icon>
+        <ion-label>
+          <h3>Пульс</h3>
+          <p>Поточний: {{healthData.activity.heartRate.current}} уд/хв</p>
+          <p>Середній: {{healthData.activity.heartRate.average}} уд/хв</p>
+        </ion-label>
+      </ion-item>
+
+      <!-- Стрес -->
+      <ion-item>
+        <ion-icon slot="start" name="pulse-outline" color="warning"></ion-icon>
+        <ion-label>
+          <h3>Рівень стресу</h3>
+          <p>{{healthData.stress.level}}%</p>
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+
+    <!-- Налаштування сповіщень -->
+    <ion-item-group>
+      <ion-item-divider>
+        <ion-label>Сповіщення</ion-label>
+      </ion-item-divider>
+      
+      <ion-item>
+        <ion-icon slot="start" name="notifications-outline"></ion-icon>
+        <ion-label>Push-сповіщення</ion-label>
+        <ion-toggle [(ngModel)]="notifications.push"></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-icon slot="start" name="time-outline"></ion-icon>
+        <ion-label>Нагадування</ion-label>
+        <ion-toggle [(ngModel)]="notifications.reminders"></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-icon slot="start" name="trophy-outline"></ion-icon>
+        <ion-label>Досягнення</ion-label>
+        <ion-toggle [(ngModel)]="notifications.achievements"></ion-toggle>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <!-- Кнопка виходу -->
+  <ion-button expand="block" color="danger" class="logout-button" (click)="logout()">
+    <ion-icon slot="start" name="log-out-outline"></ion-icon>
+    Вийти
+  </ion-button>
 </ion-content>
