@@ -29,5 +29,9 @@ export const routes: Routes = [
     path: 'challenges',
     loadComponent: () => import('./pages/challenges/challenges.page').then(m => m.ChallengesPage)
    // canActivate: [AuthGuard]
+  },
+  {
+    path: 'edit-profile',
+    loadComponent: () => import('./pages/edit-profile/edit-profile.component').then(m => m.EditProfileComponent)
   }
 ]; 
