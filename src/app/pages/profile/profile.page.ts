@@ -8,6 +8,37 @@ import { HealthApiService } from '../../services/health-api.service';
 import { HealthData } from '../../interfaces/health-data.interface';
 import { Subscription } from 'rxjs';
 import { HealthApiModule } from '../../services/health-api.module';
+import { addIcons } from 'ionicons';
+import { 
+  timeOutline, 
+  notificationsOutline, 
+  trophyOutline,
+  personOutline,
+  watchOutline,
+  checkmarkCircleOutline,
+  addCircleOutline,
+  moonOutline,
+  footstepsOutline,
+  heartOutline,
+  pulseOutline,
+  logOutOutline
+} from 'ionicons/icons';
+
+// Реєструємо іконки
+addIcons({
+  'time': timeOutline,
+  'notifications': notificationsOutline,
+  'trophy': trophyOutline,
+  'person': personOutline,
+  'watch': watchOutline,
+  'checkmark-circle': checkmarkCircleOutline,
+  'add-circle': addCircleOutline,
+  'moon': moonOutline,
+  'footsteps': footstepsOutline,
+  'heart': heartOutline,
+  'pulse': pulseOutline,
+  'log-out': logOutOutline
+});
 
 @Component({
   selector: 'app-profile',

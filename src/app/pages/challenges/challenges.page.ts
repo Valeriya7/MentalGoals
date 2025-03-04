@@ -16,13 +16,15 @@ import {
   addCircleOutline
 } from 'ionicons/icons';
 import { ChallengeService } from '../../services/challenge.service';
+import { RouterModule } from '@angular/router';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-challenges',
   templateUrl: './challenges.page.html',
   styleUrls: ['./challenges.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
 })
 export class ChallengesPage implements OnInit {
   currentChallenge = {
@@ -72,6 +74,8 @@ export class ChallengesPage implements OnInit {
     }
   };
 
+  userName: string = '';
+
   constructor(
     private challengeService: ChallengeService
   ) {
@@ -89,13 +93,27 @@ export class ChallengesPage implements OnInit {
     });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.loadUserData();
     this.challengeService.getActiveChallenge().subscribe(challenge => {
       console.log('Active challenge:', challenge);
     });
   }
 
+  async loadUserData() {
+    const name = await Preferences.get({ key: 'name' });
+    if (name && name.value) this.userName = name.value;
+  }
+
   async startChallenge(type: string) {
     await this.challengeService.startNewChallenge(type);
+  }
+
+  goToNotifications() {
+    // Навігація до сповіщень
+  }
+
+  goToBookmarks() {
+    // Навігація до закладок
   }
 }

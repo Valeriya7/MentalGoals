@@ -1,0 +1,73 @@
+{
+  "COMMON": {
+    "WELCOME": "Welcome 👋",
+    "USER": "User",
+    "NOTIFICATIONS": "Notifications",
+    "BOOKMARKS": "Bookmarks"
+  },
+  "HOME": {
+    "CURRENT_CHALLENGE": "Current Challenge",
+    "DAYS": "Days",
+    "OF": "of",
+    "DAILY_TASKS": "Daily Tasks",
+    "STATS": "Stats",
+    "HYDRATION_LEVEL": "Hydration Level",
+    "NEED_MORE_WATER": "You need to drink more water"
+  },
+  "CHALLENGES": {
+    "TITLE": "Challenges 🎯",
+    "CURRENT_CHALLENGE": "Current Challenge",
+    "DAY": "Day",
+    "DAILY_TASKS": "Daily Tasks",
+    "COMPLETED": "Completed",
+    "NOT_COMPLETED": "Not Completed",
+    "REWARDS": "Rewards",
+    "POINTS": "points",
+    "FOR_COMPLETION": "For successful completion",
+    "PARTNER_DISCOUNTS": "Partner Discounts",
+    "UPCOMING_CHALLENGES": "Upcoming Challenges",
+    "DAYS": "days",
+    "CONDITION": "Condition",
+    "REWARDS_PREVIEW": "Rewards",
+    "BONUS_POINTS": "bonus points",
+    "START_CHALLENGE": "Start Challenge",
+    "SYNC_NOTE": "Data will be synced with Garmin, Samsung Health or Apple Health"
+  },
+  "HABITS": {
+    "TITLE": "Habit Tracker",
+    "MY_HABITS": "My Habits",
+    "CURRENT_STREAK": "Current streak",
+    "BEST_STREAK": "Best streak",
+    "DAYS": "days",
+    "ADD_HABIT": "Add Habit"
+  },
+  "PROFILE": {
+    "TITLE": "Profile",
+    "EDIT_PROFILE": "Edit Profile",
+    "PERSONAL_DATA": "Personal Data",
+    "CHANGE_DATA": "Change your personal data",
+    "INTEGRATIONS": "Integrations",
+    "CONNECTED": "Connected",
+    "NOT_CONNECTED": "Not Connected",
+    "HEALTH_DATA": "Health Data",
+    "LAST_UPDATE": "Last update",
+    "SLEEP": "Sleep",
+    "DURATION": "Duration",
+    "HOURS": "hours",
+    "QUALITY": "Quality",
+    "ACTIVITY": "Activity",
+    "STEPS": "Steps",
+    "KM": "km",
+    "ACTIVE_MINUTES": "Active minutes",
+    "HEART_RATE": "Heart Rate",
+    "CURRENT": "Current",
+    "AVERAGE": "Average",
+    "BPM": "bpm",
+    "STRESS_LEVEL": "Stress Level",
+    "NOTIFICATIONS": "Notifications",
+    "PUSH_NOTIFICATIONS": "Push Notifications",
+    "REMINDERS": "Reminders",
+    "ACHIEVEMENTS": "Achievements",
+    "LOGOUT": "Logout"
+  }
+} 

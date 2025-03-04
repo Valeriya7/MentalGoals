@@ -122,21 +122,21 @@
       </ion-item-divider>
       
       <ion-item>
-        <ion-icon slot="start" name="notifications-outline"></ion-icon>
+        <ion-icon name="notifications" slot="start"></ion-icon>
         <ion-label>Push-сповіщення</ion-label>
-        <ion-toggle [(ngModel)]="notifications.push"></ion-toggle>
+        <ion-toggle [(ngModel)]="notifications.push" aria-label="Push-сповіщення"></ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-icon slot="start" name="time-outline"></ion-icon>
+        <ion-icon name="time" slot="start"></ion-icon>
         <ion-label>Нагадування</ion-label>
-        <ion-toggle [(ngModel)]="notifications.reminders"></ion-toggle>
+        <ion-toggle [(ngModel)]="notifications.reminders" aria-label="Нагадування"></ion-toggle>
       </ion-item>
 
       <ion-item>
-        <ion-icon slot="start" name="trophy-outline"></ion-icon>
+        <ion-icon name="trophy" slot="start"></ion-icon>
         <ion-label>Досягнення</ion-label>
-        <ion-toggle [(ngModel)]="notifications.achievements"></ion-toggle>
+        <ion-toggle [(ngModel)]="notifications.achievements" aria-label="Досягнення"></ion-toggle>
       </ion-item>
     </ion-item-group>
   </ion-list>

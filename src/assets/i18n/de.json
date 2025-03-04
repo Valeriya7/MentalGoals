@@ -1,0 +1,73 @@
+{
+  "COMMON": {
+    "WELCOME": "Willkommen 👋",
+    "USER": "Benutzer",
+    "NOTIFICATIONS": "Benachrichtigungen",
+    "BOOKMARKS": "Lesezeichen"
+  },
+  "HOME": {
+    "CURRENT_CHALLENGE": "Aktuelle Herausforderung",
+    "DAYS": "Tage",
+    "OF": "von",
+    "DAILY_TASKS": "Tägliche Aufgaben",
+    "STATS": "Statistiken",
+    "HYDRATION_LEVEL": "Hydrationslevel",
+    "NEED_MORE_WATER": "Sie müssen mehr Wasser trinken"
+  },
+  "CHALLENGES": {
+    "TITLE": "Herausforderungen 🎯",
+    "CURRENT_CHALLENGE": "Aktuelle Herausforderung",
+    "DAY": "Tag",
+    "DAILY_TASKS": "Tägliche Aufgaben",
+    "COMPLETED": "Abgeschlossen",
+    "NOT_COMPLETED": "Nicht abgeschlossen",
+    "REWARDS": "Belohnungen",
+    "POINTS": "Punkte",
+    "FOR_COMPLETION": "Für erfolgreichen Abschluss",
+    "PARTNER_DISCOUNTS": "Partner-Rabatte",
+    "UPCOMING_CHALLENGES": "Kommende Herausforderungen",
+    "DAYS": "Tage",
+    "CONDITION": "Bedingung",
+    "REWARDS_PREVIEW": "Belohnungen",
+    "BONUS_POINTS": "Bonus-Punkte",
+    "START_CHALLENGE": "Herausforderung starten",
+    "SYNC_NOTE": "Daten werden mit Garmin, Samsung Health oder Apple Health synchronisiert"
+  },
+  "HABITS": {
+    "TITLE": "Gewohnheits-Tracker",
+    "MY_HABITS": "Meine Gewohnheiten",
+    "CURRENT_STREAK": "Aktuelle Serie",
+    "BEST_STREAK": "Beste Serie",
+    "DAYS": "Tage",
+    "ADD_HABIT": "Gewohnheit hinzufügen"
+  },
+  "PROFILE": {
+    "TITLE": "Profil",
+    "EDIT_PROFILE": "Profil bearbeiten",
+    "PERSONAL_DATA": "Persönliche Daten",
+    "CHANGE_DATA": "Ändern Sie Ihre persönlichen Daten",
+    "INTEGRATIONS": "Integrationen",
+    "CONNECTED": "Verbunden",
+    "NOT_CONNECTED": "Nicht verbunden",
+    "HEALTH_DATA": "Gesundheitsdaten",
+    "LAST_UPDATE": "Zuletzt aktualisiert",
+    "SLEEP": "Schlaf",
+    "DURATION": "Dauer",
+    "HOURS": "Stunden",
+    "QUALITY": "Qualität",
+    "ACTIVITY": "Aktivität",
+    "STEPS": "Schritte",
+    "KM": "km",
+    "ACTIVE_MINUTES": "Aktive Minuten",
+    "HEART_RATE": "Herzfrequenz",
+    "CURRENT": "Aktuell",
+    "AVERAGE": "Durchschnitt",
+    "BPM": "bpm",
+    "STRESS_LEVEL": "Stresslevel",
+    "NOTIFICATIONS": "Benachrichtigungen",
+    "PUSH_NOTIFICATIONS": "Push-Benachrichtigungen",
+    "REMINDERS": "Erinnerungen",
+    "ACHIEVEMENTS": "Erfolge",
+    "LOGOUT": "Abmelden"
+  }
+} 

@@ -26,7 +26,10 @@ import {
   watchOutline,
   timeOutline,
   logOutOutline,
-  addCircleOutline
+  addCircleOutline,
+  heartOutline,
+  pulseOutline,
+  checkmarkCircleOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -79,7 +82,10 @@ export class AppComponent {
       'watch-outline': watchOutline,
       'time-outline': timeOutline,
       'log-out-outline': logOutOutline,
-      'add-circle-outline': addCircleOutline
+      'add-circle-outline': addCircleOutline,
+      'heart-outline': heartOutline,
+      'pulse-outline': pulseOutline,
+      'checkmark-circle-outline': checkmarkCircleOutline
     });
   }
 

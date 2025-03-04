@@ -10,26 +10,26 @@
 <ion-content class="ion-padding">
   <ion-list>
     <ion-item-sliding *ngFor="let notification of notifications">
-      <ion-item [class.unread]="!notification.read" (click)="markAsRead(notification)">
-        <ion-icon [name]="notification.icon" slot="start" [color]="notification.read ? 'medium' : 'primary'"></ion-icon>
+      <ion-item [class.unread]="!notification.read" (click)="markAsRead(notification)" role="button" aria-label="{{notification.title}}">
+        <ion-icon [name]="notification.icon" slot="start" [color]="notification.read ? 'medium' : 'primary'" aria-hidden="true"></ion-icon>
         <ion-label>
           <h2>{{ notification.title }}</h2>
           <p>{{ notification.message }}</p>
           <p class="time">{{ notification.time }}</p>
         </ion-label>
-        <ion-badge *ngIf="!notification.read" color="primary" slot="end"></ion-badge>
+        <ion-badge *ngIf="!notification.read" color="primary" slot="end" aria-hidden="true"></ion-badge>
       </ion-item>
 
       <ion-item-options side="end">
-        <ion-item-option color="danger" (click)="deleteNotification(notification)">
-          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        <ion-item-option color="danger" (click)="deleteNotification(notification)" aria-label="Видалити сповіщення">
+          <ion-icon slot="icon-only" name="trash" aria-hidden="true"></ion-icon>
         </ion-item-option>
       </ion-item-options>
     </ion-item-sliding>
   </ion-list>
 
-  <div class="empty-state" *ngIf="notifications.length === 0">
-    <ion-icon name="notifications-off-outline"></ion-icon>
+  <div class="empty-state" *ngIf="notifications.length === 0" role="status" aria-live="polite">
+    <ion-icon name="notifications-off-outline" aria-hidden="true"></ion-icon>
     <h3>Немає сповіщень</h3>
     <p>У вас поки що немає нових сповіщень</p>
   </div>

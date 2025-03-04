@@ -2,13 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-habit-tracker',
   templateUrl: './habit-tracker.page.html',
   styleUrls: ['./habit-tracker.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
 })
 export class HabitTrackerPage implements OnInit {
   today = new Date();
@@ -33,12 +35,20 @@ export class HabitTrackerPage implements OnInit {
 
   selectedDate = new Date();
   currentMonth: Date[] = [];
+  userName: string = '';
 
   constructor() {
     this.generateCalendarDays();
   }
 
-  ngOnInit() { }
+  async ngOnInit() {
+    await this.loadUserData();
+  }
+
+  async loadUserData() {
+    const name = await Preferences.get({ key: 'name' });
+    if (name && name.value) this.userName = name.value;
+  }
 
   generateCalendarDays() {
     const year = this.selectedDate.getFullYear();
@@ -77,5 +87,13 @@ export class HabitTrackerPage implements OnInit {
 
   isToday(date: Date): boolean {
     return date.toDateString() === this.today.toDateString();
+  }
+
+  goToNotifications() {
+    // Навігація до сповіщень
+  }
+
+  goToBookmarks() {
+    // Навігація до закладок
   }
 } 

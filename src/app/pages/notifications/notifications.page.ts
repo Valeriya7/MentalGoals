@@ -2,13 +2,34 @@ import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { addIcons } from 'ionicons';
+import { 
+  timeOutline, 
+  notificationsOutline, 
+  trophyOutline, 
+  trashOutline,
+  notificationsOffOutline,
+  leafOutline
+} from 'ionicons/icons';
+
+// Реєструємо іконки
+addIcons({
+  'time': timeOutline,
+  'notifications': notificationsOutline,
+  'trophy': trophyOutline,
+  'trash': trashOutline,
+  'notifications-off': notificationsOffOutline,
+  'leaf': leafOutline
+});
 
 @Component({
   selector: 'app-notifications',
   templateUrl: './notifications.page.html',
   styleUrls: ['./notifications.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule]
+  imports: [IonicModule, CommonModule, RouterModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class NotificationsPage implements OnInit {
   notifications = [
