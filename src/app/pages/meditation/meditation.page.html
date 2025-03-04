@@ -1,0 +1,37 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Медитації
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="welcome-section">
+    <h1>Вітаємо у світі спокою</h1>
+    <p>Оберіть медитацію, яка найкраще підходить для вашого настрою</p>
+  </div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6" *ngFor="let meditation of meditations">
+        <ion-card class="meditation-card" (click)="startMeditation(meditation)">
+          <img [src]="meditation.image" [alt]="meditation.title"/>
+          <ion-card-header>
+            <ion-card-title>{{ meditation.title }}</ion-card-title>
+            <ion-card-subtitle>{{ meditation.duration }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            {{ meditation.description }}
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="play"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content> 

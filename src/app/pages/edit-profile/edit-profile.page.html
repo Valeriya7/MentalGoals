@@ -1,0 +1,37 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Редагування профілю</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="saveProfile()">
+        <ion-icon name="save-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-list>
+    <ion-item>
+      <ion-label position="stacked">Ім'я</ion-label>
+      <ion-input [(ngModel)]="userData.name" placeholder="Введіть ваше ім'я"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input [(ngModel)]="userData.email" type="email" placeholder="Введіть ваш email"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Телефон</ion-label>
+      <ion-input [(ngModel)]="userData.phone" type="tel" placeholder="Введіть ваш телефон"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Біографія</ion-label>
+      <ion-textarea [(ngModel)]="userData.bio" placeholder="Розкажіть про себе" rows="4"></ion-textarea>
+    </ion-item>
+  </ion-list>
+</ion-content> 

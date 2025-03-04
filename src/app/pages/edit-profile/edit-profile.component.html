@@ -1,11 +1,11 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/profile" aria-label="Back to profile"></ion-back-button>
     </ion-buttons>
     <ion-title>Edit Profile</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="saveProfile()">
+      <ion-button (click)="saveProfile()" aria-label="Save profile">
         <ion-icon name="save-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -15,18 +15,37 @@
 <ion-content class="ion-padding">
   <ion-list>
     <ion-item>
-      <ion-label position="stacked">Name</ion-label>
-      <ion-input [(ngModel)]="userProfile.name" placeholder="Enter your name"></ion-input>
+      <ion-label position="stacked" id="name-label">Name</ion-label>
+      <ion-input 
+        #nameInput
+        [(ngModel)]="userProfile.name" 
+        placeholder="Enter your name"
+        aria-labelledby="name-label"
+        role="textbox"
+        aria-required="true">
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Email</ion-label>
-      <ion-input type="email" [(ngModel)]="userProfile.email" disabled></ion-input>
+      <ion-label position="stacked" id="email-label">Email</ion-label>
+      <ion-input 
+        type="email" 
+        [(ngModel)]="userProfile.email" 
+        disabled
+        aria-labelledby="email-label"
+        role="textbox"
+        aria-disabled="true">
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">Bio</ion-label>
-      <ion-textarea [(ngModel)]="userProfile.bio" placeholder="Tell us about yourself"></ion-textarea>
+      <ion-label position="stacked" id="bio-label">Bio</ion-label>
+      <ion-textarea 
+        [(ngModel)]="userProfile.bio" 
+        placeholder="Tell us about yourself"
+        aria-labelledby="bio-label"
+        role="textbox">
+      </ion-textarea>
     </ion-item>
   </ion-list>
 </ion-content>

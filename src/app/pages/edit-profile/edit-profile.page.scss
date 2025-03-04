@@ -1,0 +1,31 @@
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+ion-item {
+  --background: var(--ion-color-light);
+  --border-radius: 8px;
+  margin-bottom: 16px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 16px;
+}
+
+ion-label {
+  color: var(--ion-color-medium);
+}
+
+ion-input, ion-textarea {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+} 

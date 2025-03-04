@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
   imports: [IonicModule, FormsModule, CommonModule]
 })
 export class EditProfileComponent implements OnInit {
+  @ViewChild('nameInput') nameInput!: ElementRef;
+  
   userProfile = {
     name: '',
     email: '',
@@ -26,6 +28,13 @@ export class EditProfileComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadUserProfile();
+  }
+
+  ionViewDidEnter() {
+    // Встановлюємо фокус на поле імені після завантаження сторінки
+    setTimeout(() => {
+      this.nameInput?.nativeElement?.focus();
+    }, 100);
   }
 
   async loadUserProfile() {
