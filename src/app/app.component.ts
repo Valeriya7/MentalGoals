@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PlatformCheckService } from 'src/app/services/platform-check.service';
-import { VersionCheckService } from './services/version-check.service'; // Імпортуємо наш сервіс
+import { VersionCheckService } from './services/version-check.service';
+import { TranslateService } from './services/translate.service';
+import { TranslatePipe } from './pipes/translate.pipe';
 import { addIcons } from 'ionicons';
 import { 
   homeOutline, home,
@@ -37,14 +39,15 @@ import {
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule]
+  imports: [IonicModule, CommonModule, RouterModule, TranslatePipe]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   platformType: string = '';
 
   constructor(
     private platformCheckService: PlatformCheckService,
-    private versionCheckService: VersionCheckService
+    private versionCheckService: VersionCheckService,
+    private translateService: TranslateService
   ) {
     addIcons({
       'home': home,
@@ -89,9 +92,15 @@ export class AppComponent {
     });
   }
 
-  ngOnInit() {
-    this.platformType = this.platformCheckService.getPlatform();
-    console.log('Current platform:', this.platformType);
-    this.versionCheckService.checkVersion(); // Перевірка версії при запуску додатку
+  async ngOnInit() {
+    try {
+      this.platformType = this.platformCheckService.getPlatform();
+      console.log('Current platform:', this.platformType);
+      this.versionCheckService.checkVersion();
+      await this.translateService.loadSavedLanguage();
+      console.log('Translations loaded successfully');
+    } catch (error) {
+      console.error('Error initializing app:', error);
+    }
   }
 }

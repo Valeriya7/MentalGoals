@@ -4,13 +4,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-habit-tracker',
   templateUrl: './habit-tracker.page.html',
   styleUrls: ['./habit-tracker.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslatePipe]
 })
 export class HabitTrackerPage implements OnInit {
   today = new Date();

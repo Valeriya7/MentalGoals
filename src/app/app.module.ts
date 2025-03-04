@@ -8,6 +8,7 @@ import { IonicStorageModule } from '@ionic/storage-angular';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+import { TranslateService } from './services/translate.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -18,7 +19,10 @@ import { AppRoutingModule } from './app-routing.module';
     IonicStorageModule.forRoot(),
     HttpClientModule
   ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    TranslateService
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {} 

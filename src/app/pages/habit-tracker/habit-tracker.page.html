@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar mode="md" color="primary">
     <ion-title>
-       <ion-label class="inbox-name">Трекер звичок</ion-label>
+       <ion-label class="inbox-name">{{ 'HABITS.TITLE' | translate }}</ion-label>
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -30,13 +30,13 @@
   </div>
 
   <div class="habits-section">
-    <h2>Мої звички</h2>
+    <h2>{{ 'HABITS.MY_HABITS' | translate }}</h2>
     <ion-list>
       <ion-item *ngFor="let habit of habits" class="habit-item">
         <ion-label>
           <h2>{{ habit.name }}</h2>
-          <p>Поточна серія: {{ habit.currentStreak }} днів</p>
-          <p>Найкраща серія: {{ habit.bestStreak }} днів</p>
+          <p>{{ 'HABITS.CURRENT_STREAK' | translate }}: {{ habit.currentStreak }} {{ 'HABITS.DAYS' | translate }}</p>
+          <p>{{ 'HABITS.BEST_STREAK' | translate }}: {{ habit.bestStreak }} {{ 'HABITS.DAYS' | translate }}</p>
         </ion-label>
         <div class="habit-progress">
           <div class="progress-bar">

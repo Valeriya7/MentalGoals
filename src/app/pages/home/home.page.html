@@ -6,8 +6,8 @@
       </ion-avatar>
     </ion-buttons>
     <ion-title>
-      <ion-label class="inbox-status">Вітаємо 👋</ion-label>
-      <ion-label class="inbox-name">{{userName || 'Користувач'}}</ion-label>
+      <ion-label class="inbox-status">{{ 'COMMON.WELCOME' | translate }}</ion-label>
+      <ion-label class="inbox-name">{{userName || ('COMMON.USER' | translate)}}</ion-label>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="goToNotifications()">
@@ -38,9 +38,9 @@
   <!-- Челендж -->
   <div class="challenge-phase">
     <div class="phase-circle">
-      <h2>Current Challenge</h2>
-      <h1>40 DAYS CHALLENGE</h1>
-      <p>Day 15 of 40</p>
+      <h2>{{ 'HOME.CURRENT_CHALLENGE' | translate }}</h2>
+      <h1>40 {{ 'CHALLENGES.DAYS' | translate }} CHALLENGE</h1>
+      <p>{{ 'CHALLENGES.DAY' | translate }} 15 {{ 'CHALLENGES.OF' | translate }} 40</p>
       <div class="challenge-tasks">
         <div class="task-item" [class.completed]="task.completed" *ngFor="let task of dailyTasks">
           <ion-icon [name]="task.icon"></ion-icon>
@@ -54,17 +54,17 @@
   <div class="stats-grid">
     <div class="stat-item" (click)="goToHabit('steps')">
       <ion-icon name="footsteps-outline"></ion-icon>
-      <h3>Steps</h3>
+      <h3>{{ 'PROFILE.STEPS' | translate }}</h3>
       <h2>12,345</h2>
     </div>
     <div class="stat-item" (click)="goToHabit('sleep')">
       <ion-icon name="moon-outline"></ion-icon>
-      <h3>Sleep</h3>
-      <h2>7:30 Hr</h2>
+      <h3>{{ 'PROFILE.SLEEP' | translate }}</h3>
+      <h2>7:30 {{ 'PROFILE.HOURS' | translate }}</h2>
     </div>
     <div class="stat-item" (click)="goToHabit('water')">
       <ion-icon name="water-outline"></ion-icon>
-      <h3>Water</h3>
+      <h3>{{ 'HOME.HYDRATION_LEVEL' | translate }}</h3>
       <h2>1.5 L</h2>
     </div>
   </div>
@@ -73,8 +73,8 @@
   <div class="status-card hydration" (click)="goToHabit('water')">
     <ion-icon name="water-outline"></ion-icon>
     <div class="status-info">
-      <h3>Hydration Level: 25%</h3>
-      <p>You need to drink more water.</p>
+      <h3>{{ 'HOME.HYDRATION_LEVEL' | translate }}: 25%</h3>
+      <p>{{ 'HOME.NEED_MORE_WATER' | translate }}</p>
     </div>
   </div>
 </ion-content>

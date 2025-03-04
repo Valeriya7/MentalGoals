@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -8,6 +8,8 @@ import { HealthApiService } from '../../services/health-api.service';
 import { HealthData } from '../../interfaces/health-data.interface';
 import { Subscription } from 'rxjs';
 import { HealthApiModule } from '../../services/health-api.module';
+import { TranslateService } from '../../services/translate.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { addIcons } from 'ionicons';
 import { 
   timeOutline, 
@@ -45,7 +47,14 @@ addIcons({
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, HealthApiModule]
+  imports: [
+    IonicModule, 
+    CommonModule, 
+    FormsModule, 
+    HealthApiModule, 
+    TranslatePipe
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ProfilePage implements OnInit, OnDestroy {
   userName: string = '';

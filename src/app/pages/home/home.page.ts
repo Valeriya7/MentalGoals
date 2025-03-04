@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { UtilService } from 'src/app/services/util.service';
 import { Preferences } from '@capacitor/preferences';
 import { NavigationExtras } from '@angular/router';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 //import { register } from 'swiper/element';
 
 @Component({
@@ -13,7 +14,7 @@ import { NavigationExtras } from '@angular/router';
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, TranslatePipe]
 })
 export class HomePage implements OnInit {
   userName: string = 'Sayli';

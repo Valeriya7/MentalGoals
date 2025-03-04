@@ -18,13 +18,14 @@ import {
 import { ChallengeService } from '../../services/challenge.service';
 import { RouterModule } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-challenges',
   templateUrl: './challenges.page.html',
   styleUrls: ['./challenges.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslatePipe]
 })
 export class ChallengesPage implements OnInit {
   currentChallenge = {
