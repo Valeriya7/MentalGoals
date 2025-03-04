@@ -33,5 +33,9 @@ export const routes: Routes = [
   {
     path: 'edit-profile',
     loadComponent: () => import('./pages/edit-profile/edit-profile.component').then(m => m.EditProfileComponent)
+  },
+  {
+    path: 'life-wheel',
+    loadComponent: () => import('./pages/life-wheel/life-wheel.page').then(m => m.LifeWheelPage)
   }
 ]; 

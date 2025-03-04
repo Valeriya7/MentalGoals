@@ -40,7 +40,13 @@ import {
   checkmark,
   chevronForward,
   checkmarkCircle,
-  time
+  time,
+  nutritionOutline,
+  heart,
+  flowerOutline,
+  giftOutline,
+  fastFoodOutline,
+  fastFood
 } from 'ionicons/icons';
 
 // Реєструємо всі іконки один раз
@@ -68,6 +74,9 @@ addIcons({
   'bookmark-outline': bookmarkOutline,
   'cafe-outline': cafeOutline,
   'fitness-outline': fitnessOutline,
+  'flower-outline': flowerOutline,
+  'gift-outline': giftOutline,
+  'fast-food-outline': fastFoodOutline,
 
   // Filled іконки
   'home': home,
@@ -88,5 +97,8 @@ addIcons({
   'checkmark': checkmark,
   'chevron-forward': chevronForward,
   'checkmark-circle': checkmarkCircle,
-  'time': time
+  'time': time,
+  'heart': heart,
+  'cookies': fastFood,
+  'fast-food': fastFood
 }); 

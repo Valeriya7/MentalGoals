@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,6 +7,9 @@ import { UtilService } from 'src/app/services/util.service';
 import { Preferences } from '@capacitor/preferences';
 import { NavigationExtras } from '@angular/router';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { WishesService } from '../../services/wishes.service';
+import { Subscription } from 'rxjs';
+import { WishModalComponent } from '../../components/wish-modal/wish-modal.component';
 //import { register } from 'swiper/element';
 
 @Component({
@@ -16,7 +19,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, TranslatePipe]
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   userName: string = 'Sayli';
   weekDays: any[] = [];
   dailyTasks = [
@@ -26,16 +29,33 @@ export class HomePage implements OnInit {
     { name: '8000 Steps', icon: 'footsteps-outline', completed: false },
     { name: '5 English Words', icon: 'book-outline', completed: true }
   ];
+  hasUnreadWish = false;
+  currentWish = '';
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private router: Router,
-    public util: UtilService
+    public util: UtilService,
+    private wishesService: WishesService,
+    private modalController: ModalController
   ) {
     this.generateWeekDays();
   }
 
   ngOnInit() {
     this.getUserData();
+    this.subscriptions.push(
+      this.wishesService.getHasUnreadWish().subscribe(hasUnread => {
+        this.hasUnreadWish = hasUnread;
+      }),
+      this.wishesService.getCurrentWish().subscribe(wish => {
+        this.currentWish = wish;
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   generateWeekDays() {
@@ -77,11 +97,33 @@ export class HomePage implements OnInit {
     });
   }
 
+  goToLifeWheel() {
+    this.router.navigate(['/life-wheel']);
+  }
+
   async getUserData() {
     const name = await Preferences.get({key: 'name'});
     if (name && name.value) {
       this.userName = name.value;
     }
     return name;
+  }
+
+  async showWish(): Promise<void> {
+    if (this.hasUnreadWish) {
+      await this.wishesService.markWishAsRead();
+      this.hasUnreadWish = false;
+    }
+
+    const modal = await this.modalController.create({
+      component: WishModalComponent,
+      componentProps: {
+        wish: this.currentWish
+      },
+      cssClass: 'half-modal',
+      backdropDismiss: true
+    });
+
+    await modal.present();
   }
 }

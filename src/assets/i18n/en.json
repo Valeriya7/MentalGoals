@@ -3,7 +3,39 @@
     "WELCOME": "Welcome 👋",
     "USER": "User",
     "NOTIFICATIONS": "Notifications",
-    "BOOKMARKS": "Bookmarks"
+    "BOOKMARKS": "Bookmarks",
+    "CLOSE": "Close"
+  },
+  "LIFE_WHEEL": {
+    "TITLE": "Life Balance Wheel",
+    "DESCRIPTION": "Rate different areas of your life",
+    "SAVE": "Save Results",
+    "AREAS": {
+      "HEALTH": "Health",
+      "CAREER": "Career",
+      "RELATIONSHIPS": "Relationships",
+      "ENVIRONMENT": "Environment",
+      "PERSONAL_GROWTH": "Personal Growth",
+      "FINANCES": "Finances",
+      "RECREATION": "Recreation",
+      "SPIRITUALITY": "Spirituality"
+    }
+  },
+  "WISHES": {
+    "MORNING_PRODUCTIVITY": "Hey, let this morning be the start of a wonderful and productive day",
+    "YEARLY_PLAN": "It's a perfect time to make a plan for the year",
+    "SELF_CARE": "Don't forget about self-care today",
+    "MINDFULNESS": "Take a deep breath and enjoy the moment",
+    "HEALTHY_HABITS": "Today is a great day for healthy habits",
+    "GRATITUDE": "Find three things you're grateful for today",
+    "POSITIVE_THINKING": "Let positive thoughts guide your day",
+    "GOAL_SETTING": "Set one important goal for today"
+  },
+  "TABS": {
+    "HOME": "Home",
+    "HABITS": "Habits",
+    "NOTIFICATIONS": "Notifications",
+    "PROFILE": "Profile"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Current Challenge",
@@ -12,7 +44,9 @@
     "DAILY_TASKS": "Daily Tasks",
     "STATS": "Stats",
     "HYDRATION_LEVEL": "Hydration Level",
-    "NEED_MORE_WATER": "You need to drink more water"
+    "NEED_MORE_WATER": "You need to drink more water",
+    "DAILY_WISH": "Daily Wish",
+    "TITLE": "Home"
   },
   "CHALLENGES": {
     "TITLE": "Challenges 🎯",

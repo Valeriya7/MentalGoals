@@ -1,23 +1,28 @@
 <ion-tabs>
-  <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="home" routerLink="/tabs/home" routerDirection="root">
-      <ion-icon name="home"></ion-icon>
-      <ion-label>Головна</ion-label>
+  <ion-tab-bar slot="bottom" role="tablist" aria-label="Main navigation">
+    <ion-tab-button tab="home" role="tab" aria-selected="false" aria-controls="tab-home">
+      <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+      <ion-label>{{ 'TABS.HOME' | translate }}</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="challenges" routerLink="/tabs/challenges" routerDirection="root">
-      <ion-icon name="trophy"></ion-icon>
+    <ion-tab-button tab="challenges" role="tab" aria-selected="false" aria-controls="tab-challenges">
+      <ion-icon name="trophy" aria-hidden="true"></ion-icon>
       <ion-label>Виклики</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="habits" routerLink="/tabs/habits" routerDirection="root">
-      <ion-icon name="calendar"></ion-icon>
-      <ion-label>Звички</ion-label>
+    <ion-tab-button tab="habits" role="tab" aria-selected="false" aria-controls="tab-habits">
+      <ion-icon name="leaf-outline" aria-hidden="true"></ion-icon>
+      <ion-label>{{ 'TABS.HABITS' | translate }}</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="profile" routerLink="/tabs/profile" routerDirection="root">
-      <ion-icon name="person"></ion-icon>
-      <ion-label>Профіль</ion-label>
+    <ion-tab-button tab="notifications" role="tab" aria-selected="false" aria-controls="tab-notifications">
+      <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+      <ion-label>{{ 'TABS.NOTIFICATIONS' | translate }}</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="profile" role="tab" aria-selected="false" aria-controls="tab-profile">
+      <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+      <ion-label>{{ 'TABS.PROFILE' | translate }}</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>

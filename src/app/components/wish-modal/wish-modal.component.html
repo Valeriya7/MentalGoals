@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ 'HOME.DAILY_WISH' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()" [attr.aria-label]="'COMMON.CLOSE' | translate">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <div class="wish-container" role="dialog" aria-labelledby="wish-title">
+    <ion-icon name="heart" color="primary" class="wish-icon" aria-hidden="true"></ion-icon>
+    <p class="wish-text" id="wish-title">{{wish}}</p>
+    <ion-button expand="block" (click)="dismiss()" class="close-button">
+      {{ 'COMMON.CLOSE' | translate }}
+    </ion-button>
+  </div>
+</ion-content> 

@@ -3,7 +3,39 @@
     "WELCOME": "Willkommen 👋",
     "USER": "Benutzer",
     "NOTIFICATIONS": "Benachrichtigungen",
-    "BOOKMARKS": "Lesezeichen"
+    "BOOKMARKS": "Lesezeichen",
+    "CLOSE": "Schließen"
+  },
+  "LIFE_WHEEL": {
+    "TITLE": "Lebensbalance-Rad",
+    "DESCRIPTION": "Bewerten Sie verschiedene Lebensbereiche",
+    "SAVE": "Ergebnisse speichern",
+    "AREAS": {
+      "HEALTH": "Gesundheit",
+      "CAREER": "Karriere",
+      "RELATIONSHIPS": "Beziehungen",
+      "ENVIRONMENT": "Umgebung",
+      "PERSONAL_GROWTH": "Persönliche Entwicklung",
+      "FINANCES": "Finanzen",
+      "RECREATION": "Erholung",
+      "SPIRITUALITY": "Spiritualität"
+    }
+  },
+  "WISHES": {
+    "MORNING_PRODUCTIVITY": "Hey, lass diesen Morgen der Beginn eines wunderbaren und produktiven Tages sein",
+    "YEARLY_PLAN": "Es ist der perfekte Zeitpunkt, einen Plan für das Jahr zu erstellen",
+    "SELF_CARE": "Vergiss heute nicht die Selbstfürsorge",
+    "MINDFULNESS": "Atme tief durch und genieße den Moment",
+    "HEALTHY_HABITS": "Heute ist ein großartiger Tag für gesunde Gewohnheiten",
+    "GRATITUDE": "Finde drei Dinge, für die du heute dankbar bist",
+    "POSITIVE_THINKING": "Lass positive Gedanken deinen Tag leiten",
+    "GOAL_SETTING": "Setze dir ein wichtiges Ziel für heute"
+  },
+  "TABS": {
+    "HOME": "Startseite",
+    "HABITS": "Gewohnheiten",
+    "NOTIFICATIONS": "Benachrichtigungen",
+    "PROFILE": "Profil"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Aktuelle Herausforderung",
@@ -12,7 +44,9 @@
     "DAILY_TASKS": "Tägliche Aufgaben",
     "STATS": "Statistiken",
     "HYDRATION_LEVEL": "Hydrationslevel",
-    "NEED_MORE_WATER": "Sie müssen mehr Wasser trinken"
+    "NEED_MORE_WATER": "Sie müssen mehr Wasser trinken",
+    "DAILY_WISH": "Täglicher Wunsch",
+    "TITLE": "Startseite"
   },
   "CHALLENGES": {
     "TITLE": "Herausforderungen 🎯",

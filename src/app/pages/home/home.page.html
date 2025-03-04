@@ -13,8 +13,12 @@
       <ion-button (click)="goToNotifications()">
         <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
       </ion-button>
-      <ion-button (click)="goToBookmarks()">
-        <ion-icon slot="icon-only" name="bookmark-outline"></ion-icon>
+      <ion-button (click)="goToLifeWheel()">
+        <ion-icon slot="icon-only" name="flower-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="showWish()">
+        <ion-icon slot="icon-only" name="gift-outline"></ion-icon>
+        <ion-badge *ngIf="hasUnreadWish" color="danger" class="wish-badge">!</ion-badge>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
