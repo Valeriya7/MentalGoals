@@ -1,10 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { HabitsService } from '../../services/habits.service';
+import { Habit } from '../../interfaces/habit.interface';
+import { Subscription } from 'rxjs';
+import '../../utils/icons'; // Імпортуємо централізовану реєстрацію іконок
 
 @Component({
   selector: 'app-habit-tracker',
@@ -13,42 +17,36 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslatePipe]
 })
-export class HabitTrackerPage implements OnInit {
+export class HabitTrackerPage implements OnInit, OnDestroy {
   today = new Date();
-  habits = [
-    {
-      id: 1,
-      name: 'Ранкова медитація',
-      target: 10,
-      currentStreak: 5,
-      bestStreak: 15,
-      daysCompleted: []
-    },
-    {
-      id: 2,
-      name: 'Дихальні вправи',
-      target: 5,
-      currentStreak: 3,
-      bestStreak: 7,
-      daysCompleted: []
-    }
-  ];
-
   selectedDate = new Date();
   currentMonth: Date[] = [];
-  userName: string = '';
+  activeHabits: Habit[] = [];
+  availableHabits: Habit[] = [];
+  private habitsSubscription?: Subscription;
 
-  constructor() {
+  constructor(private habitsService: HabitsService) {
     this.generateCalendarDays();
   }
 
-  async ngOnInit() {
-    await this.loadUserData();
+  ngOnInit() {
+    this.loadHabits();
   }
 
-  async loadUserData() {
-    const name = await Preferences.get({ key: 'name' });
-    if (name && name.value) this.userName = name.value;
+  ngOnDestroy() {
+    if (this.habitsSubscription) {
+      this.habitsSubscription.unsubscribe();
+    }
+  }
+
+  private loadHabits() {
+    this.habitsSubscription = this.habitsService.getActiveHabits().subscribe(habits => {
+      this.activeHabits = habits;
+    });
+
+    this.habitsService.getAvailableHabits().subscribe(habits => {
+      this.availableHabits = habits;
+    });
   }
 
   generateCalendarDays() {
@@ -64,30 +62,50 @@ export class HabitTrackerPage implements OnInit {
     );
   }
 
-  toggleHabitCompletion(habit: any, date: Date) {
+  async toggleHabitCompletion(habit: Habit, date: Date, status: 'completed' | 'partial' | 'not_completed') {
     const dateStr = date.toISOString().split('T')[0];
-    const index = habit.daysCompleted.indexOf(dateStr);
-    
-    if (index === -1) {
-      habit.daysCompleted.push(dateStr);
-    } else {
-      habit.daysCompleted.splice(index, 1);
-    }
-    
-    this.updateStreak(habit);
+    await this.habitsService.toggleHabit(habit.id, dateStr, status);
   }
 
-  updateStreak(habit: any) {
-    // TODO: Implement streak calculation logic
+  getHabitStatus(habit: Habit, date: Date): 'completed' | 'partial' | 'not_completed' {
+    const dateStr = date.toISOString().split('T')[0];
+    return habit.completionStatus[dateStr] || 'not_completed';
   }
 
-  isHabitCompleted(habit: any, date: Date): boolean {
-    const dateStr = date.toISOString().split('T')[0];
-    return habit.daysCompleted.includes(dateStr);
+  async activateHabit(habit: Habit) {
+    await this.habitsService.activateHabit(habit.id);
+  }
+
+  async deactivateHabit(habit: Habit) {
+    await this.habitsService.deactivateHabit(habit.id);
   }
 
   isToday(date: Date): boolean {
     return date.toDateString() === this.today.toDateString();
+  }
+
+  getHabitIcon(category: string): string {
+    const icons: { [key: string]: string } = {
+      'health': 'heart-outline',
+      'fitness': 'footsteps-outline',
+      'mindfulness': 'leaf-outline',
+      'nutrition': 'ice-cream-outline',
+      'learning': 'book-outline',
+      'productivity': 'time-outline'
+    };
+    return icons[category] || 'checkmark-circle-outline';
+  }
+
+  getHabitColor(category: string): string {
+    const colors: { [key: string]: string } = {
+      'health': 'danger',
+      'fitness': 'success',
+      'mindfulness': 'primary',
+      'nutrition': 'warning',
+      'learning': 'tertiary',
+      'productivity': 'secondary'
+    };
+    return colors[category] || 'medium';
   }
 
   goToNotifications() {

@@ -1,111 +1,124 @@
 .calendar-section {
-  margin-bottom: 2rem;
-  
+  background: var(--ion-color-light);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+
   h2 {
-    text-align: center;
-    color: var(--ion-color-primary);
-    margin-bottom: 1rem;
-    text-transform: capitalize;
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    font-weight: 600;
   }
 }
 
 .calendar-grid {
-  background: var(--ion-color-light);
-  border-radius: 16px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.calendar-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  margin-bottom: 0.5rem;
-  
-  div {
-    padding: 0.5rem;
-    font-weight: 600;
+  .calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 500;
+    margin-bottom: 8px;
     color: var(--ion-color-medium);
   }
-}
 
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
 
-.calendar-day {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &.today {
-    background: var(--ion-color-primary);
-    color: white;
-  }
-  
-  &:hover {
-    background: var(--ion-color-primary-tint);
-    color: white;
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--ion-color-light);
+      }
+
+      &.today {
+        background: var(--ion-color-primary);
+        color: var(--ion-color-primary-contrast);
+      }
+    }
   }
 }
 
 .habits-section {
+  margin-bottom: 24px;
+
   h2 {
-    color: var(--ion-color-dark);
-    margin-bottom: 1rem;
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    font-weight: 600;
   }
 }
 
 .habit-item {
-  --padding-start: 1rem;
-  --padding-end: 1rem;
-  --padding-top: 1rem;
-  --padding-bottom: 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 12px;
-  
+  --padding-start: 12px;
+  --inner-padding-end: 12px;
+  --background: var(--ion-color-light);
+  --border-radius: 12px;
+  margin-bottom: 8px;
+
+  ion-icon {
+    font-size: 24px;
+  }
+
   ion-label {
     h2 {
-      font-size: 1.1rem;
+      margin: 0 0 4px;
+      font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
     }
-    
+
     p {
-      color: var(--ion-color-medium);
+      margin: 0;
       font-size: 0.9rem;
-      margin-bottom: 0.25rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .habit-progress {
+    margin: 8px 0;
+
+    .progress-bar {
+      height: 4px;
+      background: var(--ion-color-light-shade);
+      border-radius: 2px;
+      overflow: hidden;
+
+      .progress {
+        height: 100%;
+        background: var(--ion-color-primary);
+        transition: width 0.3s ease;
+      }
+    }
+
+    .progress-text {
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --border-radius: 8px;
+    height: 36px;
+    width: 36px;
+
+    ion-icon {
+      font-size: 20px;
     }
   }
 }
 
-.habit-progress {
-  margin: 0 1rem;
-  flex: 1;
-  
-  .progress-bar {
-    height: 8px;
-    background: var(--ion-color-light);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 0.25rem;
-    
-    .progress {
-      height: 100%;
-      background: var(--ion-color-primary);
-      transition: width 0.3s ease;
-    }
-  }
-  
-  .progress-text {
-    font-size: 0.8rem;
-    color: var(--ion-color-medium);
-  }
+ion-fab-button {
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
 } 

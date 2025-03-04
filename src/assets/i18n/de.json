@@ -31,15 +31,28 @@
     "REWARDS_PREVIEW": "Belohnungen",
     "BONUS_POINTS": "Bonus-Punkte",
     "START_CHALLENGE": "Herausforderung starten",
-    "SYNC_NOTE": "Daten werden mit Garmin, Samsung Health oder Apple Health synchronisiert"
+    "SYNC_NOTE": "Daten werden mit Garmin, Samsung Health oder Apple Health synchronisiert",
+    "OF": "von"
   },
   "HABITS": {
-    "TITLE": "Gewohnheits-Tracker",
-    "MY_HABITS": "Meine Gewohnheiten",
+    "TITLE": "Gewohnheiten",
+    "MON": "Mo",
+    "TUE": "Di",
+    "WED": "Mi",
+    "THU": "Do",
+    "FRI": "Fr",
+    "SAT": "Sa",
+    "SUN": "So",
+    "ACTIVE_HABITS": "Aktive Gewohnheiten",
+    "AVAILABLE_HABITS": "Verfügbare Gewohnheiten",
     "CURRENT_STREAK": "Aktuelle Serie",
     "BEST_STREAK": "Beste Serie",
     "DAYS": "Tage",
-    "ADD_HABIT": "Gewohnheit hinzufügen"
+    "DIFFICULTY": "Schwierigkeit",
+    "DIFFICULTY_EASY": "Einfach",
+    "DIFFICULTY_MEDIUM": "Mittel",
+    "DIFFICULTY_HARD": "Schwer",
+    "POINTS": "Punkte"
   },
   "PROFILE": {
     "TITLE": "Profil",
@@ -68,6 +81,7 @@
     "PUSH_NOTIFICATIONS": "Push-Benachrichtigungen",
     "REMINDERS": "Erinnerungen",
     "ACHIEVEMENTS": "Erfolge",
-    "LOGOUT": "Abmelden"
+    "LOGOUT": "Abmelden",
+    "POINTS": "Punkte"
   }
 } 

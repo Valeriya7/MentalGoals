@@ -11,13 +11,13 @@
     <h2>{{ selectedDate | date:'MMMM yyyy' }}</h2>
     <div class="calendar-grid">
       <div class="calendar-header">
-        <div>Пн</div>
-        <div>Вт</div>
-        <div>Ср</div>
-        <div>Чт</div>
-        <div>Пт</div>
-        <div>Сб</div>
-        <div>Нд</div>
+        <div>{{ 'HABITS.MON' | translate }}</div>
+        <div>{{ 'HABITS.TUE' | translate }}</div>
+        <div>{{ 'HABITS.WED' | translate }}</div>
+        <div>{{ 'HABITS.THU' | translate }}</div>
+        <div>{{ 'HABITS.FRI' | translate }}</div>
+        <div>{{ 'HABITS.SAT' | translate }}</div>
+        <div>{{ 'HABITS.SUN' | translate }}</div>
       </div>
       <div class="calendar-days">
         <div *ngFor="let date of currentMonth" 
@@ -30,24 +30,43 @@
   </div>
 
   <div class="habits-section">
-    <h2>{{ 'HABITS.MY_HABITS' | translate }}</h2>
+    <h2>{{ 'HABITS.ACTIVE_HABITS' | translate }}</h2>
     <ion-list>
-      <ion-item *ngFor="let habit of habits" class="habit-item">
+      <ion-item *ngFor="let habit of activeHabits" class="habit-item">
+        <ion-icon [name]="getHabitIcon(habit.category)" slot="start" [color]="getHabitColor(habit.category)"></ion-icon>
         <ion-label>
           <h2>{{ habit.name }}</h2>
-          <p>{{ 'HABITS.CURRENT_STREAK' | translate }}: {{ habit.currentStreak }} {{ 'HABITS.DAYS' | translate }}</p>
-          <p>{{ 'HABITS.BEST_STREAK' | translate }}: {{ habit.bestStreak }} {{ 'HABITS.DAYS' | translate }}</p>
+          <p>{{ 'HABITS.CURRENT_STREAK' | translate }}: {{ habit.streak.current }} {{ 'HABITS.DAYS' | translate }}</p>
+          <p>{{ 'HABITS.BEST_STREAK' | translate }}: {{ habit.streak.best }} {{ 'HABITS.DAYS' | translate }}</p>
         </ion-label>
         <div class="habit-progress">
           <div class="progress-bar">
             <div class="progress" 
-                 [style.width.%]="(habit.currentStreak / habit.target) * 100">
+                 [style.width.%]="(habit.streak.current / habit.target) * 100">
             </div>
           </div>
-          <span class="progress-text">{{ habit.currentStreak }}/{{ habit.target }}</span>
+          <span class="progress-text">{{ habit.streak.current }}/{{ habit.target }}</span>
         </div>
-        <ion-button slot="end" (click)="toggleHabitCompletion(habit, selectedDate)">
-          <ion-icon name="checkmark"></ion-icon>
+        <ion-button slot="end" (click)="toggleHabitCompletion(habit, selectedDate, getHabitStatus(habit, selectedDate) === 'completed' ? 'not_completed' : 'completed')">
+          <ion-icon [name]="getHabitStatus(habit, selectedDate) === 'completed' ? 'checkmark-circle-outline' : 'time-outline'"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <div class="habits-section">
+    <h2>{{ 'HABITS.AVAILABLE_HABITS' | translate }}</h2>
+    <ion-list>
+      <ion-item *ngFor="let habit of availableHabits" class="habit-item">
+        <ion-icon [name]="getHabitIcon(habit.category)" slot="start" [color]="getHabitColor(habit.category)"></ion-icon>
+        <ion-label>
+          <h2>{{ habit.name }}</h2>
+          <p>{{ habit.description }}</p>
+          <p>{{ 'HABITS.DIFFICULTY' | translate }}: {{ 'HABITS.DIFFICULTY_' + habit.difficulty.toUpperCase() | translate }}</p>
+          <p>{{ 'HABITS.POINTS' | translate }}: {{ habit.points }}</p>
+        </ion-label>
+        <ion-button slot="end" (click)="activateHabit(habit)">
+          <ion-icon name="add-circle-outline"></ion-icon>
         </ion-button>
       </ion-item>
     </ion-list>

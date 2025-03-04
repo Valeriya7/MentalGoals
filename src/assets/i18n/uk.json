@@ -31,15 +31,28 @@
     "REWARDS_PREVIEW": "Винагороди",
     "BONUS_POINTS": "бонусних балів",
     "START_CHALLENGE": "Почати виклик",
-    "SYNC_NOTE": "Дані будуть синхронізуватися з Garmin, Samsung Health або Apple Health"
+    "SYNC_NOTE": "Дані будуть синхронізуватися з Garmin, Samsung Health або Apple Health",
+    "OF": "з"
   },
   "HABITS": {
-    "TITLE": "Трекер звичок",
-    "MY_HABITS": "Мої звички",
+    "TITLE": "Звички",
+    "MON": "Пн",
+    "TUE": "Вт",
+    "WED": "Ср",
+    "THU": "Чт",
+    "FRI": "Пт",
+    "SAT": "Сб",
+    "SUN": "Нд",
+    "ACTIVE_HABITS": "Активні звички",
+    "AVAILABLE_HABITS": "Доступні звички",
     "CURRENT_STREAK": "Поточна серія",
     "BEST_STREAK": "Найкраща серія",
     "DAYS": "днів",
-    "ADD_HABIT": "Додати звичку"
+    "DIFFICULTY": "Складність",
+    "DIFFICULTY_EASY": "Легка",
+    "DIFFICULTY_MEDIUM": "Середня",
+    "DIFFICULTY_HARD": "Важка",
+    "POINTS": "Бали"
   },
   "PROFILE": {
     "TITLE": "Профіль",
@@ -68,6 +81,7 @@
     "PUSH_NOTIFICATIONS": "Push-сповіщення",
     "REMINDERS": "Нагадування",
     "ACHIEVEMENTS": "Досягнення",
-    "LOGOUT": "Вийти"
+    "LOGOUT": "Вийти",
+    "POINTS": "Бали"
   }
 } 
