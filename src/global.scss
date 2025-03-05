@@ -86,6 +86,10 @@ ion-title {
   font-family: 'bold';
   text-transform: capitalize;
   font-size: 14px;
+  -webkit-padding-start: 5px;
+  padding-inline-start: 5px;
+  -webkit-padding-end: 5px;
+  padding-inline-end: 5px;
 
   .inbox-name {
     font-size: 16px;

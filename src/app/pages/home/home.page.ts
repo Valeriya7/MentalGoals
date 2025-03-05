@@ -87,10 +87,6 @@ export class HomePage implements OnInit, OnDestroy {
     this.router.navigate(['/tabs/notifications']);
   }
 
-  goToBookmarks() {
-    // Implement bookmarks navigation
-  }
-
   goToHabit(type: string) {
     this.router.navigate(['/tabs/habits'], {
       queryParams: { type: type }

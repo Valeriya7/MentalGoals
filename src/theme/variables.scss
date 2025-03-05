@@ -1,4 +1,3 @@
-
 // Ionic Variables and Theming. For more info, please see:
 // http://ionicframework.com/docs/theming/
 
@@ -75,4 +74,51 @@
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
+}
+
+// Header buttons styles
+ion-header {
+  ion-toolbar {
+    ion-buttons {
+      display: flex !important;
+      gap: 2px !important;
+      
+      .button-native {
+        margin: 0 !important;
+        padding: 0 !important;
+        padding-inline-end: 2px !important;
+        padding-top: 2px !important;
+        height: 36px !important;
+        width: 32px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        -webkit-padding-end: 0 !important;
+        padding-inline-end: 0 !important;
+        
+        ion-icon {
+          font-size: 20px !important;
+          --ionicon-stroke-width: 32px;
+        }
+
+        &:active {
+          background: var(--ion-color-light) !important;
+        }
+      }
+    }
+  }
+}
+
+// Existing button styles
+ion-toolbar ion-buttons, 
+.home-header-buttons button.button-native, 
+.home-header-buttons button,
+ion-button,
+.home-header-buttons .button-native {
+  margin: 0 !important;
+  padding: 0 !important;
+  -webkit-padding-end: 0 !important;
+  padding-inline-end: 0 !important;
 }

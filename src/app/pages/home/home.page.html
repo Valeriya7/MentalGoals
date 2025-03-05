@@ -9,7 +9,7 @@
       <ion-label class="inbox-status">{{ 'COMMON.WELCOME' | translate }}</ion-label>
       <ion-label class="inbox-name">{{userName || ('COMMON.USER' | translate)}}</ion-label>
     </ion-title>
-    <ion-buttons slot="end">
+    <ion-buttons slot="end" class="home-header-buttons">
       <ion-button (click)="goToNotifications()">
         <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
       </ion-button>
