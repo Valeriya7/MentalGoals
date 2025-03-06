@@ -18,14 +18,16 @@ import {
 import { ChallengeService } from '../../services/challenge.service';
 import { RouterModule } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
-import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-challenges',
   templateUrl: './challenges.page.html',
   styleUrls: ['./challenges.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslatePipe]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslateModule]
 })
 export class ChallengesPage implements OnInit {
   currentChallenge = {
@@ -78,7 +80,8 @@ export class ChallengesPage implements OnInit {
   userName: string = '';
 
   constructor(
-    private challengeService: ChallengeService
+    private challengeService: ChallengeService,
+    private router: Router
   ) {
     addIcons({
       'trophy-outline': trophyOutline,
@@ -107,7 +110,14 @@ export class ChallengesPage implements OnInit {
   }
 
   async startChallenge(type: string) {
-    await this.challengeService.startNewChallenge(type);
+    const success = await this.challengeService.startNewChallenge(type);
+    if (success) {
+      // Отримуємо активний челендж і переходимо до його деталей
+      const activeChallenge = await firstValueFrom(this.challengeService.getActiveChallenge());
+      if (activeChallenge) {
+        await this.router.navigate(['/challenge-details', activeChallenge.id]);
+      }
+    }
   }
 
   goToNotifications() {

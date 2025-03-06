@@ -1,40 +1,41 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
-import { IonicModule, IonContent } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { TranslatePipe } from '../../pipes/translate.pipe';
-import { TranslateService } from '../../services/translate.service';
-import { firstValueFrom } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-life-wheel',
   templateUrl: './life-wheel.page.html',
   styleUrls: ['./life-wheel.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, TranslatePipe]
+  imports: [IonicModule, CommonModule, TranslateModule]
 })
-export class LifeWheelPage {
-  @ViewChild(IonContent) content!: IonContent;
+export class LifeWheelPage implements OnInit {
+  areas = [
+    { key: 'LIFE_WHEEL.AREAS.HEALTH', value: 0 },
+    { key: 'LIFE_WHEEL.AREAS.CAREER', value: 0 },
+    { key: 'LIFE_WHEEL.AREAS.RELATIONSHIPS', value: 0 },
+    { key: 'LIFE_WHEEL.AREAS.ENVIRONMENT', value: 0 },
+    { key: 'LIFE_WHEEL.AREAS.PERSONAL_GROWTH', value: 0 },
+    { key: 'LIFE_WHEEL.AREAS.FINANCES', value: 0 },
+    { key: 'LIFE_WHEEL.AREAS.RECREATION', value: 0 },
+    { key: 'LIFE_WHEEL.AREAS.SPIRITUALITY', value: 0 }
+  ];
 
   constructor(private translateService: TranslateService) {}
 
-  async ionViewWillEnter() {
-    // Чекаємо завантаження перекладів
-    await firstValueFrom(this.translateService.isTranslationsLoaded());
-    
-    // Видаляємо aria-hidden з контенту при активації сторінки
-    setTimeout(() => {
-      const contentElement = (this.content as any)?.nativeElement;
-      if (contentElement) {
-        contentElement.removeAttribute('aria-hidden');
-      }
-    }, 100);
+  async ngOnInit() {
+    // Ініціалізуємо переклади
+    this.translateService.setDefaultLang('en');
+    await this.translateService.use('en');
   }
 
-  ionViewWillLeave() {
-    // Перевіряємо, чи немає фокусу всередині контенту перед встановленням aria-hidden
-    const contentElement = (this.content as any)?.nativeElement;
-    if (contentElement && !contentElement.contains(document.activeElement)) {
-      contentElement.setAttribute('aria-hidden', 'true');
-    }
+  onSliderChange(event: any, area: any) {
+    area.value = event.detail.value;
+  }
+
+  async saveResults() {
+    // Тут буде логіка збереження результатів
+    console.log('Results:', this.areas);
   }
 } 

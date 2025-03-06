@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
-import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslateModule } from '@ngx-translate/core';
 import { HabitsService } from '../../services/habits.service';
 import { Habit } from '../../interfaces/habit.interface';
 import { Subscription } from 'rxjs';
@@ -15,7 +15,7 @@ import '../../utils/icons'; // Імпортуємо централізовану
   templateUrl: './habit-tracker.page.html',
   styleUrls: ['./habit-tracker.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslatePipe]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslateModule]
 })
 export class HabitTrackerPage implements OnInit, OnDestroy {
   today = new Date();

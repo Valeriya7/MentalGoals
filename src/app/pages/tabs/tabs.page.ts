@@ -2,7 +2,7 @@ import { Component, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { IonicModule, IonTabs } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslateModule } from '@ngx-translate/core';
 import '../../utils/icons'; // Імпортуємо централізовану реєстрацію іконок
 
 @Component({
@@ -10,7 +10,7 @@ import '../../utils/icons'; // Імпортуємо централізовану
   templateUrl: './tabs.page.html',
   styleUrls: ['./tabs.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule, TranslatePipe]
+  imports: [IonicModule, CommonModule, RouterModule, TranslateModule]
 })
 export class TabsPage {
   @ViewChild(IonTabs) tabs!: IonTabs;

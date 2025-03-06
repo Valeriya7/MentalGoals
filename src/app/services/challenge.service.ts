@@ -1,50 +1,192 @@
 import { Injectable } from '@angular/core';
-import { LoadingController, ToastController } from '@ionic/angular';
-import { BehaviorSubject } from 'rxjs';
+import { ToastController } from '@ionic/angular';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { Challenge } from '../interfaces/challenge.interface';
+import { Storage } from '@ionic/storage-angular';
+import { ModalService } from './modal.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChallengeService {
-  private loadingElement: HTMLIonLoadingElement | null = null;
-  private activeChallenge = new BehaviorSubject<string | null>(null);
+  private activeChallenge = new BehaviorSubject<Challenge | null>(null);
+  private storageReady = new BehaviorSubject<boolean>(false);
+  private isLoading = new BehaviorSubject<boolean>(false);
 
   constructor(
-    private loadingController: LoadingController,
-    private toastController: ToastController
-  ) {}
+    private toastController: ToastController,
+    private modalService: ModalService,
+    private storage: Storage
+  ) {
+    this.initStorage();
+    this.loadActiveChallenge(); // Додаємо автоматичне завантаження активного челенджу
+  }
+
+  private async initStorage() {
+    try {
+      console.log('Checking storage initialization...');
+      if (!this.storage) {
+        throw new Error('Storage is not injected');
+      }
+      this.storageReady.next(true);
+      console.log('Storage is ready');
+    } catch (error) {
+      console.error('Storage initialization error:', error);
+      this.storageReady.next(false);
+    }
+  }
+
+  private async loadActiveChallenge() {
+    try {
+      const storage = await this.ensureStorageReady();
+      const challenges = await storage.get('challenges') || [];
+      const activeChallenge = challenges.find((c: Challenge) => c.status === 'active');
+      console.log('Loaded active challenge:', activeChallenge);
+      this.activeChallenge.next(activeChallenge || null);
+    } catch (error) {
+      console.error('Error loading active challenge:', error);
+      this.activeChallenge.next(null);
+    }
+  }
+
+  private async ensureStorageReady(): Promise<Storage> {
+    if (!this.storageReady.value) {
+      console.log('Storage not ready, initializing...');
+      await this.initStorage();
+    }
+    
+    if (!this.storage || !this.storageReady.value) {
+      console.error('Storage initialization failed');
+      throw new Error('Storage not initialized');
+    }
+    
+    return this.storage;
+  }
 
   async startNewChallenge(type: string): Promise<boolean> {
-    try {
-      this.loadingElement = await this.loadingController.create({
-        message: 'Починаємо виклик...',
-        spinner: 'circular'
-      });
-      
-      await this.loadingElement.present();
+    if (this.isLoading.value) {
+      console.log('Challenge creation already in progress');
+      return false;
+    }
 
-      // Імітуємо асинхронну операцію
+    this.isLoading.next(true);
+
+    try {
+      await this.ensureStorageReady();
+      
+      await this.modalService.showLoading('Починаємо виклик...');
+
+      // Перевіряємо наявність активного челенджу
+      const activeChallenge = await this.getCurrentActiveChallenge();
+      if (activeChallenge) {
+        await this.modalService.hideLoading();
+        const toast = await this.toastController.create({
+          message: 'У вас вже є активний челендж. Спочатку завершіть або відмовтесь від поточного.',
+          duration: 3000,
+          position: 'bottom',
+          color: 'warning'
+        });
+        await toast.present();
+        this.isLoading.next(false);
+        return false;
+      }
+
+      await this.modalService.showLoading('Починаємо виклик...');
+
+      // Імітуємо завантаження
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      this.activeChallenge.next(type);
+      const tasks = [
+        {
+          id: 'no-sweets',
+          title: 'Без солодкого',
+          description: 'Уникайте солодощів протягом дня',
+          icon: 'ice-cream-outline',
+          completed: false
+        },
+        {
+          id: 'no-coffee',
+          title: 'Без кави',
+          description: 'Замініть каву на здорові альтернативи',
+          icon: 'cafe-outline',
+          completed: false
+        },
+        {
+          id: 'exercise',
+          title: '10 хвилин вправ',
+          description: 'Виконайте комплекс вправ',
+          icon: 'fitness-outline',
+          completed: false
+        },
+        {
+          id: 'steps',
+          title: '8000 кроків',
+          description: 'Пройдіть мінімум 8000 кроків',
+          icon: 'footsteps-outline',
+          completed: false
+        },
+        {
+          id: 'english',
+          title: '5 англійських слів',
+          description: 'Вивчіть нові слова',
+          icon: 'book-outline',
+          completed: false
+        }
+      ];
 
-      if (this.loadingElement) {
-        await this.loadingElement.dismiss();
-        this.loadingElement = null;
-      }
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(startDate.getDate() + 40); // 40 днів для челенджу
 
-      await this.showSuccessToast(type);
-      return true;
+      const phase = {
+        id: 'phase-1',
+        title: 'Фаза 1',
+        tasks: tasks,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      };
 
-    } catch (error) {
-      console.error('Помилка при старті виклику:', error);
+      // Create a new challenge object
+      const challenge: Challenge = {
+        id: `challenge-${Date.now()}`, // Унікальний ідентифікатор
+        title: '40 Днів Здорових Звичок',
+        description: 'Челендж для формування здорових звичок протягом 40 днів',
+        phases: [phase],
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        status: 'active',
+        progress: {
+          currentDay: 1,
+          totalDays: 40,
+          completedTasks: 0,
+          totalTasks: tasks.length * 40
+        }
+      };
+
+      // Save the challenge to storage
+      const storage = await this.ensureStorageReady();
+      const challenges = await storage.get('challenges') || [];
       
-      if (this.loadingElement) {
-        await this.loadingElement.dismiss();
-        this.loadingElement = null;
-      }
+      challenges.push(challenge);
+      await storage.set('challenges', challenges);
 
+      // Update active challenge
+      this.activeChallenge.next(challenge);
+
+      await this.modalService.hideLoading();
+      await this.showSuccessToast(challenge.title);
+      
+      this.isLoading.next(false);
+
+      // After successful challenge creation
+      await this.loadActiveChallenge(); // Перезавантажуємо активний челендж
+
+      return true;
+    } catch (error) {
+      console.error('Error starting challenge:', error);
+      await this.modalService.hideLoading();
       await this.showErrorToast();
+      this.isLoading.next(false);
       return false;
     }
   }
@@ -71,7 +213,155 @@ export class ChallengeService {
     await toast.present();
   }
 
-  getActiveChallenge() {
+  getActiveChallenge(): Observable<Challenge | null> {
     return this.activeChallenge.asObservable();
+  }
+
+  async getCurrentActiveChallenge(): Promise<Challenge | null> {
+    try {
+      const storage = await this.ensureStorageReady();
+      const challenges = await storage.get('challenges') || [];
+      return challenges.find((c: Challenge) => c.status === 'active') || null;
+    } catch (error) {
+      console.error('Error getting current active challenge:', error);
+      return null;
+    }
+  }
+
+  async getChallenge(id: string): Promise<Challenge | undefined> {
+    try {
+      const storage = await this.ensureStorageReady();
+      const challenges = await storage.get('challenges') || [];
+      return challenges.find((c: Challenge) => c.id === id);
+    } catch (error) {
+      console.error('Error getting challenge:', error);
+      return undefined;
+    }
+  }
+
+  async getCurrentPhase(challengeId: string) {
+    try {
+      const challenge = await this.getChallenge(challengeId);
+      if (!challenge || !challenge.phases || challenge.phases.length === 0) {
+        console.warn('No phases found for challenge:', challengeId);
+        return undefined;
+      }
+      return challenge.phases[0];
+    } catch (error) {
+      console.error('Error getting current phase:', error);
+      return undefined;
+    }
+  }
+
+  async getTodayProgress(challengeId: string, date?: string): Promise<{ [key: string]: boolean }> {
+    try {
+      const storage = await this.ensureStorageReady();
+      const dateStr = date || new Date().toISOString().split('T')[0];
+      const key = `progress_${challengeId}_${dateStr}`;
+      return await storage.get(key) || {};
+    } catch (error) {
+      console.error('Error getting progress:', error);
+      return {};
+    }
+  }
+
+  async updateTodayProgress(challengeId: string, taskId: string, completed: boolean) {
+    try {
+      const storage = await this.ensureStorageReady();
+      const today = new Date().toISOString().split('T')[0];
+      const key = `progress_${challengeId}_${today}`;
+      const progress = await this.getTodayProgress(challengeId);
+      progress[taskId] = completed;
+      await storage.set(key, progress);
+    } catch (error) {
+      console.error('Error updating today progress:', error);
+      throw error;
+    }
+  }
+
+  async quitChallenge(challengeId: string): Promise<boolean> {
+    try {
+      const storage = await this.ensureStorageReady();
+      const challenges = await storage.get('challenges') || [];
+      const challengeIndex = challenges.findIndex((c: Challenge) => c.id === challengeId);
+      
+      if (challengeIndex === -1) {
+        throw new Error('Challenge not found');
+      }
+
+      challenges[challengeIndex].status = 'failed';
+      await storage.set('challenges', challenges);
+      
+      // Оновлюємо активний челендж після відмови
+      await this.loadActiveChallenge();
+
+      const toast = await this.toastController.create({
+        message: 'Ви відмовились від челенджу. Не засмучуйтесь, спробуйте знову коли будете готові!',
+        duration: 3000,
+        position: 'bottom',
+        color: 'warning',
+        buttons: [{ text: 'OK', role: 'cancel' }]
+      });
+      await toast.present();
+
+      return true;
+    } catch (error) {
+      console.error('Error quitting challenge:', error);
+      return false;
+    }
+  }
+
+  async getStatistics(challengeId: string): Promise<{
+    completedDays: number;
+    totalDays: number;
+    completedTasks: number;
+    totalTasks: number;
+    progress: number;
+  }> {
+    try {
+      const challenge = await this.getChallenge(challengeId);
+      if (!challenge) {
+        throw new Error('Challenge not found');
+      }
+
+      const startDate = new Date(challenge.startDate);
+      const currentDate = new Date();
+      const daysDiff = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      const completedDays = Math.min(daysDiff + 1, 40);
+      const totalDays = 40;
+
+      // Перевіряємо наявність фаз та завдань
+      const tasks = challenge.phases?.[0]?.tasks || [];
+      const totalTasks = tasks.length * totalDays;
+
+      let completedTasks = 0;
+      for (let i = 0; i < completedDays; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayProgress = await this.getTodayProgress(challengeId, dateStr);
+        completedTasks += Object.values(dayProgress).filter(Boolean).length;
+      }
+
+      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+      return {
+        completedDays,
+        totalDays,
+        completedTasks,
+        totalTasks,
+        progress
+      };
+    } catch (error) {
+      console.error('Error getting statistics:', error);
+      return {
+        completedDays: 0,
+        totalDays: 40,
+        completedTasks: 0,
+        totalTasks: 0,
+        progress: 0
+      };
+    }
   }
 } 

@@ -6,9 +6,10 @@
   Copyright and Good Faith Purchasers © 2023-present initappz.
 */
 import { Injectable, NgZone } from '@angular/core';
-import { LoadingController, AlertController, ToastController, NavController, MenuController } from '@ionic/angular';
+import { AlertController, ToastController, NavController, MenuController } from '@ionic/angular';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { NavigationExtras, Router } from '@angular/router';
+import { ModalService } from './modal.service';
 
 @Injectable({
   providedIn: 'root'
@@ -436,13 +437,13 @@ export class UtilService {
     }
   ];
   constructor(
-    public loadingCtrl: LoadingController,
-    public alertCtrl: AlertController,
+    private alertCtrl: AlertController,
     private toastCtrl: ToastController,
     private navCtrl: NavController,
     private menuCtrl: MenuController,
     private router: Router,
     private zone: NgZone,
+    private modalService: ModalService
   ) { }
 
   navigateToPage(routes: any, param?: NavigationExtras | undefined) {
@@ -483,24 +484,12 @@ export class UtilService {
 
   async show(msg?: string | null) {
     this.isLoading = true;
-    return await this.loadingCtrl.create({
-      cssClass: 'custom-loader',
-      spinner: null,
-      // message: msg && msg != '' && msg != null ? msg : '',
-      // spinner: 'bubbles',
-    }).then(a => {
-      a.present().then(() => {
-        //console.log('presented');
-        if (!this.isLoading) {
-          a.dismiss().then(() => console.log('abort presenting'));
-        }
-      });
-    });
+    await this.modalService.showLoading(msg || undefined);
   }
 
   async hide() {
     this.isLoading = false;
-    return await this.loadingCtrl.dismiss().then(() => console.log('dismissed'));
+    await this.modalService.hideLoading();
   }
 
   /*

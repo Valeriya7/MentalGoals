@@ -8,9 +8,7 @@ import { HealthApiService } from '../../services/health-api.service';
 import { HealthData } from '../../interfaces/health-data.interface';
 import { Subscription } from 'rxjs';
 import { HealthApiModule } from '../../services/health-api.module';
-import { TranslateService } from '../../services/translate.service';
-import { TranslatePipe } from '../../pipes/translate.pipe';
-import '../../utils/icons'; // Імпортуємо централізовану реєстрацію іконок
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profile',
@@ -22,7 +20,7 @@ import '../../utils/icons'; // Імпортуємо централізовану
     CommonModule, 
     FormsModule, 
     HealthApiModule, 
-    TranslatePipe
+    TranslateModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

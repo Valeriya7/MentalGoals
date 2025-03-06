@@ -5,18 +5,18 @@
   justify-content: center;
   height: 100%;
   text-align: center;
-  padding: 20px;
+  padding: 1rem;
 
   .wish-icon {
-    font-size: 48px;
-    margin-bottom: 20px;
+    font-size: 3rem;
+    margin-bottom: 1rem;
   }
 
   .wish-text {
-    font-size: 18px;
+    font-size: 1.2rem;
     line-height: 1.5;
-    margin-bottom: 30px;
-    color: var(--ion-color-medium);
+    margin: 1rem 0;
+    color: var(--ion-color-dark);
   }
 
   .close-button {
@@ -28,4 +28,21 @@
 :host {
   --height: 50%;
   --border-radius: 16px 16px 0 0;
+
+  .close-button,
+  .dismiss-button {
+    &:focus-visible {
+      outline: 2px solid var(--ion-color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
+:host ::ng-deep {
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
 } 
