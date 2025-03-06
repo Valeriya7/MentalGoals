@@ -26,27 +26,38 @@ import {
   personOutline,
   settingsOutline,
   chevronForwardOutline,
-  addOutline
+  addOutline,
+  chevronBackOutline,
+  checkmarkCircleOutline,
+  personCircleOutline
 } from 'ionicons/icons';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ToastController } from '@ionic/angular';
+import { AuthService, User } from '../../services/auth.service';
+
+interface DiaryEntry {
+  date: Date;
+  mood: number;
+  sleep: number;
+}
 
 @Component({
   selector: 'app-home',
+  standalone: true,
+  imports: [IonicModule, CommonModule, FormsModule, TranslateModule],
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-    IonicModule
-  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit, OnDestroy {
-  userName: string = 'Sayli';
+  userName: string = '';
+  userPhotoUrl: string | null = null;
   weekDays: any[] = [];
+  selectedDate: Date = new Date();
+  currentWeekLabel: string = '';
+  activeChallenge: Challenge | null = null;
+  challengeDay: number = 0;
+  
   dailyTasks = [
     { name: 'No Sweets', icon: 'ice-cream-outline', completed: true },
     { name: 'No Coffee', icon: 'cafe-outline', completed: true },
@@ -54,6 +65,7 @@ export class HomePage implements OnInit, OnDestroy {
     { name: '8000 Steps', icon: 'footsteps-outline', completed: false },
     { name: '5 English Words', icon: 'book-outline', completed: true }
   ];
+  
   hasUnreadWish = false;
   currentWish = '';
   private subscriptions: Subscription[] = [];
@@ -64,9 +76,9 @@ export class HomePage implements OnInit, OnDestroy {
     private wishesService: WishesService,
     private challengeService: ChallengeService,
     private modalService: ModalService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private authService: AuthService
   ) {
-    this.generateWeekDays();
     addIcons({ 
       iceCreamOutline, 
       cafeOutline, 
@@ -79,45 +91,135 @@ export class HomePage implements OnInit, OnDestroy {
       personOutline,
       settingsOutline,
       chevronForwardOutline,
-      addOutline
+      addOutline,
+      chevronBackOutline,
+      checkmarkCircleOutline,
+      personCircleOutline
     });
   }
 
-  ngOnInit() {
-    this.getUserData();
+  async ngOnInit() {
+    await this.getUserData();
     this.subscriptions.push(
       this.wishesService.getHasUnreadWish().subscribe(hasUnread => {
         this.hasUnreadWish = hasUnread;
       }),
       this.wishesService.getCurrentWish().subscribe(wish => {
         this.currentWish = wish;
+      }),
+      this.authService.currentUser$.subscribe(user => {
+        if (user) {
+          this.userName = user.displayName || 'Користувач';
+          this.userPhotoUrl = user.photoURL || null;
+        }
       })
     );
+
+    await this.loadActiveChallenge();
+    this.generateWeekDays();
+    await this.loadSelectedDayProgress();
+
+    // Перевіряємо, чи користувач авторизований
+    this.checkAuth();
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
+  async loadActiveChallenge() {
+    this.activeChallenge = await this.challengeService.getCurrentActiveChallenge();
+    if (this.activeChallenge) {
+      const startDate = new Date(this.activeChallenge.startDate);
+      const today = new Date();
+      this.challengeDay = Math.min(
+        Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1,
+        40
+      );
+    }
+  }
+
   generateWeekDays() {
-    const today = new Date();
-    const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const startDate = new Date(this.selectedDate);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
     
-    for (let i = -3; i <= 3; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
+    const dayNames = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+    this.weekDays = [];
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
       
       this.weekDays.push({
         name: dayNames[date.getDay()],
         date: date.getDate(),
-        marked: i < 0 && Math.random() > 0.5, // Випадково відмічаємо минулі дні
-        fullDate: date
+        fullDate: date,
+        hasCompletedTasks: false
       });
+    }
+
+    this.updateWeekLabel();
+  }
+
+  updateWeekLabel() {
+    const firstDay = this.weekDays[0].fullDate;
+    const lastDay = this.weekDays[6].fullDate;
+    this.currentWeekLabel = `${firstDay.getDate()} - ${lastDay.getDate()} ${lastDay.toLocaleString('uk-UA', { month: 'long' })}`;
+  }
+
+  previousWeek() {
+    this.selectedDate.setDate(this.selectedDate.getDate() - 7);
+    this.generateWeekDays();
+    this.loadSelectedDayProgress();
+  }
+
+  nextWeek() {
+    this.selectedDate.setDate(this.selectedDate.getDate() + 7);
+    this.generateWeekDays();
+    this.loadSelectedDayProgress();
+  }
+
+  async selectDay(day: any) {
+    this.selectedDate = new Date(day.fullDate);
+    await this.loadSelectedDayProgress();
+  }
+
+  async loadSelectedDayProgress() {
+    if (this.activeChallenge) {
+      // Оновлюємо статус виконаних завдань для всіх днів тижня
+      for (const day of this.weekDays) {
+        const dayProgress = await this.challengeService.getTodayProgress(
+          this.activeChallenge.id,
+          day.fullDate.toISOString().split('T')[0]
+        );
+        day.hasCompletedTasks = Object.values(dayProgress).some(Boolean);
+      }
     }
   }
 
   isCurrentDay(date: number): boolean {
-    return date === new Date().getDate();
+    const today = new Date();
+    return date === today.getDate() && 
+           this.selectedDate.getMonth() === today.getMonth() &&
+           this.selectedDate.getFullYear() === today.getFullYear();
+  }
+
+  isPastDay(date: Date): boolean {
+    return new Date(date).getTime() < new Date().setHours(0, 0, 0, 0);
+  }
+
+  isFutureDay(date: Date): boolean {
+    return new Date(date).getTime() > new Date().setHours(23, 59, 59, 999);
+  }
+
+  isChallengeDay(date: Date): boolean {
+    if (!this.activeChallenge) return false;
+    
+    const challengeStart = new Date(this.activeChallenge.startDate);
+    const challengeEnd = new Date(this.activeChallenge.endDate);
+    const checkDate = new Date(date);
+    
+    return checkDate >= challengeStart && checkDate <= challengeEnd;
   }
 
   goToCalendar() {
@@ -139,11 +241,14 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async getUserData() {
-    const name = await Preferences.get({key: 'name'});
-    if (name && name.value) {
-      this.userName = name.value;
+    try {
+      const { value: name } = await Preferences.get({ key: 'name' });
+      if (name) {
+        this.userName = name;
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
     }
-    return name;
   }
 
   async showWish(): Promise<void> {
@@ -184,6 +289,26 @@ export class HomePage implements OnInit, OnDestroy {
         color: 'danger'
       });
       await toast.present();
+    }
+  }
+
+  goToProfile() {
+    this.router.navigate(['/profile']);
+  }
+
+  goToSettings() {
+    this.router.navigate(['/settings']);
+  }
+
+  handleAvatarError(event: any) {
+    const img = event.target;
+    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=random`;
+  }
+
+  private async checkAuth() {
+    const user = await this.authService.getCurrentUser();
+    if (!user) {
+      await this.router.navigate(['/auth']);
     }
   }
 }

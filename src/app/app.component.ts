@@ -10,15 +10,9 @@ import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-root',
-  templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
+  template: '<ion-app><ion-router-outlet></ion-router-outlet></ion-app>',
   standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    RouterModule,
-    TranslateModule
-  ]
+  imports: [IonicModule]
 })
 export class AppComponent {
   platformType: string = '';

@@ -1,10 +1,24 @@
 import { Routes } from '@angular/router';
-//import { AuthGuard } from './guards/auth.guard';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'questions',
+    pathMatch: 'full'
+  },
+  {
+    path: 'questions',
+    loadComponent: () => import('./pages/questions/questions.page').then(m => m.QuestionsPage)
+  },
+  {
+    path: 'auth',
+    loadComponent: () => import('./pages/auth/auth.page').then(m => m.AuthPage)
+  },
+  {
+    path: 'tabs',
     loadComponent: () => import('./pages/tabs/tabs.page').then(m => m.TabsPage),
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'home',
@@ -35,18 +49,16 @@ export const routes: Routes = [
   },
   {
     path: 'challenge-details/:id',
-    loadComponent: () => import('./pages/challenge-details/challenge-details.page').then(m => m.ChallengeDetailsPage)
+    loadComponent: () => import('./pages/challenge-details/challenge-details.page').then(m => m.ChallengeDetailsPage),
+    canActivate: [AuthGuard]
   },
   {
     path: 'life-wheel',
-    loadComponent: () => import('./pages/life-wheel/life-wheel.page').then(m => m.LifeWheelPage)
-  },
-  {
-    path: 'auth',
-    loadComponent: () => import('./pages/auth/auth.page').then(m => m.AuthPage)
+    loadComponent: () => import('./pages/life-wheel/life-wheel.page').then(m => m.LifeWheelPage),
+    canActivate: [AuthGuard]
   },
   {
     path: '**',
-    redirectTo: 'home'
+    redirectTo: 'questions'
   }
 ]; 

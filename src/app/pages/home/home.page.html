@@ -1,84 +1,103 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar mode="md" color="primary">
+  <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-avatar slot="start">
-        <img src="../../../assets/images/avatar/4.jpg" />
+      <ion-avatar (click)="goToProfile()">
+        <img *ngIf="userPhotoUrl" [src]="userPhotoUrl" alt="User avatar" (error)="handleAvatarError($event)">
+        <ion-icon *ngIf="!userPhotoUrl" name="person-circle-outline" class="avatar-icon"></ion-icon>
       </ion-avatar>
+      <div class="user-info">
+        <h2>Привіт,</h2>
+        <h3>{{ userName }}!</h3>
+      </div>
     </ion-buttons>
-    <ion-title>
-      <ion-label class="inbox-status">{{ 'COMMON.WELCOME' | translate }}</ion-label>
-      <ion-label class="inbox-name">{{userName || ('COMMON.USER' | translate)}}</ion-label>
-    </ion-title>
-    <ion-buttons slot="end" class="home-header-buttons">
+    <ion-buttons slot="end">
       <ion-button (click)="goToNotifications()">
-        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+        <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="goToLifeWheel()">
-        <ion-icon slot="icon-only" name="flower-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="showWish()">
-        <ion-icon slot="icon-only" name="gift-outline"></ion-icon>
-        <ion-badge *ngIf="hasUnreadWish" color="danger" class="wish-badge">!</ion-badge>
+      <ion-button (click)="goToSettings()">
+        <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-
+<ion-content class="ion-padding">
   <!-- Календар -->
-  <div class="calendar-strip" (click)="goToCalendar()">
-    <div class="week-days">
-      <div *ngFor="let day of weekDays" 
-           class="day-item" 
-           [class.current]="isCurrentDay(day.date)"
-           [class.marked]="day.marked">
-        <span class="day-name">{{ day.name }}</span>
-        <span class="day-number">{{ day.date }}</span>
+  <ion-card class="calendar-card" *ngIf="activeChallenge">
+    <ion-card-header>
+      <div class="calendar-header">
+        <ion-button fill="clear" (click)="previousWeek()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+        <div class="challenge-info">
+          <h3>{{ currentWeekLabel }}</h3>
+          <p class="challenge-title">40 days CHALLENGE</p>
+          <p class="challenge-days">День {{ challengeDay }} з 40</p>
+        </div>
+        <ion-button fill="clear" (click)="nextWeek()">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
       </div>
-    </div>
-  </div>
-
-  <!-- Челендж -->
-  <div class="challenge-phase" (click)="goToCurrentChallenge()">
-    <div class="phase-circle">
-      <h2>{{ 'HOME.CURRENT_CHALLENGE' | translate }}</h2>
-      <h1>40 {{ 'CHALLENGES.DAYS' | translate }} CHALLENGE</h1>
-      <p>{{ 'CHALLENGES.DAY' | translate }} 15 {{ 'CHALLENGES.OF' | translate }} 40</p>
-      <div class="challenge-tasks">
-        <div class="task-item" [class.completed]="task.completed" *ngFor="let task of dailyTasks">
-          <ion-icon [name]="task.icon"></ion-icon>
-          <span>{{ task.name }}</span>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="calendar-grid">
+        <div *ngFor="let day of weekDays" 
+             [class.active]="isCurrentDay(day.date)"
+             [class.past]="isPastDay(day.date)"
+             [class.future]="isFutureDay(day.date)"
+             [class.challenge-day]="isChallengeDay(day.fullDate)"
+             [class.has-tasks]="day.hasCompletedTasks"
+             (click)="selectDay(day)">
+          <span class="day-name">{{ day.name }}</span>
+          <span class="day-date">{{ day.date }}</span>
+          <ion-icon *ngIf="day.hasCompletedTasks" 
+                   name="checkmark-circle-outline" 
+                   color="success">
+          </ion-icon>
         </div>
       </div>
-    </div>
-  </div>
+    </ion-card-content>
+  </ion-card>
 
-  <!-- Статистика -->
-  <div class="stats-grid">
-    <div class="stat-item" (click)="goToHabit('steps')">
-      <ion-icon name="footsteps-outline"></ion-icon>
-      <h3>{{ 'PROFILE.STEPS' | translate }}</h3>
-      <h2>12,345</h2>
-    </div>
-    <div class="stat-item" (click)="goToHabit('sleep')">
-      <ion-icon name="moon-outline"></ion-icon>
-      <h3>{{ 'PROFILE.SLEEP' | translate }}</h3>
-      <h2>7:30 {{ 'PROFILE.HOURS' | translate }}</h2>
-    </div>
-    <div class="stat-item" (click)="goToHabit('water')">
-      <ion-icon name="water-outline"></ion-icon>
-      <h3>{{ 'HOME.HYDRATION_LEVEL' | translate }}</h3>
-      <h2>1.5 L</h2>
-    </div>
-  </div>
+  <!-- Щоденні завдання -->
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Щоденні завдання</ion-label>
+    </ion-list-header>
 
-  <!-- Статус гідратації -->
-  <div class="status-card hydration" (click)="goToHabit('water')">
-    <ion-icon name="water-outline"></ion-icon>
-    <div class="status-info">
-      <h3>{{ 'HOME.HYDRATION_LEVEL' | translate }}: 25%</h3>
-      <p>{{ 'HOME.NEED_MORE_WATER' | translate }}</p>
-    </div>
-  </div>
-</ion-content>
+    <ion-item *ngFor="let task of dailyTasks">
+      <ion-icon [name]="task.icon" slot="start"></ion-icon>
+      <ion-checkbox 
+        [(ngModel)]="task.completed"
+        [aria-label]="task.name">
+        {{ task.name }}
+      </ion-checkbox>
+    </ion-item>
+  </ion-list>
+
+  <!-- Побажання -->
+  <ion-card class="wish-card" (click)="showWish()" *ngIf="currentWish">
+    <ion-card-content>
+      <ion-icon name="heart-outline" [class.unread]="hasUnreadWish"></ion-icon>
+      <p>{{ currentWish }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Швидкі дії -->
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6">
+        <ion-button expand="block" (click)="goToLifeWheel()">
+          <ion-icon name="settings-outline" slot="start"></ion-icon>
+          Колесо життя
+        </ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button expand="block" (click)="goToCurrentChallenge()">
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          Челендж
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content> 

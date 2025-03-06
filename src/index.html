@@ -8,18 +8,23 @@
   <base href="/" />
 
   <meta name="color-scheme" content="light dark" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
 
-  <link rel="icon" type="image/x-icon" href="/assets/images/avatar/4.jpg" />
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
 
   <!-- add to homescreen for ios -->
-  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+  <!-- Google Sign-In -->
+  <meta name="google-signin-client_id" content="629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Cross-Origin-Opener-Policy -->
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap">
 </head>

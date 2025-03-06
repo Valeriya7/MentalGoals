@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Platform, AlertController } from '@ionic/angular';
-import { APP_CONFIG } from '../../../src/app.config';
+import { appConfig } from '../../../src/app.config';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class VersionCheckService {
   ) {}
 
   async checkVersion() {
-    const currentVersion = APP_CONFIG.VERSION;
+    const currentVersion = appConfig.VERSION;
     const latestVersion = await this.getLatestVersionFromServer(); // Заміни на свою логіку для отримання актуальної версії
 
     if (currentVersion !== latestVersion) {
@@ -51,5 +51,9 @@ export class VersionCheckService {
     } else if (this.platform.is('android')) {
       window.location.href = 'https://play.google.com/store/apps/details?id=com.yourapp';
     }
+  }
+
+  getVersion(): string {
+    return appConfig.VERSION;
   }
 }

@@ -9,6 +9,7 @@ import { HealthData } from '../../interfaces/health-data.interface';
 import { Subscription } from 'rxjs';
 import { HealthApiModule } from '../../services/health-api.module';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -43,7 +44,8 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private healthApiService: HealthApiService
+    private healthApiService: HealthApiService,
+    private authService: AuthService
   ) {}
 
   async ngOnInit() {
@@ -93,8 +95,12 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async logout() {
-    await this.healthApiService.disconnectDevice();
-    await Preferences.clear();
-    this.router.navigate(['/login'], { replaceUrl: true });
+    try {
+      await this.healthApiService.disconnectDevice();
+      await this.authService.signOut();
+      await this.router.navigate(['/auth'], { replaceUrl: true });
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   }
 }

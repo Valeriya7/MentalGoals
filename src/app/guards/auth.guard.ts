@@ -11,17 +11,22 @@ export class AuthGuard implements CanActivate {
     private router: Router
   ) {}
 
-  canActivate(): boolean {
-    let isAuthenticated = false;
-    this.authService.isAuthenticated$.subscribe(status => {
-      isAuthenticated = status;
-    });
+  async canActivate(): Promise<boolean> {
+    try {
+      const user = await this.authService.getCurrentUser();
+      
+      if (user) {
+        return true;
+      }
 
-    if (!isAuthenticated) {
-      this.router.navigate(['/auth']);
+      // Якщо користувач не авторизований, перенаправляємо на сторінку авторизації
+      await this.router.navigate(['/auth']);
+      return false;
+    } catch (error) {
+      console.error('Auth guard error:', error);
+      // У випадку помилки також перенаправляємо на сторінку авторизації
+      await this.router.navigate(['/auth']);
       return false;
     }
-
-    return true;
   }
 } 

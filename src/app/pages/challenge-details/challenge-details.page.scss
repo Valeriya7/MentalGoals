@@ -1,82 +1,162 @@
-.challenge-details {
-  .progress-section {
-    margin: 16px 0;
-    
-    ion-progress-bar {
-      height: 8px;
-      border-radius: 4px;
-      --progress-background: var(--ion-color-primary);
-      --buffer-background: var(--ion-color-light);
-    }
-    
-    .progress-text {
-      text-align: center;
-      margin-top: 8px;
-      color: var(--ion-color-medium);
-      font-size: 14px;
-    }
+:host {
+  ion-content {
+    --background: var(--ion-color-light);
   }
 
   ion-card {
-    margin: 16px 0;
-    border-radius: 12px;
+    margin: 1rem;
+    border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
+    
     ion-card-header {
-      padding: 16px;
-
+      padding: 1rem;
+      
       ion-card-title {
-        font-size: 18px;
+        font-size: 1.25rem;
         font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+      
+      ion-card-subtitle {
+        font-size: 0.9rem;
+        color: var(--ion-color-medium);
+        margin-top: 0.5rem;
+      }
+    }
+    
+    ion-card-content {
+      padding: 0 1rem 1rem;
+    }
+  }
+
+  .calendar-card {
+    .calendar-header {
+      padding: 0.5rem;
+      background: var(--ion-color-light);
+      border-radius: 12px;
+      margin-bottom: 1rem;
+
+      h3 {
+        color: var(--ion-color-dark);
+        font-weight: 500;
       }
 
-      ion-card-subtitle {
-        margin-top: 4px;
-        color: var(--ion-color-medium);
+      ion-button {
+        --padding-start: 0.5rem;
+        --padding-end: 0.5rem;
       }
     }
 
-    ion-card-content {
-      padding: 0 16px 16px;
-      line-height: 1.5;
+    .calendar-grid {
+      > div {
+        transition: all 0.2s ease;
+        background: var(--ion-color-light);
+
+        &:hover {
+          background: var(--ion-color-primary-tint);
+          color: var(--ion-color-primary-contrast);
+        }
+
+        &.active {
+          background: var(--ion-color-primary);
+          box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+          transform: scale(1.05);
+        }
+
+        &.has-tasks {
+          border: 2px solid var(--ion-color-success);
+        }
+      }
     }
   }
 
   ion-list {
-    margin-top: 16px;
     background: transparent;
+    padding: 0;
+    margin: 1rem;
 
     ion-list-header {
       padding-left: 0;
-      font-size: 16px;
-      font-weight: 600;
+      
+      ion-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
     }
 
     ion-item {
-      --padding-start: 0;
-      --inner-padding-end: 0;
-      --background: transparent;
-      margin-bottom: 8px;
+      --background: var(--ion-color-light);
+      --border-radius: 12px;
+      margin-bottom: 0.5rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
 
       ion-checkbox {
-        margin-right: 16px;
         --size: 24px;
-        --checkbox-background-checked: var(--ion-color-primary);
+        --border-radius: 6px;
+        margin-right: 1rem;
       }
 
       ion-label {
         h2 {
-          font-size: 16px;
+          font-size: 1rem;
           font-weight: 500;
-          margin-bottom: 4px;
+          color: var(--ion-color-dark);
         }
 
         p {
+          font-size: 0.9rem;
           color: var(--ion-color-medium);
-          font-size: 14px;
-          line-height: 1.4;
+          margin-top: 0.25rem;
         }
       }
+
+      ion-icon {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .statistics-card {
+    ion-grid {
+      padding: 0;
+    }
+
+    .stat-item {
+      padding: 1rem;
+      border-radius: 12px;
+      background: var(--ion-color-light);
+      
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      
+      p {
+        font-size: 0.9rem;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .progress-bar {
+      margin-top: 1rem;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+  }
+
+  ion-progress-bar {
+    &::part(progress) {
+      background: linear-gradient(
+        to right,
+        var(--ion-color-primary),
+        var(--ion-color-primary-shade)
+      );
     }
   }
 } 

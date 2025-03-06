@@ -1,21 +1,33 @@
-<!--<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>auth</ion-title>
+    <ion-title>Авторизація</ion-title>
   </ion-toolbar>
-</ion-header>-->
+</ion-header>
 
-<ion-content [fullscreen]="true">
-  <div class="auth-screen">
-    <div class="center-image">
-
-      <div [ngStyle]="{'background-image': 'url(../assets/images/auth.jpg)'}" class="top-cover"></div>
+<ion-content class="ion-padding">
+  <div class="auth-container">
+    <div class="auth-image">
+      <img src="assets/images/auth.jpg" alt="Mental Health">
     </div>
-    <ion-label class="title">Let's you in</ion-label>
 
+    <div class="auth-content">
+      <h1>Ласкаво просимо до Mental Goals</h1>
+      <p>Увійдіть, щоб продовжити</p>
 
-    <ion-button expand="full" color="primary" (click)="googleLogin()" >
-      Login with Google
-    </ion-button>
+      <div class="google-signin-container">
+        <ion-button expand="block" (click)="googleLogin()" [disabled]="isLoading">
+          <ion-icon name="logo-google" slot="start"></ion-icon>
+          {{ isLoading ? 'Вхід...' : 'Увійти через Google' }}
+        </ion-button>
+      </div>
 
+      <div *ngIf="isLoading" class="loading-container">
+        <ion-spinner></ion-spinner>
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+    </div>
   </div>
 </ion-content>
