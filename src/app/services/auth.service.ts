@@ -93,6 +93,29 @@ export class AuthService {
 
   async getCurrentUser(): Promise<User | null> {
     try {
+      // Спочатку перевіряємо, чи є збережені дані
+      const { value: idToken } = await Preferences.get({ key: 'idToken' });
+      if (idToken) {
+        // Якщо є токен, повертаємо користувача
+        const { value: email } = await Preferences.get({ key: 'email' });
+        const { value: name } = await Preferences.get({ key: 'name' });
+        const { value: imageUrl } = await Preferences.get({ key: 'imageUrl' });
+
+        const user: User = {
+          email: email || undefined,
+          name: name || undefined,
+          imageUrl: imageUrl || undefined,
+          authentication: {
+            idToken: idToken,
+            accessToken: '' // Це поле не використовується в даному контексті
+          }
+        };
+
+        this.currentUserSubject.next(user);
+        return user;
+      }
+
+      // Якщо немає збережених даних, пробуємо оновити через Google Auth
       const user = await GoogleAuth.refresh();
       if (user) {
         await this.handleSuccessfulLogin(user);

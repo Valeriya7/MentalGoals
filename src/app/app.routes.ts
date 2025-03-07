@@ -4,16 +4,17 @@ import { AuthGuard } from './guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'questions',
+    redirectTo: 'auth',
     pathMatch: 'full'
-  },
-  {
-    path: 'questions',
-    loadComponent: () => import('./pages/questions/questions.page').then(m => m.QuestionsPage)
   },
   {
     path: 'auth',
     loadComponent: () => import('./pages/auth/auth.page').then(m => m.AuthPage)
+  },
+  {
+    path: 'questions',
+    loadComponent: () => import('./pages/questions/questions.page').then(m => m.QuestionsPage),
+    canActivate: [AuthGuard]
   },
   {
     path: 'tabs',
@@ -59,6 +60,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'questions'
+    redirectTo: 'auth'
   }
 ]; 
