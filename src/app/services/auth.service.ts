@@ -4,6 +4,7 @@ import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Router } from '@angular/router';
 import { appConfig } from '../config/app.config';
+import { Capacitor } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,26 @@ export class AuthService {
 
   constructor(private router: Router) {
     this.loadStoredUser();
+    this.initializeGoogleAuth();
+  }
+
+  private async initializeGoogleAuth() {
+    try {
+      let clientId = appConfig.GOOGLE_CLIENT_ID;
+      if (Capacitor.getPlatform() === 'ios') {
+        clientId = '629190984804-oqit9rd3t8rb7jucei1lq8g236c1bpjg.apps.googleusercontent.com';
+      } else if (Capacitor.getPlatform() === 'android') {
+        clientId = '629190984804-hihuo9k8tj6bn2f3pm3b3omgfiqdualp.apps.googleusercontent.com';
+      }
+
+      await GoogleAuth.initialize({
+        clientId: clientId,
+        scopes: ['profile', 'email'],
+        forceCodeForRefreshToken: true
+      });
+    } catch (error) {
+      console.error('Error initializing Google Auth:', error);
+    }
   }
 
   private async loadStoredUser() {
@@ -73,13 +94,27 @@ export class AuthService {
 
   async signOut() {
     try {
-      await GoogleAuth.signOut();
+      // Очищаємо дані користувача
       await Preferences.remove({ key: 'userData' });
+      
+      // Очищаємо токен в конфігурації
+      appConfig.ID_TOKEN = null;
+      
+      // Оновлюємо стан користувача
       this.currentUserSubject.next(null);
+
+      // Виходимо з Google Auth
+      await GoogleAuth.signOut();
+
+      // Перенаправляємо на сторінку автентифікації
       await this.router.navigate(['/auth']);
     } catch (error) {
       console.error('Error signing out:', error);
-      throw error;
+      // Навіть якщо виникла помилка, все одно очищаємо дані
+      await Preferences.remove({ key: 'userData' });
+      appConfig.ID_TOKEN = null;
+      this.currentUserSubject.next(null);
+      await this.router.navigate(['/auth']);
     }
   }
 }

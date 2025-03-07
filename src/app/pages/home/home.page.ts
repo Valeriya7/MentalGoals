@@ -116,7 +116,8 @@ export class HomePage implements OnInit, OnDestroy {
       }),
       this.authService.currentUser$.subscribe(user => {
         if (user) {
-          this.userName = user.displayName || 'Користувач';
+          console.log('!! user: ', user);
+          this.userName = user.name || 'Користувач';
           this.userPhotoUrl = user.photoURL || null;
         }
       })

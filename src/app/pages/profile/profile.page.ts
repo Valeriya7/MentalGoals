@@ -27,6 +27,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class ProfilePage implements OnInit, OnDestroy {
   userName: string = '';
+  userPhotoUrl: string = '';
   totalPoints: number = 0;
   isConnected = {
     garmin: false,
@@ -73,8 +74,11 @@ export class ProfilePage implements OnInit, OnDestroy {
     const name = await Preferences.get({ key: 'name' });
     const points = await Preferences.get({ key: 'points' });
     const notif = await Preferences.get({ key: 'notifications' });
+    const photoURL = await Preferences.get({key:'photoURL'});
+    console.log('photoURL: ',photoURL);
 
     if (name && name.value) this.userName = name.value;
+    if (photoURL && photoURL.value) this.userPhotoUrl=photoURL.value;
     if (points && points.value) this.totalPoints = parseInt(points.value);
     if (notif && notif.value) this.notifications = JSON.parse(notif.value);
   }

@@ -2,8 +2,13 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-avatar (click)="goToProfile()">
+        <img *ngIf="userPhotoUrl" [src]="userPhotoUrl"  />
+        <img *ngIf="!userPhotoUrl" src="../../../assets/images/avatar/4.jpg" />
+       
+        <!--
         <img *ngIf="userPhotoUrl" [src]="userPhotoUrl" alt="User avatar" (error)="handleAvatarError($event)">
         <ion-icon *ngIf="!userPhotoUrl" name="person-circle-outline" class="avatar-icon"></ion-icon>
+        -->
       </ion-avatar>
       <div class="user-info">
         <h2>Привіт,</h2>

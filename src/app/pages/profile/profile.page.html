@@ -8,7 +8,8 @@
   <!-- Профіль користувача -->
   <div class="profile-header">
     <ion-avatar>
-      <img src="../../../assets/images/avatar/4.jpg" />
+      <img *ngIf="userPhotoUrl" [src]="userPhotoUrl"  />
+      <img *ngIf="!userPhotoUrl" src="../../../assets/images/avatar/4.jpg" />
     </ion-avatar>
     <h2>{{userName}}</h2>
     <div class="points">

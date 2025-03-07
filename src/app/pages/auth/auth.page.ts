@@ -68,12 +68,44 @@ export class AuthPage implements OnInit {
 
       this.user = await GoogleAuth.signIn();
       console.log('User Info:', this.user);
-
+      console.log('accessToken:', this.user.authentication.accessToken);
+      console.log('idToken:', this.user.authentication.idToken);
+      /*
+      User Info:
+      authentication :{
+           accessToken: 'ya29.a0AXeO80TPZUU3Cv_hcs99F8ApIF6knRGBmHXNMhIMcct…IgaCgYKATUSARASFQHGX2MiSJ6LTl36G_cTBGRxJv6QAQ0175',
+           idToken: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjVkMTJhYjc4MmNiNjA5Nj…wAR1732USNpIbV88-buqYdaU6uF9OCnqmzbgStDfoNgb8HmVw',
+           refreshToken: ''}
+      email : "lebedevavaleriya@gmail.com"
+      familyName :"M"
+      givenName : "Valeriya"
+      id : "100064947706655698581"
+      imageUrl : "https://lh3.googleusercontent.com/a/ACg8ocJUXfk1spYk2YmA2cwR2U_XlDCmdPj2bXE6mVJ-aFn81yoNZrJk=s96-c"
+      name : "Valeriya M"
+      serverAuthCode : undefined
+       */
+      // Перевірка на наявність необхідних даних
       if (this.user && this.user.authentication.idToken) {
+        console.log("idToken:", this.user.authentication.idToken);
+        console.log("accessToken:", this.user.authentication.accessToken);
+
+        // Відправляємо idToken на бекенд для логіну
+        /*
+        await fetch("https://your-backend.com/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ this.user.idToken })
+        });*/
+
         const idToken = this.user.authentication.idToken;
         const accessToken = this.user.authentication.accessToken;
         const email = this.user.email;
         const name = this.user.name;
+        const photoURL = this.user.imageUrl;
+        
+        console.log('this.user: ',this.user);
 
         // Оновлюємо токен в конфігурації
         appConfig.ID_TOKEN = idToken;
@@ -83,6 +115,7 @@ export class AuthPage implements OnInit {
         await Preferences.set({key: 'accessToken', value: accessToken});
         await Preferences.set({key: 'email', value: email});
         await Preferences.set({key: 'name', value: name});
+        await Preferences.set({key: 'photoURL', value: photoURL});
 
         // Оновлюємо стан автентифікації
         await this.authService.handleSuccessfulLogin(this.user);
