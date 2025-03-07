@@ -15,12 +15,13 @@
       <p>Увійдіть, щоб продовжити</p>
 
       <div class="google-signin-container">
-        <ion-button expand="block" (click)="googleLogin()" [disabled]="isLoading">
-          <ion-icon name="logo-google" slot="start"></ion-icon>
-          {{ isLoading ? 'Вхід...' : 'Увійти через Google' }}
-        </ion-button>
+        <div id="googleSignInButton"></div>
       </div>
 
+
+      <ion-button expand="full" color="primary" (click)="googleLogin()" >
+        Login with Google
+      </ion-button>
       <div *ngIf="isLoading" class="loading-container">
         <ion-spinner></ion-spinner>
       </div>

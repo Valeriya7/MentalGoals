@@ -11,7 +11,7 @@ import { WishesService } from '../../services/wishes.service';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { WishModalComponent } from '../../components/wish-modal/wish-modal.component';
 import { ChallengeService } from '../../services/challenge.service';
-import { Challenge } from '../../interfaces/challenge.interface';
+import { Challenge, ChallengePhase, ChallengeTask } from '../../interfaces/challenge.interface';
 import { ModalService } from '../../services/modal.service';
 import { addIcons } from 'ionicons';
 import { 
@@ -33,7 +33,14 @@ import {
 } from 'ionicons/icons';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { AuthService, User } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../models/user.model';
+import { TaskService } from '../../services/task.service';
+import { Task } from '../../models/task.model';
+import { WishService } from '../../services/wish.service';
+import { Wish } from '../../models/wish.model';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from 'date-fns';
+import { uk } from 'date-fns/locale';
 
 interface DiaryEntry {
   date: Date;
@@ -128,14 +135,19 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async loadActiveChallenge() {
-    this.activeChallenge = await this.challengeService.getCurrentActiveChallenge();
-    if (this.activeChallenge) {
-      const startDate = new Date(this.activeChallenge.startDate);
-      const today = new Date();
-      this.challengeDay = Math.min(
-        Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1,
-        40
-      );
+    try {
+      const activeChallenge = await firstValueFrom(this.challengeService.getActiveChallenge());
+      this.activeChallenge = activeChallenge;
+      if (this.activeChallenge) {
+        const startDate = new Date(this.activeChallenge.startDate);
+        const today = new Date();
+        this.challengeDay = Math.min(
+          Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1,
+          40
+        );
+      }
+    } catch (error) {
+      console.error('Error loading active challenge:', error);
     }
   }
 
@@ -266,7 +278,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   async goToCurrentChallenge() {
     try {
-      const activeChallenge = await this.challengeService.getCurrentActiveChallenge();
+      const activeChallenge = await firstValueFrom(this.challengeService.getActiveChallenge());
       console.log('Current active challenge:', activeChallenge);
       
       if (activeChallenge) {

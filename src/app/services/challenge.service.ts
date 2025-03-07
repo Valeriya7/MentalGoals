@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { Challenge } from '../interfaces/challenge.interface';
 import { Storage } from '@ionic/storage-angular';
 import { ModalService } from './modal.service';
+import { Preferences } from '@capacitor/preferences';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class ChallengeService {
   private activeChallenge = new BehaviorSubject<Challenge | null>(null);
   private storageReady = new BehaviorSubject<boolean>(false);
   private isLoading = new BehaviorSubject<boolean>(false);
+  private readonly STORAGE_KEY = 'challenges';
 
   constructor(
     private toastController: ToastController,
@@ -19,7 +21,6 @@ export class ChallengeService {
     private storage: Storage
   ) {
     this.initStorage();
-    this.loadActiveChallenge(); // Додаємо автоматичне завантаження активного челенджу
   }
 
   private async initStorage() {
@@ -33,19 +34,6 @@ export class ChallengeService {
     } catch (error) {
       console.error('Storage initialization error:', error);
       this.storageReady.next(false);
-    }
-  }
-
-  private async loadActiveChallenge() {
-    try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
-      const activeChallenge = challenges.find((c: Challenge) => c.status === 'active');
-      console.log('Loaded active challenge:', activeChallenge);
-      this.activeChallenge.next(activeChallenge || null);
-    } catch (error) {
-      console.error('Error loading active challenge:', error);
-      this.activeChallenge.next(null);
     }
   }
 
@@ -74,23 +62,6 @@ export class ChallengeService {
     try {
       await this.ensureStorageReady();
       
-      await this.modalService.showLoading('Починаємо виклик...');
-
-      // Перевіряємо наявність активного челенджу
-      const activeChallenge = await this.getCurrentActiveChallenge();
-      if (activeChallenge) {
-        await this.modalService.hideLoading();
-        const toast = await this.toastController.create({
-          message: 'У вас вже є активний челендж. Спочатку завершіть або відмовтесь від поточного.',
-          duration: 3000,
-          position: 'bottom',
-          color: 'warning'
-        });
-        await toast.present();
-        this.isLoading.next(false);
-        return false;
-      }
-
       await this.modalService.showLoading('Починаємо виклик...');
 
       // Імітуємо завантаження
@@ -167,6 +138,21 @@ export class ChallengeService {
       const storage = await this.ensureStorageReady();
       const challenges = await storage.get('challenges') || [];
       
+      // Перевіряємо, чи немає вже активного челенджу
+      const hasActiveChallenge = challenges.some((c: Challenge) => c.status === 'active');
+      if (hasActiveChallenge) {
+        await this.modalService.hideLoading();
+        const toast = await this.toastController.create({
+          message: 'У вас вже є активний челендж. Спочатку завершіть або відмовтесь від поточного.',
+          duration: 3000,
+          position: 'bottom',
+          color: 'warning'
+        });
+        await toast.present();
+        this.isLoading.next(false);
+        return false;
+      }
+
       challenges.push(challenge);
       await storage.set('challenges', challenges);
 
@@ -177,13 +163,10 @@ export class ChallengeService {
       await this.showSuccessToast(challenge.title);
       
       this.isLoading.next(false);
-
-      // After successful challenge creation
-      await this.loadActiveChallenge(); // Перезавантажуємо активний челендж
-
       return true;
+
     } catch (error) {
-      console.error('Error starting challenge:', error);
+      console.error('Помилка при старті виклику:', error);
       await this.modalService.hideLoading();
       await this.showErrorToast();
       this.isLoading.next(false);
@@ -215,17 +198,6 @@ export class ChallengeService {
 
   getActiveChallenge(): Observable<Challenge | null> {
     return this.activeChallenge.asObservable();
-  }
-
-  async getCurrentActiveChallenge(): Promise<Challenge | null> {
-    try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
-      return challenges.find((c: Challenge) => c.status === 'active') || null;
-    } catch (error) {
-      console.error('Error getting current active challenge:', error);
-      return null;
-    }
   }
 
   async getChallenge(id: string): Promise<Challenge | undefined> {
@@ -292,8 +264,9 @@ export class ChallengeService {
       challenges[challengeIndex].status = 'failed';
       await storage.set('challenges', challenges);
       
-      // Оновлюємо активний челендж після відмови
-      await this.loadActiveChallenge();
+      if (this.activeChallenge.value?.id === challengeId) {
+        this.activeChallenge.next(null);
+      }
 
       const toast = await this.toastController.create({
         message: 'Ви відмовились від челенджу. Не засмучуйтесь, спробуйте знову коли будете готові!',
@@ -363,5 +336,31 @@ export class ChallengeService {
         progress: 0
       };
     }
+  }
+
+  async getChallenges(): Promise<Challenge[]> {
+    const { value } = await Preferences.get({ key: this.STORAGE_KEY });
+    return value ? JSON.parse(value) : [];
+  }
+
+  async addChallenge(challenge: Challenge): Promise<void> {
+    const challenges = await this.getChallenges();
+    challenges.push(challenge);
+    await Preferences.set({ key: this.STORAGE_KEY, value: JSON.stringify(challenges) });
+  }
+
+  async updateChallenge(challenge: Challenge): Promise<void> {
+    const challenges = await this.getChallenges();
+    const index = challenges.findIndex(c => c.id === challenge.id);
+    if (index !== -1) {
+      challenges[index] = challenge;
+      await Preferences.set({ key: this.STORAGE_KEY, value: JSON.stringify(challenges) });
+    }
+  }
+
+  async deleteChallenge(id: string): Promise<void> {
+    const challenges = await this.getChallenges();
+    const filtered = challenges.filter(c => c.id !== id);
+    await Preferences.set({ key: this.STORAGE_KEY, value: JSON.stringify(filtered) });
   }
 } 

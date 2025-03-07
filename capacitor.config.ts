@@ -4,11 +4,15 @@ const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
   appName: 'MentalGoals',
   webDir: 'www',
-  // bundledWebRuntime: false,
+  server: {
+    androidScheme: 'https',
+    cleartext: true
+  },
   plugins: {
     GoogleAuth: {
       scopes: ["profile", "email"],
-      clientId: "", // Це значення змінюємо в коді перед ініціалізацією
+      serverClientId: "YOUR_WEB_CLIENT_ID", // Додайте ваш Web Client ID
+      iosClientId: "YOUR_IOS_CLIENT_ID", // Додайте ваш iOS Client ID
       forceCodeForRefreshToken: true
     }
   }

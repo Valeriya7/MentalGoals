@@ -2,174 +2,84 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
-import { Capacitor } from '@capacitor/core';
 import { Router } from '@angular/router';
-import { TokenService } from './token.service';
-
-type Platform = 'ios' | 'android' | 'web';
-
-export interface User {
-  displayName?: string;
-  email?: string;
-  photoURL?: string;
-  idToken?: string;
-  name?: string;
-  imageUrl?: string;
-  authentication?: {
-    idToken: string;
-    accessToken: string;
-  };
-}
+import { appConfig } from '../config/app.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private currentUserSubject = new BehaviorSubject<any>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  private googleClientIds: Record<Platform, string> = {
-    ios: '629190984804-oqit9rd3t8rb7jucei1lq8g236c1bpjg.apps.googleusercontent.com',
-    android: '629190984804-hihuo9k8tj6bn2f3pm3b3omgfiqdualp.apps.googleusercontent.com',
-    web: '629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com'
-  };
-
-  constructor(
-    private router: Router,
-    private tokenService: TokenService
-  ) {
-    this.initializeAuth();
+  constructor(private router: Router) {
+    this.loadStoredUser();
   }
 
-  private async initializeAuth() {
+  private async loadStoredUser() {
     try {
-      const platform = Capacitor.getPlatform() as Platform;
-      const clientId = this.googleClientIds[platform] || this.googleClientIds.web;
-
-      // Ініціалізуємо Google Auth
-      await GoogleAuth.initialize({
-        clientId: clientId,
-        scopes: ['profile', 'email'],
-        forceCodeForRefreshToken: true,
-        serverClientId: clientId
-      });
-
-      // Перевіряємо, чи користувач вже авторизований
-      try {
-        const user = await GoogleAuth.refresh();
-        if (user) {
-          await this.handleSuccessfulLogin(user);
-        }
-      } catch (e) {
-        // Ігноруємо помилку, якщо користувач не авторизований
+      const { value } = await Preferences.get({ key: 'userData' });
+      if (value) {
+        const userData = JSON.parse(value);
+        this.currentUserSubject.next(userData);
       }
     } catch (error) {
-      console.error('Error initializing Google Auth:', error);
+      console.error('Error loading stored user:', error);
     }
   }
 
-  async signIn(): Promise<User> {
+  async getCurrentUser(): Promise<any> {
     try {
-      const user = await GoogleAuth.signIn();
-      await this.handleSuccessfulLogin(user);
-      return user;
+      const { value } = await Preferences.get({ key: 'userData' });
+      if (value) {
+        return JSON.parse(value);
+      }
+      return null;
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
+  async handleSuccessfulLogin(user: any) {
+    try {
+      const userData = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        photoURL: user.imageUrl,
+        accessToken: user.authentication.accessToken,
+        idToken: user.authentication.idToken
+      };
+
+      // Зберігаємо дані користувача
+      await Preferences.set({
+        key: 'userData',
+        value: JSON.stringify(userData)
+      });
+
+      // Оновлюємо токен в конфігурації
+      appConfig.ID_TOKEN = user.authentication.idToken;
+
+      // Оновлюємо стан користувача
+      this.currentUserSubject.next(userData);
+
+      return userData;
+    } catch (error) {
+      console.error('Error handling successful login:', error);
       throw error;
     }
   }
 
-  async signOut(): Promise<void> {
+  async signOut() {
     try {
       await GoogleAuth.signOut();
-      await this.clearUserData();
+      await Preferences.remove({ key: 'userData' });
       this.currentUserSubject.next(null);
       await this.router.navigate(['/auth']);
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('Error signing out:', error);
       throw error;
     }
-  }
-
-  async getCurrentUser(): Promise<User | null> {
-    try {
-      // Спочатку перевіряємо, чи є збережені дані
-      const { value: idToken } = await Preferences.get({ key: 'idToken' });
-      if (idToken) {
-        // Якщо є токен, повертаємо користувача
-        const { value: email } = await Preferences.get({ key: 'email' });
-        const { value: name } = await Preferences.get({ key: 'name' });
-        const { value: imageUrl } = await Preferences.get({ key: 'imageUrl' });
-
-        const user: User = {
-          email: email || undefined,
-          name: name || undefined,
-          imageUrl: imageUrl || undefined,
-          authentication: {
-            idToken: idToken,
-            accessToken: '' // Це поле не використовується в даному контексті
-          }
-        };
-
-        this.currentUserSubject.next(user);
-        return user;
-      }
-
-      // Якщо немає збережених даних, пробуємо оновити через Google Auth
-      const user = await GoogleAuth.refresh();
-      if (user) {
-        await this.handleSuccessfulLogin(user);
-        return user;
-      }
-      return null;
-    } catch (error) {
-      console.error('Get current user error:', error);
-      return null;
-    }
-  }
-
-  async handleGoogleSignIn(userData: User): Promise<void> {
-    try {
-      await this.handleSuccessfulLogin(userData);
-    } catch (error) {
-      console.error('Handle Google Sign-In error:', error);
-      throw error;
-    }
-  }
-
-  private async handleSuccessfulLogin(user: User) {
-    if (user && user.authentication?.idToken) {
-      const { idToken, accessToken } = user.authentication;
-      const { email, name, imageUrl } = user;
-
-      // Зберігаємо дані
-      await Promise.all([
-        Preferences.set({ key: 'idToken', value: idToken }),
-        Preferences.set({ key: 'accessToken', value: accessToken }),
-        Preferences.set({ key: 'email', value: email || '' }),
-        Preferences.set({ key: 'name', value: name || '' }),
-        Preferences.set({ key: 'imageUrl', value: imageUrl || '' })
-      ]);
-
-      // Оновлюємо токен
-      this.tokenService.idToken = idToken;
-
-      // Оновлюємо стан користувача
-      this.currentUserSubject.next({
-        ...user,
-        photoURL: imageUrl || user.photoURL
-      });
-    }
-  }
-
-  private async clearUserData(): Promise<void> {
-    await Promise.all([
-      Preferences.remove({ key: 'idToken' }),
-      Preferences.remove({ key: 'accessToken' }),
-      Preferences.remove({ key: 'email' }),
-      Preferences.remove({ key: 'name' }),
-      Preferences.remove({ key: 'imageUrl' })
-    ]);
-    this.tokenService.clearToken();
   }
 }
