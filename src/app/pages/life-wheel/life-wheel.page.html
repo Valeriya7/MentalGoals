@@ -9,6 +9,31 @@
 
 <ion-content class="ion-padding">
   <div class="wheel-container">
-    <img src="assets/images/life-wheel.png" alt="Life Wheel" class="wheel-image">
+    <div class="wheel-svg-container">
+      <svg viewBox="-20 -50 470 490" class="life-wheel-svg">
+        <!-- Сегменти колеса -->
+        <g *ngFor="let area of areas; let i = index" [attr.transform]="'rotate(' + (i * 45) + ', 200, 200)'">
+          <path *ngFor="let level of [1,2,3,4,5,6,7,8,9,10]; let j = index"
+                [attr.d]="createSegmentPath(j, level === area.value)"
+                [attr.class]="'segment ' + (level <= area.value ? 'active' : 'inactive')"
+                (click)="setAreaValue(area, level)"
+                [attr.fill]="getSegmentColor(i, level <= area.value)"/>
+          
+          <!-- Іконки та підписи -->
+          <g [attr.transform]="'rotate(' + (-i * 45) + ', 200, 200)'">
+            <image [attr.x]="getIconX(i)" [attr.y]="getIconY(i)" width="30" height="30" 
+                   [attr.href]="'assets/icons/' + area.icon + '.svg'"/>
+            <text [attr.x]="getLabelX(i)" [attr.y]="getLabelY(i)" 
+                  [attr.text-anchor]="getLabelAnchor(i)" class="area-label">
+              {{ area.key | translate }}
+            </text>
+          </g>
+        </g>
+      </svg>
+    </div>
   </div>
+
+  <ion-button expand="block" (click)="saveResults()" class="save-button">
+    {{ 'LIFE_WHEEL.SAVE' | translate }}
+  </ion-button>
 </ion-content> 

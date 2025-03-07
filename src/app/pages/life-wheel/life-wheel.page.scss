@@ -1,14 +1,52 @@
 .wheel-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  min-height: 100%;
   padding: 20px;
+}
 
-  .wheel-image {
-    max-width: 100%;
-    height: auto;
-    border-radius: 50%;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+.wheel-svg-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.life-wheel-svg {
+  width: 100%;
+  height: auto;
+
+  .segment {
+    transition: fill 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &.inactive {
+      fill-opacity: 0.3;
+    }
   }
+
+  .area-label {
+    font-size: 12px;
+    font-weight: 500;
+    fill: var(--ion-color-dark);
+  }
+}
+
+// Кольори для сегментів
+.segment-color-0 { fill: #FF5733; } // Health
+.segment-color-1 { fill: #33FF57; } // Career
+.segment-color-2 { fill: #3357FF; } // Finance
+.segment-color-3 { fill: #FF33F5; } // Family
+.segment-color-4 { fill: #33FFF5; } // Personal Development
+.segment-color-5 { fill: #FFB533; } // Social Life
+.segment-color-6 { fill: #FF3333; } // Friends
+.segment-color-7 { fill: #33FF33; } // Spiritual
+
+.save-button {
+  margin-top: 20px;
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-light);
 } 

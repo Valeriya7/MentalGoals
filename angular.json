@@ -40,7 +40,12 @@
               "@capacitor/ios",
               "@capacitor/android",
               "localforage"
-            ]
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/theme"
+              ]
+            }
           },
           "configurations": {
             "production": {
