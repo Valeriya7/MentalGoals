@@ -18,12 +18,12 @@
                 [attr.class]="'segment ' + (level <= area.value ? 'active' : 'inactive')"
                 (click)="setAreaValue(area, level)"
                 [attr.fill]="getSegmentColor(i, level <= area.value)"/>
-          
+
           <!-- Іконки та підписи -->
-          <g [attr.transform]="'rotate(' + (-i * 45) + ', 200, 200)'">
-            <image [attr.x]="getIconX(i)" [attr.y]="getIconY(i)" width="30" height="30" 
+          <g [attr.transform]="'rotate(' + (-i * 45) + ', 190, 190)'">
+            <image [attr.x]="getIconX(i)" [attr.y]="getIconY(i)" width="30" height="30"
                    [attr.href]="'assets/icons/' + area.icon + '.svg'"/>
-            <text [attr.x]="getLabelX(i)" [attr.y]="getLabelY(i)" 
+            <text [attr.x]="getLabelX(i)" [attr.y]="getLabelY(i)"
                   [attr.text-anchor]="getLabelAnchor(i)" class="area-label">
               {{ area.key | translate }}
             </text>
@@ -36,4 +36,4 @@
   <ion-button expand="block" (click)="saveResults()" class="save-button">
     {{ 'LIFE_WHEEL.SAVE' | translate }}
   </ion-button>
-</ion-content> 
+</ion-content>

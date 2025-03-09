@@ -24,7 +24,7 @@
     }
 
     &.inactive {
-      fill-opacity: 0.3;
+      fill-opacity: 0.5;
     }
   }
 
@@ -49,4 +49,4 @@
   margin-top: 20px;
   --background: var(--ion-color-primary);
   --color: var(--ion-color-light);
-} 
+}

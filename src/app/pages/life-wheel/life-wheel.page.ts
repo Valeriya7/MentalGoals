@@ -35,7 +35,7 @@ export class LifeWheelPage implements OnInit {
     // Ініціалізуємо переклади
     this.translateService.setDefaultLang('en');
     await this.translateService.use('en');
-    
+
     // Завантажуємо збережені дані
     await this.loadSavedData();
   }
@@ -65,14 +65,14 @@ export class LifeWheelPage implements OnInit {
 
   getSegmentColor(index: number, isActive: boolean): string {
     const colors = [
-      '#FF5733', // Health
-      '#33FF57', // Career
-      '#3357FF', // Finance
-      '#FF33F5', // Family
-      '#33FFF5', // Personal Development
-      '#FFB533', // Social Life
-      '#FF3333', // Friends
-      '#33FF33'  // Spiritual
+      '#b266b9', // Finances
+      '#76a276', // Family
+      '#3357FF', // Personal Development
+      '#ec95eb', // Social Life
+      '#7dc6e8', // FRIENDS
+      '#FFB533', // Spiritual
+      '#ea7171', // Health
+      '#a2efa2'  // Career
     ];
     return isActive ? colors[index] : `${colors[index]}33`;
   }
@@ -155,4 +155,4 @@ export class LifeWheelPage implements OnInit {
       toast.present();
     }
   }
-} 
+}
