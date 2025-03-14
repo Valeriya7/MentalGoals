@@ -7,17 +7,19 @@
     "CLOSE": "Schließen"
   },
   "LIFE_WHEEL": {
-    "TITLE": "Lebensbalance-Rad",
+    "TITLE": "Lebensrad",
     "DESCRIPTION": "Bewerten Sie verschiedene Lebensbereiche",
     "SAVE": "Ergebnisse speichern",
+    "SAVE_SUCCESS": "Ergebnisse erfolgreich gespeichert",
+    "SAVE_ERROR": "Fehler beim Speichern der Ergebnisse",
     "AREAS": {
       "HEALTH": "Gesundheit",
       "CAREER": "Karriere",
-      "RELATIONSHIPS": "Beziehungen",
-      "ENVIRONMENT": "Umgebung",
-      "PERSONAL_GROWTH": "Persönliche Entwicklung",
       "FINANCES": "Finanzen",
-      "RECREATION": "Erholung",
+      "FAMILY": "Familie",
+      "PERSONAL_GROWTH": "Persönliche Entwicklung",
+      "SOCIAL_LIFE": "Sozialleben",
+      "FRIENDS": "Freunde",
       "SPIRITUALITY": "Spiritualität"
     }
   },
@@ -35,7 +37,8 @@
     "HOME": "Startseite",
     "HABITS": "Gewohnheiten",
     "NOTIFICATIONS": "Benachrichtigungen",
-    "PROFILE": "Profil"
+    "PROFILE": "Profil",
+    "CHALLENGES": "Aufgaben"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Aktuelle Herausforderung",
@@ -90,6 +93,13 @@
   },
   "PROFILE": {
     "TITLE": "Profil",
+    "LANGUAGE": "Sprache",
+    "LANGUAGE_SETTINGS": "Spracheinstellungen",
+    "LANGUAGES": {
+      "UK": "Ukrainisch",
+      "EN": "Englisch",
+      "DE": "Deutsch"
+    },
     "EDIT_PROFILE": "Profil bearbeiten",
     "PERSONAL_DATA": "Persönliche Daten",
     "CHANGE_DATA": "Ändern Sie Ihre persönlichen Daten",

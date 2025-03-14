@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
+import { TranslateService } from '../../services/translate.service';
 import { Preferences } from '@capacitor/preferences';
 
 interface LifeWheelArea {
@@ -29,15 +30,60 @@ export class LifeWheelPage implements OnInit {
     { key: 'LIFE_WHEEL.AREAS.SPIRITUALITY', value: 0, icon: 'spiritual' }
   ];
 
-  constructor(private translateService: TranslateService) {}
+  constructor(
+    private translateService: TranslateService,
+    private toastController: ToastController
+  ) {}
 
   async ngOnInit() {
-    // Ініціалізуємо переклади
-    this.translateService.setDefaultLang('en');
-    await this.translateService.use('en');
-
-    // Завантажуємо збережені дані
     await this.loadSavedData();
+  }
+
+  private async loadSavedData() {
+    try {
+      const { value: savedData } = await Preferences.get({ key: 'lifeWheelData' });
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        this.areas = this.areas.map(area => ({
+          ...area,
+          value: parsedData[area.key] || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading saved data:', error);
+    }
+  }
+
+  async saveResults() {
+    try {
+      const dataToSave = this.areas.reduce((acc, area) => ({
+        ...acc,
+        [area.key]: area.value
+      }), {});
+      
+      await Preferences.set({
+        key: 'lifeWheelData',
+        value: JSON.stringify(dataToSave)
+      });
+      
+      // Показуємо повідомлення про успішне збереження
+      const toast = await this.toastController.create({
+        message: this.translateService.instant('LIFE_WHEEL.SAVE_SUCCESS'),
+        duration: 2000,
+        color: 'success',
+        position: 'bottom'
+      });
+      await toast.present();
+    } catch (error) {
+      console.error('Error saving data:', error);
+      const toast = await this.toastController.create({
+        message: this.translateService.instant('LIFE_WHEEL.SAVE_ERROR'),
+        duration: 2000,
+        color: 'danger',
+        position: 'bottom'
+      });
+      await toast.present();
+    }
   }
 
   createSegmentPath(level: number, isActive: boolean): string {
@@ -108,51 +154,5 @@ export class LifeWheelPage implements OnInit {
   getLabelAnchor(index: number): string {
     if (index === 0 || index === 4) return 'middle';
     return index < 4 ? 'start' : 'end';
-  }
-
-  async loadSavedData() {
-    try {
-      const { value } = await Preferences.get({ key: 'lifeWheelData' });
-      if (value) {
-        const savedData = JSON.parse(value);
-        this.areas = this.areas.map(area => ({
-          ...area,
-          value: savedData[area.key] || 0
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading life wheel data:', error);
-    }
-  }
-
-  async saveResults() {
-    try {
-      const dataToSave = this.areas.reduce((acc, area) => ({
-        ...acc,
-        [area.key]: area.value
-      }), {});
-
-      await Preferences.set({
-        key: 'lifeWheelData',
-        value: JSON.stringify(dataToSave)
-      });
-
-      // Показуємо повідомлення про успішне збереження
-      const toast = document.createElement('ion-toast');
-      toast.message = await this.translateService.get('LIFE_WHEEL.SAVE_SUCCESS').toPromise();
-      toast.duration = 2000;
-      toast.color = 'success';
-      document.body.appendChild(toast);
-      toast.present();
-    } catch (error) {
-      console.error('Error saving life wheel data:', error);
-      // Показуємо повідомлення про помилку
-      const toast = document.createElement('ion-toast');
-      toast.message = await this.translateService.get('LIFE_WHEEL.SAVE_ERROR').toPromise();
-      toast.duration = 2000;
-      toast.color = 'danger';
-      document.body.appendChild(toast);
-      toast.present();
-    }
   }
 }

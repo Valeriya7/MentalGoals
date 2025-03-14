@@ -32,12 +32,18 @@
               {
                 "glob": "manifest.json",
                 "input": "src",
-                "output": "."
+                "output": "./"
               }
             ],
             "styles": [
-              "src/theme/variables.scss",
-              "src/global.scss"
+              {
+                "input": "src/theme/variables.scss",
+                "bundleName": "theme"
+              },
+              {
+                "input": "src/global.scss",
+                "bundleName": "global"
+              }
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
@@ -121,12 +127,18 @@
               {
                 "glob": "manifest.json",
                 "input": "src",
-                "output": "."
+                "output": "./"
               }
             ],
             "styles": [
-              "src/theme/variables.scss",
-              "src/global.scss"
+              {
+                "input": "src/theme/variables.scss",
+                "bundleName": "theme"
+              },
+              {
+                "input": "src/global.scss",
+                "bundleName": "global"
+              }
             ],
             "scripts": []
           }

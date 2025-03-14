@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
+import { Device } from '@capacitor/device';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
@@ -9,18 +10,49 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export class TranslateService {
   private currentLang = new BehaviorSubject<string>('en');
   private defaultLang = 'en';
+  private availableLanguages = ['uk', 'en', 'de'];
 
   constructor(private translate: NgxTranslateService) {
-    this.loadSavedLanguage();
+    this.translate.addLangs(this.availableLanguages);
+    this.translate.setDefaultLang(this.defaultLang);
+    this.initializeLanguage();
+  }
+
+  private async initializeLanguage() {
+    try {
+      // Спочатку перевіряємо збережену мову
+      const { value: savedLang } = await Preferences.get({ key: 'language' });
+      if (savedLang && this.availableLanguages.includes(savedLang)) {
+        await this.setLanguage(savedLang);
+        return;
+      }
+
+      // Якщо збереженої мови немає, перевіряємо мову пристрою
+      const { value: deviceLang } = await Device.getLanguageCode();
+      console.log('Device language:', deviceLang);
+
+      // Отримуємо основний код мови (наприклад, 'uk' з 'uk-UA')
+      const languageCode = deviceLang.split('-')[0].toLowerCase();
+
+      if (this.availableLanguages.includes(languageCode)) {
+        await this.setLanguage(languageCode);
+      } else {
+        // Якщо мова пристрою не підтримується, використовуємо англійську
+        await this.setLanguage(this.defaultLang);
+      }
+    } catch (error) {
+      console.error('Error initializing language:', error);
+      await this.setLanguage(this.defaultLang);
+    }
   }
 
   async loadSavedLanguage() {
     try {
       const { value } = await Preferences.get({ key: 'language' });
-      if (value) {
+      if (value && this.availableLanguages.includes(value)) {
         await this.setLanguage(value);
       } else {
-        await this.setLanguage(this.defaultLang);
+        await this.initializeLanguage();
       }
     } catch (error) {
       console.error('Error loading saved language:', error);
@@ -30,9 +62,12 @@ export class TranslateService {
 
   async setLanguage(lang: string) {
     try {
+      if (!this.availableLanguages.includes(lang)) {
+        throw new Error(`Language ${lang} is not supported`);
+      }
+      
       console.log(`Setting language to: ${lang}`);
-      this.translate.setDefaultLang(this.defaultLang);
-      this.translate.use(lang);
+      await this.translate.use(lang);
       this.currentLang.next(lang);
       await Preferences.set({ key: 'language', value: lang });
     } catch (error) {

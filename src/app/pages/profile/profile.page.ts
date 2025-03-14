@@ -9,6 +9,7 @@ import { HealthData } from '../../interfaces/health-data.interface';
 import { Subscription } from 'rxjs';
 import { HealthApiModule } from '../../services/health-api.module';
 import { TranslateModule } from '@ngx-translate/core';
+import { TranslateService } from '../../services/translate.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -29,6 +30,12 @@ export class ProfilePage implements OnInit, OnDestroy {
   userName: string = '';
   userPhotoUrl: string = '';
   totalPoints: number = 0;
+  currentLanguage: string = 'en';
+  availableLanguages = [
+    { code: 'en', name: 'PROFILE.LANGUAGES.EN' },
+    { code: 'uk', name: 'PROFILE.LANGUAGES.UK' },
+    { code: 'de', name: 'PROFILE.LANGUAGES.DE' }
+  ];
   isConnected = {
     garmin: false,
     samsung: false,
@@ -46,17 +53,42 @@ export class ProfilePage implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private healthApiService: HealthApiService,
-    private authService: AuthService
+    private authService: AuthService,
+    private translateService: TranslateService
   ) {}
 
   async ngOnInit() {
     await this.loadUserData();
     this.subscribeToHealthData();
+    await this.loadLanguageSettings();
   }
 
   ngOnDestroy() {
     if (this.healthDataSubscription) {
       this.healthDataSubscription.unsubscribe();
+    }
+  }
+
+  private async loadLanguageSettings() {
+    try {
+      const { value } = await Preferences.get({ key: 'language' });
+      if (value) {
+        this.currentLanguage = value;
+        await this.translateService.setLanguage(value);
+      }
+    } catch (error) {
+      console.error('Error loading language settings:', error);
+    }
+  }
+
+  async changeLanguage(event: any) {
+    const newLang = event.detail.value;
+    try {
+      await this.translateService.setLanguage(newLang);
+      this.currentLanguage = newLang;
+      window.location.reload();
+    } catch (error) {
+      console.error('Error changing language:', error);
     }
   }
 

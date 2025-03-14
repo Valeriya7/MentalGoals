@@ -12,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
   selector: 'app-root',
   template: '<ion-app><ion-router-outlet></ion-router-outlet></ion-app>',
   standalone: true,
-  imports: [IonicModule]
+  imports: [IonicModule, TranslateModule]
 })
 export class AppComponent {
   platformType: string = '';
@@ -28,7 +28,8 @@ export class AppComponent {
     this.versionCheckService.checkVersion();
     
     try {
-      await this.translateService.setLanguage('en');
+      // Ініціалізація мови буде автоматично перевіряти мову пристрою
+      await this.translateService.loadSavedLanguage();
       console.log('Translations initialized');
     } catch (error) {
       console.error('Failed to initialize translations:', error);

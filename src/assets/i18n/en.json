@@ -10,14 +10,16 @@
     "TITLE": "Life Balance Wheel",
     "DESCRIPTION": "Rate different areas of your life",
     "SAVE": "Save Results",
+    "SAVE_SUCCESS": "Results saved successfully",
+    "SAVE_ERROR": "Error saving results",
     "AREAS": {
       "HEALTH": "Health",
       "CAREER": "Career",
-      "RELATIONSHIPS": "Relationships",
-      "ENVIRONMENT": "Environment",
-      "PERSONAL_GROWTH": "Personal Growth",
       "FINANCES": "Finances",
-      "RECREATION": "Recreation",
+      "FAMILY": "Family",
+      "PERSONAL_GROWTH": "Personal Growth",
+      "SOCIAL_LIFE": "Social Life",
+      "FRIENDS": "Friends",
       "SPIRITUALITY": "Spirituality"
     }
   },
@@ -35,7 +37,8 @@
     "HOME": "Home",
     "HABITS": "Habits",
     "NOTIFICATIONS": "Notifications",
-    "PROFILE": "Profile"
+    "PROFILE": "Profile",
+    "CHALLENGES": "Challenges"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Current Challenge",
@@ -90,6 +93,13 @@
   },
   "PROFILE": {
     "TITLE": "Profile",
+    "LANGUAGE": "Language",
+    "LANGUAGE_SETTINGS": "Language Settings",
+    "LANGUAGES": {
+      "UK": "Ukrainian",
+      "EN": "English",
+      "DE": "German"
+    },
     "EDIT_PROFILE": "Edit Profile",
     "PERSONAL_DATA": "Personal Data",
     "CHANGE_DATA": "Change your personal data",
@@ -97,7 +107,7 @@
     "CONNECTED": "Connected",
     "NOT_CONNECTED": "Not Connected",
     "HEALTH_DATA": "Health Data",
-    "LAST_UPDATE": "Last update",
+    "LAST_UPDATE": "Last Update",
     "SLEEP": "Sleep",
     "DURATION": "Duration",
     "HOURS": "hours",
@@ -105,7 +115,7 @@
     "ACTIVITY": "Activity",
     "STEPS": "Steps",
     "KM": "km",
-    "ACTIVE_MINUTES": "Active minutes",
+    "ACTIVE_MINUTES": "Active Minutes",
     "HEART_RATE": "Heart Rate",
     "CURRENT": "Current",
     "AVERAGE": "Average",

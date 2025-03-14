@@ -11,7 +11,7 @@
         -->
       </ion-avatar>
       <div class="user-info">
-        <h2>Привіт,</h2>
+        <h2>{{ 'COMMON.WELCOME' | translate }}</h2>
         <h3>{{ userName }}!</h3>
       </div>
     </ion-buttons>
@@ -36,8 +36,8 @@
         </ion-button>
         <div class="challenge-info">
           <h3>{{ currentWeekLabel }}</h3>
-          <p class="challenge-title">40 days CHALLENGE</p>
-          <p class="challenge-days">День {{ challengeDay }} з 40</p>
+          <p class="challenge-title">{{ 'HOME.CURRENT_CHALLENGE' | translate }}</p>
+          <p class="challenge-days">{{ 'HOME.DAY' | translate }} {{ challengeDay }} {{ 'HOME.OF' | translate }} 40</p>
         </div>
         <ion-button fill="clear" (click)="nextWeek()">
           <ion-icon name="chevron-forward-outline"></ion-icon>

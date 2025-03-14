@@ -1,0 +1,57 @@
+ion-tab-bar {
+  --background: var(--ion-color-light);
+  border-radius: 16px 16px 0 0;
+  padding: 10px;
+}
+
+ion-tab-button {
+  --color: var(--ion-color-medium);
+  --color-selected: var(--ion-color-primary);
+  --padding-bottom: 8px;
+  --padding-top: 8px;
+  
+  &::before {
+    display: none;
+  }
+
+  ion-icon {
+    font-size: 24px;
+  }
+
+  ion-label {
+    font-size: 12px;
+    font-weight: 500;
+    
+    // Для портретної орієнтації (вертикальної)
+    @media screen and (orientation: portrait) {
+      // Для вкладки Notifications
+      &:contains("Notifications") {
+        max-width: 70px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      // Для інших довгих назв
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    // Для ландшафтної орієнтації (горизонтальної)
+    @media screen and (orientation: landscape) {
+      max-width: none;
+      overflow: visible;
+      white-space: normal;
+    }
+  }
+}
+
+// Активна вкладка
+ion-tab-button.tab-selected {
+  ion-icon, ion-label {
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+} 

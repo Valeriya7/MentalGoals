@@ -33,6 +33,22 @@
         </ion-label>
         <ion-icon slot="end" name="chevron-forward"></ion-icon>
       </ion-item>
+
+      <!-- Вибір мови -->
+      <ion-item>
+        <ion-icon slot="start" name="language-outline"></ion-icon>
+        <ion-label>{{ 'PROFILE.LANGUAGE' | translate }}</ion-label>
+        <ion-select 
+          [(ngModel)]="currentLanguage"
+          (ionChange)="changeLanguage($event)"
+          interface="action-sheet"
+          [interfaceOptions]="{ header: 'PROFILE.LANGUAGE_SETTINGS' | translate }"
+        >
+          <ion-select-option *ngFor="let lang of availableLanguages" [value]="lang.code">
+            {{ lang.name | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
     </ion-item-group>
 
     <!-- Інтеграції -->

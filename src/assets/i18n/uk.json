@@ -6,21 +6,6 @@
     "BOOKMARKS": "Закладки",
     "CLOSE": "Закрити"
   },
-  "LIFE_WHEEL": {
-    "TITLE": "Колесо життєвого балансу",
-    "DESCRIPTION": "Оцініть різні сфери вашого життя",
-    "SAVE": "Зберегти результати",
-    "AREAS": {
-      "HEALTH": "Здоров'я",
-      "CAREER": "Кар'єра",
-      "RELATIONSHIPS": "Стосунки",
-      "ENVIRONMENT": "Середовище",
-      "PERSONAL_GROWTH": "Особистий розвиток",
-      "FINANCES": "Фінанси",
-      "RECREATION": "Відпочинок",
-      "SPIRITUALITY": "Духовність"
-    }
-  },
   "WISHES": {
     "MORNING_PRODUCTIVITY": "Хей, ранок став початком чудового і продуктивного дня",
     "YEARLY_PLAN": "Слушний час, щоб скласти план на рік",
@@ -35,7 +20,8 @@
     "HOME": "Головна",
     "HABITS": "Звички",
     "NOTIFICATIONS": "Сповіщення",
-    "PROFILE": "Профіль"
+    "PROFILE": "Профіль",
+    "CHALLENGES": "Виклики"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Поточний виклик",
@@ -88,8 +74,33 @@
     "DIFFICULTY_HARD": "Важка",
     "POINTS": "Бали"
   },
+  "LIFE_WHEEL": {
+    "TITLE": "Колесо життєвого балансу",
+    "DESCRIPTION": "Оцініть різні сфери вашого життя",
+    "SAVE": "Зберегти результати",
+    "SAVE_SUCCESS": "Результати успішно збережено",
+    "SAVE_ERROR": "Помилка при збереженні результатів",
+    "AREAS": {
+      "HEALTH": "Здоров'я",
+      "CAREER": "Кар'єра",
+      "FINANCES": "Фінанси",
+      "FAMILY": "Сім'я",
+      "PERSONAL_GROWTH": "Особистий розвиток",
+      "SOCIAL_LIFE": "Соціальне життя",
+      "FRIENDS": "Друзі",
+      "SPIRITUALITY": "Духовність"
+    }
+  },
   "PROFILE": {
     "TITLE": "Профіль",
+    "LANGUAGE": "Мова",
+    "LANGUAGE_SETTINGS": "Налаштування мови",
+    "LANGUAGES": {
+      "UK": "Українська",
+      "EN": "Англійська",
+      "DE": "Німецька"
+    },
+    "POINTS": "балів",
     "EDIT_PROFILE": "Редагувати профіль",
     "PERSONAL_DATA": "Особисті дані",
     "CHANGE_DATA": "Змініть ваші особисті дані",
