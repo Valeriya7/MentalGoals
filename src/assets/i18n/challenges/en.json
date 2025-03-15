@@ -1,0 +1,52 @@
+{
+  "challenges": [
+    {
+      "id": "1",
+      "title": "40 Days of Healthy Habits",
+      "description": "Improve your health in 40 days",
+      "currentDay": 15,
+      "duration": 40,
+      "status": "active",
+      "tasks": [
+        {
+          "name": "No Sweets",
+          "description": "Avoid sweets during the day",
+          "icon": "ice-cream-outline",
+          "completed": true
+        },
+        {
+          "name": "No Coffee",
+          "description": "Replace coffee with healthy alternatives",
+          "icon": "cafe-outline",
+          "completed": true
+        },
+        {
+          "name": "10 Minutes Exercise",
+          "description": "Complete an exercise routine",
+          "icon": "fitness-outline",
+          "completed": false
+        },
+        {
+          "name": "8000 Steps",
+          "description": "Walk at least 8000 steps",
+          "icon": "footsteps-outline",
+          "completed": false
+        },
+        {
+          "name": "5 English Words",
+          "description": "Learn new words",
+          "icon": "book-outline",
+          "completed": true
+        }
+      ],
+      "rewards": {
+        "points": 40,
+        "discounts": [
+          { "brand": "Adidas", "amount": "15%" },
+          { "brand": "Garmin", "amount": "15%" },
+          { "brand": "Nike", "amount": "15%" }
+        ]
+      }
+    }
+  ]
+} 

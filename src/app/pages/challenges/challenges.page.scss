@@ -63,7 +63,8 @@ h2 {
 
           ion-icon {
             font-size: 24px;
-            margin-right: 15px;
+            color: var(--ion-color-primary);
+            margin-right: 12px;
           }
 
           ion-label {
@@ -102,7 +103,8 @@ h2 {
 
           ion-icon {
             font-size: 24px;
-            margin-right: 15px;
+            color: var(--ion-color-primary);
+            margin-right: 12px;
           }
 
           ion-label {
@@ -210,5 +212,263 @@ h2 {
         margin: 0;
       }
     }
+  }
+}
+.item-has-start-slot .item-native{
+  padding: 0 !important;
+  --padding-start: 0 !important
+}
+.challenges-list {
+  padding: 2px;
+
+ 
+  .challenge-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    .item-native{
+      padding: 0 !important;
+      --padding-start: 0 !important
+    }
+
+    .btn-challenge{   
+      font-weight: 600;
+      text-shadow: 1px 1px #92949c;
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--ion-color-dark);
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      margin-bottom: 15px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 15px;
+
+      &.active {
+        background: var(--ion-color-success-light);
+        color: var(--ion-color-success);
+      }
+
+      &.completed {
+        background: var(--ion-color-medium-light);
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .challenge-info {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        ion-icon {
+          font-size: 16px;
+          color: var(--ion-color-medium);
+        }
+
+        span {
+          font-size: 14px;
+          color: var(--ion-color-medium);
+        }
+      }
+    }
+
+    .tasks-section {
+      margin: 20px 0;
+
+      h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 15px;
+      }
+
+      .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .task-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 12px;
+          background: var(--ion-color-light);
+          border-radius: 12px;
+
+          ion-icon {
+            font-size: 20px;
+            color: var(--ion-color-primary);
+            margin-top: 2px;
+          }
+
+          .task-details {
+            flex: 1;
+
+            h4 {
+              font-size: 14px;
+              font-weight: 500;
+              color: var(--ion-color-dark);
+              margin: 0 0 4px;
+            }
+
+            p {
+              font-size: 12px;
+              color: var(--ion-color-medium);
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+
+    .rewards-section {
+      margin: 20px 0;
+
+      h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 15px;
+      }
+
+      .points-reward {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        ion-icon {
+          font-size: 20px;
+          color: var(--ion-color-warning);
+        }
+
+        span {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--ion-color-dark);
+        }
+      }
+
+      .discounts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .discount-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          background: var(--ion-color-light);
+          border-radius: 8px;
+
+          ion-icon {
+            font-size: 16px;
+            color: var(--ion-color-primary);
+          }
+
+          span {
+            font-size: 13px;
+            color: var(--ion-color-dark);
+          }
+        }
+      }
+    }
+
+    ion-button {
+      margin: 0;
+      --border-radius: 8px;
+    }
+
+    .rewards {
+      ion-item-divider {
+        --background: transparent;
+        --padding-start: 0;
+        --inner-padding-end: 0;
+        margin: 16px 0 8px;
+
+        h3 {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--ion-color-dark);
+          margin: 0;
+        }
+      }
+
+      .discount-item {
+        --background: var(--ion-color-light);
+        --border-radius: 12px;
+        margin: 8px 0;
+        
+        ion-icon {
+          font-size: 24px;
+          color: var(--ion-color-primary);
+          margin-right: 12px;
+        }
+
+        ion-label {
+          h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+          }
+
+          p {
+            font-size: 14px;
+            color: var(--ion-color-medium);
+            margin: 0;
+          }
+        }
+
+        ion-chip {
+          margin: 0;
+          font-weight: 500;
+        }
+      }
+
+      .discount-note {
+        --background: transparent;
+        margin-top: 16px;
+        
+        ion-icon {
+          color: var(--ion-color-medium);
+          font-size: 20px;
+        }
+
+        p {
+          font-size: 12px;
+          color: var(--ion-color-medium);
+          font-style: italic;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .icon-only {
+    font-size: 24px;
+    color: var(--ion-color-primary);
+    pointer-events: none;
+    margin-inline-end: 2px;
   }
 }

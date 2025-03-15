@@ -353,4 +353,214 @@ ion-grid {
       margin-right: 0.5rem;
     }
   }
+}
+
+.calendar-strip {
+  background: var(--ion-color-light);
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .week-days {
+    display: flex;
+    justify-content: space-between;
+
+    .day-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+
+      &.current {
+        background: var(--ion-color-primary);
+        color: white;
+      }
+
+      &.marked::after {
+        content: '';
+        width: 6px;
+        height: 6px;
+        background: var(--ion-color-success);
+        border-radius: 50%;
+        margin-top: 4px;
+      }
+
+      .day-name {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      .day-number {
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+.challenge-phase {
+  padding: 20px;
+  margin-bottom: 20px;
+
+  .phase-circle {
+    background: var(--ion-color-light);
+    border-radius: 20px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      color: var(--ion-color-medium);
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: var(--ion-color-primary);
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--ion-color-light-shade);
+      border-radius: 4px;
+      margin: 15px 0;
+      overflow: hidden;
+
+      .progress {
+        height: 100%;
+        background: var(--ion-color-primary);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+      }
+    }
+
+    .challenge-tasks {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+
+      .task-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+
+        &.completed {
+          background: var(--ion-color-success);
+          color: white;
+
+          ion-icon {
+            color: white;
+          }
+        }
+
+        ion-icon {
+          font-size: 20px;
+          margin-right: 8px;
+          color: var(--ion-color-primary);
+        }
+
+        span {
+          font-size: 14px;
+          color: var(--ion-color-dark);
+        }
+      }
+    }
+  }
+}
+
+.no-challenge {
+  padding: 20px;
+  text-align: center;
+
+  ion-button {
+    --border-radius: 12px;
+    margin: 0 auto;
+    max-width: 300px;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  padding: 0 20px;
+
+  .stat-item {
+    background: var(--ion-color-light);
+    border-radius: 16px;
+    padding: 10px;
+    text-align: center;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    ion-icon {
+      font-size: 24px;
+      color: var(--ion-color-primary);
+      margin-bottom: 8px;
+    }
+
+    h3 {
+      color: var(--ion-color-medium);
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    h2 {
+      color: var(--ion-color-dark);
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0;
+    }
+  }
+}
+
+.stats-item {
+  margin: 2px 0;
+
+  .metric-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    img {
+      width: 15px;
+      height: 15px;
+      filter: invert(47%) sepia(82%) saturate(2026%) hue-rotate(189deg) brightness(97%) contrast(91%);
+    }
+
+    .metric-value {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .metric-label {
+    margin: 4px 0;
+    font-size: 14px;
+    color: var(--ion-color-medium);
+  }
 } 

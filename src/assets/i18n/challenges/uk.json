@@ -1,0 +1,52 @@
+{
+  "challenges": [
+    {
+      "id": "1",
+      "title": "40 Днів Здорових Звичок",
+      "description": "Покращіть своє здоров'я за 40 днів",
+      "currentDay": 15,
+      "duration": 40,
+      "status": "active",
+      "tasks": [
+        {
+          "name": "Без солодкого",
+          "description": "Уникайте солодощів протягом дня",
+          "icon": "ice-cream-outline",
+          "completed": true
+        },
+        {
+          "name": "Без кави",
+          "description": "Замініть каву на здорові альтернативи",
+          "icon": "cafe-outline",
+          "completed": true
+        },
+        {
+          "name": "10 хвилин вправ",
+          "description": "Виконайте комплекс вправ",
+          "icon": "fitness-outline",
+          "completed": false
+        },
+        {
+          "name": "8000 кроків",
+          "description": "Пройдіть мінімум 8000 кроків",
+          "icon": "footsteps-outline",
+          "completed": false
+        },
+        {
+          "name": "5 англійських слів",
+          "description": "Вивчіть нові слова",
+          "icon": "book-outline",
+          "completed": true
+        }
+      ],
+      "rewards": {
+        "points": 40,
+        "discounts": [
+          { "brand": "Adidas", "amount": "15%" },
+          { "brand": "Garmin", "amount": "15%" },
+          { "brand": "Nike", "amount": "15%" }
+        ]
+      }
+    }
+  ]
+} 

@@ -13,71 +13,30 @@ import {
   footstepsOutline,
   bookOutline,
   checkmarkCircle,
-  addCircleOutline
+  calendarOutline,
+  notificationsOutline,
+  bookmarkOutline,
+  timeOutline,
+  shirtOutline,
+  watchOutline,
+  storefront
 } from 'ionicons/icons';
 import { ChallengeService } from '../../services/challenge.service';
-import { RouterModule } from '@angular/router';
-import { Preferences } from '@capacitor/preferences';
+import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { firstValueFrom } from 'rxjs';
-import { Router } from '@angular/router';
+import { Challenge } from '../../interfaces/challenge.interface';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 @Component({
   selector: 'app-challenges',
   templateUrl: './challenges.page.html',
   styleUrls: ['./challenges.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslateModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslateModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ChallengesPage implements OnInit {
-  currentChallenge = {
-    id: 1,
-    name: '40 Днів Здорових Звичок',
-    currentDay: 15,
-    totalDays: 40,
-    tasks: [
-      {
-        name: 'Без солодкого',
-        description: 'Уникайте солодощів протягом дня',
-        icon: 'ice-cream-outline',
-        completed: true
-      },
-      {
-        name: 'Без кави',
-        description: 'Замініть каву на здорові альтернативи',
-        icon: 'cafe-outline',
-        completed: true
-      },
-      {
-        name: '10 хвилин вправ',
-        description: 'Виконайте комплекс вправ',
-        icon: 'fitness-outline',
-        completed: false
-      },
-      {
-        name: '8000 кроків',
-        description: 'Пройдіть мінімум 8000 кроків',
-        icon: 'footsteps-outline',
-        completed: false
-      },
-      {
-        name: '5 англійських слів',
-        description: 'Вивчіть нові слова',
-        icon: 'book-outline',
-        completed: true
-      }
-    ],
-    rewards: {
-      points: 40,
-      discounts: [
-        { brand: 'Adidas', amount: '15%' },
-        { brand: 'Garmin', amount: '15%' },
-        { brand: 'Nike', amount: '15$' }
-      ]
-    }
-  };
-
-  userName: string = '';
+  challenges: Challenge[] = [];
 
   constructor(
     private challengeService: ChallengeService,
@@ -93,38 +52,112 @@ export class ChallengesPage implements OnInit {
       'footsteps-outline': footstepsOutline,
       'book-outline': bookOutline,
       'checkmark-circle': checkmarkCircle,
-      'add-circle-outline': addCircleOutline
+      'calendar-outline': calendarOutline,
+      'notifications-outline': notificationsOutline,
+      'bookmark-outline': bookmarkOutline,
+      'time-outline': timeOutline,
+      'shirt-outline': shirtOutline,
+      'watch-outline': watchOutline,
+      'storefront': storefront,
+      'gift': giftOutline
     });
   }
 
   async ngOnInit() {
-    await this.loadUserData();
-    this.challengeService.getActiveChallenge().subscribe(challenge => {
-      console.log('Active challenge:', challenge);
-    });
+    await this.loadChallenges();
   }
 
-  async loadUserData() {
-    const name = await Preferences.get({ key: 'name' });
-    if (name && name.value) this.userName = name.value;
-  }
-
-  async startChallenge(type: string) {
-    const success = await this.challengeService.startNewChallenge(type);
-    if (success) {
-      // Отримуємо активний челендж і переходимо до його деталей
-      const activeChallenge = await firstValueFrom(this.challengeService.getActiveChallenge());
+  async loadChallenges() {
+    try {
+      this.challenges = await this.challengeService.getChallenges();
+      console.log('Loaded challenges:', this.challenges);
+      
+      // Перевірка наявності завдань у активному челенджі
+      const activeChallenge = this.challenges.find(c => c.status === 'active');
       if (activeChallenge) {
-        await this.router.navigate(['/challenge-details', activeChallenge.id]);
+        console.log('Active challenge:', activeChallenge);
+        console.log('Active challenge tasks:', activeChallenge.tasks);
+        if (!activeChallenge.tasks || activeChallenge.tasks.length === 0) {
+          console.warn('No tasks found in active challenge');
+        }
+      } else {
+        console.log('No active challenge found');
       }
+    } catch (error) {
+      console.error('Error loading challenges:', error);
     }
   }
 
+  async startNewChallenge(type: string) {
+    const success = await this.challengeService.startNewChallenge(type);
+    if (success) {
+      await this.loadChallenges();
+    }
+  }
+
+  async activateChallenge(challenge: Challenge) {
+    try {
+      const success = await this.challengeService.activateChallenge(challenge.id);
+      if (success) {
+        await this.loadChallenges();
+        console.log('Challenge activated successfully:', challenge.id);
+      } else {
+        console.warn('Failed to activate challenge:', challenge.id);
+      }
+    } catch (error) {
+      console.error('Error activating challenge:', error);
+    }
+  }
+
+  goToChallenge(challenge: Challenge) {
+    this.router.navigate(['/challenge-details', challenge.id]);
+  }
+
   goToNotifications() {
-    // Навігація до сповіщень
+    this.router.navigate(['/notifications']);
   }
 
   goToBookmarks() {
-    // Навігація до закладок
+    this.router.navigate(['/bookmarks']);
+  }
+
+  getPartnerIcon(brand: string): string {
+    const icons: { [key: string]: string } = {
+      'Adidas': 'storefront',
+      'Nike': 'storefront',
+      'Garmin': 'watch-outline',
+      'Under Armour': 'shirt-outline'
+    };
+    return icons[brand] || 'gift-outline';
+  }
+
+  getDiscountColor(amount: string): string {
+    if (amount.includes('%')) {
+      const percentage = parseInt(amount);
+      if (percentage >= 30) return 'success';
+      if (percentage >= 20) return 'warning';
+      return 'primary';
+    }
+    if (amount.includes('$')) {
+      const value = parseInt(amount);
+      if (value >= 50) return 'success';
+      if (value >= 25) return 'warning';
+      return 'primary';
+    }
+    return 'medium';
+  }
+
+  async deactivateAllChallenges() {
+    try {
+      const success = await this.challengeService.deactivateAllChallenges();
+      if (success) {
+        await this.loadChallenges();
+        console.log('All challenges deactivated successfully');
+      } else {
+        console.warn('Failed to deactivate challenges');
+      }
+    } catch (error) {
+      console.error('Error deactivating challenges:', error);
+    }
   }
 }

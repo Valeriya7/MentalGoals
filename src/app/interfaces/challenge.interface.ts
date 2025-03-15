@@ -2,11 +2,13 @@ export interface Challenge {
   id: string;
   title: string;
   description: string;
-  phases: ChallengePhase[];
-  startDate: string;
-  endDate: string;
-  status: 'active' | 'completed' | 'failed';
-  progress: ChallengeProgress;
+  duration: number;
+  status: 'active' | 'completed';
+  currentDay?: number;
+  startDate?: string;
+  endDate?: string;
+  tasks: ChallengeTask[];
+  rewards: Rewards;
 }
 
 export interface ChallengePhase {
@@ -20,14 +22,21 @@ export interface ChallengePhase {
 export interface ChallengeTask {
   id: string;
   title: string;
-  description?: string;
+  description: string;
+  icon: string;
   completed: boolean;
-  icon?: string;
 }
 
 export interface ChallengeProgress {
-  currentDay: number;
-  totalDays: number;
-  completedTasks: number;
-  totalTasks: number;
+  [taskId: string]: boolean;
+}
+
+export interface Rewards {
+  points: number;
+  discounts: Discount[];
+}
+
+export interface Discount {
+  brand: string;
+  amount: string;
 } 
