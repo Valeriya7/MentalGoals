@@ -214,25 +214,16 @@ h2 {
     }
   }
 }
-.item-has-start-slot .item-native{
-  padding: 0 !important;
-  --padding-start: 0 !important
-}
-.challenges-list {
-  padding: 2px;
 
- 
+.challenges-list {
+  padding: 10px;
+
   .challenge-card {
     background: white;
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-    .item-native{
-      padding: 0 !important;
-      --padding-start: 0 !important
-    }
 
     .btn-challenge{   
       font-weight: 600;
@@ -463,12 +454,21 @@ h2 {
         }
       }
     }
+
+    ::ng-deep .item-native {
+      --padding-start: 2px !important;
+      --inner-padding-end: 2px !important;
+    }
   }
 
   .icon-only {
     font-size: 24px;
     color: var(--ion-color-primary);
     pointer-events: none;
-    margin-inline-end: 2px;
+    margin-inline-end: 4px;
   }
+}
+:host {
+  -padding-start: 2px !important;
+  --inner-padding-end: 2px !important;
 }

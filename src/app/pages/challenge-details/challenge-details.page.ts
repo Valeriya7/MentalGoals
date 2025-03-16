@@ -60,9 +60,9 @@ import {
               slot="start" 
               [checked]="task.completed"
               (ionChange)="updateTaskProgress(task, $event)">
+              {{ task.title }}
             </ion-checkbox>
             <ion-label>
-              <h2>{{ task.title }}</h2>
               <p *ngIf="task.description">{{ task.description }}</p>
             </ion-label>
             <ion-icon 

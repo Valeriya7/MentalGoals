@@ -133,3 +133,12 @@ ion-button,
   -webkit-padding-end: 0 !important;
   padding-inline-end: 0 !important;
 }
+
+.challenges-list {
+  .challenge-card {
+    ion-item .item-native{
+      padding: 0 !important;
+      --padding-start: 0 !important
+    }
+  }
+}

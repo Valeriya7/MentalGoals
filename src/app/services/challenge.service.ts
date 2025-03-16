@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Challenge, ChallengePhase, ChallengeTask } from '../interfaces/challenge.interface';
-import { Storage } from '@ionic/storage-angular';
 import { ModalService } from './modal.service';
 import { Preferences } from '@capacitor/preferences';
+import { Platform } from '@ionic/angular';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,41 +15,217 @@ export class ChallengeService {
   private storageReady = new BehaviorSubject<boolean>(false);
   private isLoading = new BehaviorSubject<boolean>(false);
   private readonly STORAGE_KEY = 'challenges';
+  private readonly ALLOWED_ORIGINS = ['localhost', 'mentalgoals.app'];
+  private preferenceStorage = true;
 
   constructor(
     private toastController: ToastController,
     private modalService: ModalService,
-    private storage: Storage
+    private storageService: StorageService,
+    private platform: Platform
   ) {
-    this.initStorage();
+    this.init();
   }
 
-  private async initStorage() {
+  private isOriginAllowed(): boolean {
     try {
-      console.log('Checking storage initialization...');
-      if (!this.storage) {
-        throw new Error('Storage is not injected');
+      const currentOrigin = window.location.hostname;
+      return this.ALLOWED_ORIGINS.some(origin => currentOrigin.includes(origin));
+    } catch (error) {
+      console.error('Error checking origin:', error);
+      return false;
+    }
+  }
+
+  private isSecureContext(): boolean {
+    try {
+      return window.isSecureContext && 
+             window.location.protocol === 'https:' || 
+             window.location.hostname === 'localhost';
+    } catch {
+      return false;
+    }
+  }
+
+  private isIframeSafe(): boolean {
+    try {
+      // Перевіряємо, чи ми в iframe
+      if (window.top !== window.self) {
+        const frameElement = window.frameElement;
+        
+        // Перевіряємо атрибути sandbox
+        if (frameElement && frameElement.hasAttribute('sandbox')) {
+          const sandbox = frameElement.getAttribute('sandbox') || '';
+          
+          // Перевіряємо небезпечну комбінацію атрибутів
+          if (sandbox.includes('allow-scripts') && sandbox.includes('allow-same-origin')) {
+            console.error('Unsafe iframe configuration detected');
+            return false;
+          }
+          
+          // Перевіряємо необхідні безпечні атрибути
+          const requiredAttributes = ['allow-forms', 'allow-scripts'];
+          const hasAllRequired = requiredAttributes.every(attr => sandbox.includes(attr));
+          
+          if (!hasAllRequired) {
+            console.error('Missing required sandbox attributes');
+            return false;
+          }
+        }
+        
+        // Перевіряємо CSP заголовки
+        const csp = document.head.querySelector('meta[http-equiv="Content-Security-Policy"]');
+        if (!csp) {
+          console.warn('No CSP meta tag found');
+        }
       }
+      
+      return true;
+    } catch (error) {
+      console.error('Error checking iframe safety:', error);
+      return false;
+    }
+  }
+
+  private async validateStorageAccess(): Promise<boolean> {
+    // Перевіряємо безпечний контекст
+    if (!this.isSecureContext()) {
+      console.error('Storage access denied: Not a secure context');
+      return false;
+    }
+
+    // Перевіряємо безпеку iframe
+    if (!this.isIframeSafe()) {
+      console.error('Storage access denied: Unsafe iframe configuration');
+      return false;
+    }
+
+    // Перевіряємо походження
+    if (!this.ALLOWED_ORIGINS.some(origin => window.location.hostname.includes(origin))) {
+      console.error('Storage access denied: Invalid origin');
+      return false;
+    }
+
+    return true;
+  }
+
+  private async init() {
+    try {
+      // Перевіряємо безпеку доступу до сховища
+      const isStorageAccessAllowed = await this.validateStorageAccess();
+      if (!isStorageAccessAllowed) {
+        this.storageReady.next(false);
+        throw new Error('Storage access denied due to security restrictions');
+      }
+
+      // Визначаємо, чи можемо використовувати Preferences API
+      this.preferenceStorage = this.platform.is('capacitor');
+
+      // Отримуємо дані
+      const challenges = await this.getStorageData();
+      
+      // Якщо челенджів немає, створюємо базові
+      if (!challenges || challenges.length === 0) {
+        const defaultChallenges = this.getDefaultChallenges();
+        await this.saveToAllStorages(defaultChallenges);
+        console.log('Default challenges initialized');
+      }
+
       this.storageReady.next(true);
       console.log('Storage is ready');
     } catch (error) {
       console.error('Storage initialization error:', error);
       this.storageReady.next(false);
+      
+      // Якщо основне сховище недоступне, спробуємо використовувати тільки Preferences
+      if (this.preferenceStorage) {
+        try {
+          const { value } = await Preferences.get({ key: this.STORAGE_KEY });
+          if (!value) {
+            const defaultChallenges = this.getDefaultChallenges();
+            await Preferences.set({
+              key: this.STORAGE_KEY,
+              value: JSON.stringify(defaultChallenges)
+            });
+          }
+          this.storageReady.next(true);
+        } catch (prefsError) {
+          console.error('Preferences fallback failed:', prefsError);
+        }
+      }
     }
   }
 
-  private async ensureStorageReady(): Promise<Storage> {
+  private async getStorageData(): Promise<any> {
+    let data = null;
+
+    // Спочатку пробуємо отримати дані з Preferences API
+    if (this.preferenceStorage) {
+      try {
+        const { value } = await Preferences.get({ key: this.STORAGE_KEY });
+        if (value) {
+          data = JSON.parse(value);
+          return data;
+        }
+      } catch (error) {
+        console.error('Error reading from Preferences:', error);
+      }
+    }
+
+    // Якщо дані не отримані з Preferences, пробуємо основне сховище
+    try {
+      data = await this.storageService.get(this.STORAGE_KEY);
+    } catch (error) {
+      console.error('Error reading from storage:', error);
+    }
+
+    return data;
+  }
+
+  private async saveToAllStorages(data: any) {
+    try {
+      // Перевіряємо безпеку доступу до сховища
+      const isStorageAccessAllowed = await this.validateStorageAccess();
+      if (!isStorageAccessAllowed) {
+        throw new Error('Storage access denied due to security restrictions');
+      }
+
+      // Зберігаємо в Preferences API, якщо доступно
+      if (this.preferenceStorage) {
+        try {
+          await Preferences.set({
+            key: this.STORAGE_KEY,
+            value: JSON.stringify(data)
+          });
+        } catch (error) {
+          console.error('Error saving to Preferences:', error);
+        }
+      }
+
+      // Зберігаємо в основне сховище
+      try {
+        await this.storageService.set(this.STORAGE_KEY, data);
+      } catch (error) {
+        console.error('Error saving to storage:', error);
+        // Якщо збереження в основне сховище не вдалося, але є Preferences
+        if (!this.preferenceStorage) {
+          throw error; // Перекидаємо помилку тільки якщо немає резервного сховища
+        }
+      }
+    } catch (error) {
+      console.error('Error saving to storages:', error);
+      throw error;
+    }
+  }
+
+  private async ensureStorageReady(): Promise<void> {
     if (!this.storageReady.value) {
-      console.log('Storage not ready, initializing...');
-      await this.initStorage();
+      await this.init();
     }
     
-    if (!this.storage || !this.storageReady.value) {
-      console.error('Storage initialization failed');
+    if (!this.storageReady.value) {
       throw new Error('Storage not initialized');
     }
-    
-    return this.storage;
   }
 
   private async showSuccessToast(type: string): Promise<void> {
@@ -145,9 +322,9 @@ export class ChallengeService {
 
       // Save the challenge to storage
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       challenges.push(challenge);
-      await storage.set('challenges', challenges);
+      await this.storageService.set(this.STORAGE_KEY, challenges);
 
       await this.modalService.hideLoading();
       await this.showSuccessToast(challenge.title);
@@ -182,7 +359,7 @@ export class ChallengeService {
   async getChallenge(id: string): Promise<Challenge | undefined> {
     try {
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       return challenges.find((c: Challenge) => c.id === id);
     } catch (error) {
       console.error('Error getting challenge:', error);
@@ -209,7 +386,7 @@ export class ChallengeService {
     try {
       const storage = await this.ensureStorageReady();
       const key = `progress_${challengeId}_${date}`;
-      const value = await storage.get(key);
+      const value = await this.storageService.get(key);
       return value || {};
     } catch (error) {
       console.error('Error getting progress:', error);
@@ -238,7 +415,7 @@ export class ChallengeService {
       const key = `progress_${challengeId}_${today}`;
       const progress = await this.getTodayProgress(challengeId, today);
       progress[taskId] = completed;
-      await storage.set(key, progress);
+      await this.storageService.set(key, progress);
     } catch (error) {
       console.error('Error updating today progress:', error);
       throw error;
@@ -248,7 +425,7 @@ export class ChallengeService {
   async quitChallenge(challengeId: string): Promise<boolean> {
     try {
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       const challengeIndex = challenges.findIndex((c: Challenge) => c.id === challengeId);
       
       if (challengeIndex === -1) {
@@ -256,7 +433,7 @@ export class ChallengeService {
       }
 
       challenges[challengeIndex].status = 'failed';
-      await storage.set('challenges', challenges);
+      await this.storageService.set(this.STORAGE_KEY, challenges);
       
       if (this.activeChallenge.value?.id === challengeId) {
         this.activeChallenge.next(null);
@@ -334,7 +511,7 @@ export class ChallengeService {
   private async cleanupStorage(): Promise<void> {
     try {
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       
       // Створюємо Map для зберігання унікальних челенджів
       const uniqueChallenges = new Map<string, Challenge>();
@@ -350,17 +527,89 @@ export class ChallengeService {
       }
       
       // Зберігаємо тільки унікальні челенджі
-      await storage.set('challenges', Array.from(uniqueChallenges.values()));
+      await this.saveToAllStorages(Array.from(uniqueChallenges.values()));
     } catch (error) {
       console.error('Error cleaning up storage:', error);
     }
   }
 
+  private getDefaultChallenges(): Challenge[] {
+    return [
+      {
+        id: 'challenge-default-1',
+        title: '40 Днів Здорових Звичок',
+        description: 'Покращіть своє здоров\'я за 40 днів, формуючи корисні звички',
+        duration: 40,
+        tasks: [
+          {
+            id: 'no-sweets',
+            title: 'Без солодкого',
+            description: 'Уникайте солодощів протягом дня',
+            icon: 'ice-cream-outline',
+            completed: false
+          },
+          {
+            id: 'no-coffee',
+            title: 'Без кави',
+            description: 'Замініть каву на здорові альтернативи',
+            icon: 'cafe-outline',
+            completed: false
+          },
+          {
+            id: 'exercise',
+            title: '10 хвилин вправ',
+            description: 'Виконайте комплекс вправ',
+            icon: 'fitness-outline',
+            completed: false
+          },
+          {
+            id: 'steps',
+            title: '8000 кроків',
+            description: 'Пройдіть мінімум 8000 кроків',
+            icon: 'footsteps-outline',
+            completed: false
+          },
+          {
+            id: 'english',
+            title: '5 англійських слів',
+            description: 'Вивчіть нові слова',
+            icon: 'book-outline',
+            completed: false
+          }
+        ],
+        status: 'active',
+        rewards: {
+          points: 40,
+          discounts: [
+            {
+              brand: 'Adidas',
+              amount: '15%'
+            },
+            {
+              brand: 'Garmin',
+              amount: '15%'
+            },
+            {
+              brand: 'Nike',
+              amount: '15%'
+            }
+          ]
+        }
+      }
+    ];
+  }
+
   async getChallenges(): Promise<Challenge[]> {
     try {
-      await this.cleanupStorage(); // Очищаємо сховище перед отриманням челенджів
+      await this.cleanupStorage();
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
+      
+      // Якщо челенджів немає, створюємо базові
+      if (challenges.length === 0) {
+        challenges = this.getDefaultChallenges();
+        await this.saveToAllStorages(challenges);
+      }
       
       return challenges.map((challenge: Challenge) => ({
         ...challenge,
@@ -378,9 +627,9 @@ export class ChallengeService {
   async addChallenge(challenge: Challenge): Promise<void> {
     try {
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       challenges.push(challenge);
-      await storage.set('challenges', challenges);
+      await this.saveToAllStorages(challenges);
     } catch (error) {
       console.error('Error adding challenge:', error);
       throw error;
@@ -390,11 +639,11 @@ export class ChallengeService {
   async updateChallenge(challenge: Challenge): Promise<void> {
     try {
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       const index = challenges.findIndex((c: Challenge) => c.id === challenge.id);
       if (index !== -1) {
         challenges[index] = challenge;
-        await storage.set('challenges', challenges);
+        await this.saveToAllStorages(challenges);
       }
     } catch (error) {
       console.error('Error updating challenge:', error);
@@ -405,9 +654,9 @@ export class ChallengeService {
   async deleteChallenge(id: string): Promise<void> {
     try {
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       const filtered = challenges.filter((c: Challenge) => c.id !== id);
-      await storage.set('challenges', filtered);
+      await this.saveToAllStorages(filtered);
     } catch (error) {
       console.error('Error deleting challenge:', error);
       throw error;
@@ -417,7 +666,7 @@ export class ChallengeService {
   async activateChallenge(challengeId: string): Promise<boolean> {
     try {
       const storage = await this.ensureStorageReady();
-      const challenges = await storage.get('challenges') || [];
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       
       // Перевіряємо, чи немає вже активного челенджу
       const hasActiveChallenge = challenges.some((c: Challenge) => c.status === 'active');
@@ -440,16 +689,29 @@ export class ChallengeService {
       // Оновлюємо дати при активації
       const startDate = new Date();
       const endDate = new Date();
-      endDate.setDate(startDate.getDate() + challenges[challengeIndex].duration);
+      endDate.setDate(startDate.getDate() + (challenges[challengeIndex].duration || 40));
+
+      // Форматуємо дати в ISO string з обробкою помилок
+      let startDateISO: string;
+      let endDateISO: string;
+      
+      try {
+        startDateISO = startDate.toISOString();
+        endDateISO = endDate.toISOString();
+      } catch (error) {
+        console.error('Error converting dates to ISO:', error);
+        startDateISO = new Date().toISOString();
+        endDateISO = new Date(Date.now() + (40 * 24 * 60 * 60 * 1000)).toISOString();
+      }
 
       challenges[challengeIndex] = {
         ...challenges[challengeIndex],
         status: 'active',
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
+        startDate: startDateISO,
+        endDate: endDateISO
       };
 
-      await storage.set('challenges', challenges);
+      await this.saveToAllStorages(challenges);
       
       // Update active challenge
       this.activeChallenge.next(challenges[challengeIndex]);
@@ -472,21 +734,24 @@ export class ChallengeService {
   async deactivateAllChallenges(): Promise<boolean> {
     try {
       const storage = await this.ensureStorageReady();
-      let challenges = await storage.get('challenges') || [];
+      let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
       
-      // Змінюємо статус всіх челенджів на 'completed'
+      // Змінюємо статус всіх челенджів на 'completed' та скидаємо дати
       challenges = challenges.map((challenge: Challenge) => ({
         ...challenge,
-        status: 'completed'
+        status: 'completed',
+        startDate: undefined,
+        endDate: undefined,
+        currentDay: undefined
       }));
 
-      await storage.set('challenges', challenges);
+      await this.saveToAllStorages(challenges);
       
       // Очищаємо активний челендж
       this.activeChallenge.next(null);
 
       const toast = await this.toastController.create({
-        message: 'Всі челенджі деактивовано',
+        message: 'Всі челенджі доступні для активації',
         duration: 2000,
         position: 'bottom',
         color: 'success'

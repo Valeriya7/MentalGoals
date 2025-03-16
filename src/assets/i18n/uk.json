@@ -64,6 +64,7 @@
     "SYNC_NOTE": "Дані будуть синхронізуватися з Garmin, Samsung Health або Apple Health",
     "STATUS_ACTIVE": "Активний",
     "STATUS_COMPLETED": "Завершений",
+    "STATUS_FAILED": "Відмінено",
     "ACTIVATE": "Активувати челендж",
     "VIEW_DETAILS": "Переглянути деталі",
     "CHALLENGE_ACTIVATED": "Челендж активовано",

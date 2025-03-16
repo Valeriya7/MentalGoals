@@ -2,7 +2,7 @@
   <ion-toolbar mode="md" color="primary">
     <ion-title>{{ 'CHALLENGES.AVAILABLE_CHALLENGES' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="deactivateAllChallenges()" color="light">пара
+      <ion-button (click)="deactivateAllChallenges()" color="light">
         <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button (click)="goToNotifications()" [attr.aria-label]="'COMMON.NOTIFICATIONS' | translate">
@@ -39,13 +39,13 @@
       <div class="tasks" *ngIf="challenge.status === 'active' && challenge.tasks" role="region" [attr.aria-label]="'CHALLENGES.DAILY_TASKS' | translate">
         <h3>{{ 'CHALLENGES.DAILY_TASKS' | translate }}</h3>
         
-        <!-- Debug output 
+        <!-- Debug output -->
         <div style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
           <p>Challenge status: {{ challenge.status }}</p>
           <p>Tasks count: {{ challenge.tasks ? challenge.tasks.length : 0 }}</p>
           <pre>{{ challenge.tasks | json }}</pre>
         </div>
-  -->
+
         <ion-list *ngIf="challenge.tasks.length > 0">
           <ion-item *ngFor="let task of challenge.tasks; let i = index" role="listitem">
             <ion-icon [name]="task.icon" slot="start" class="icon-only" [attr.aria-label]="task.title"></ion-icon>

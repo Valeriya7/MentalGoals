@@ -115,11 +115,10 @@
 
     <ion-item *ngFor="let task of dailyTasks">
       <ion-icon [name]="task.icon" slot="start" [attr.aria-hidden]="true"></ion-icon>
-      <ion-label>{{ task.name }}</ion-label>
       <ion-checkbox 
         slot="end"
-        [(ngModel)]="task.completed"
-        [attr.aria-label]="task.name">
+        [(ngModel)]="task.completed">
+        {{ task.name }}
       </ion-checkbox>
     </ion-item>
   </ion-list>

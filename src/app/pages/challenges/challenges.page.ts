@@ -19,7 +19,8 @@ import {
   timeOutline,
   shirtOutline,
   watchOutline,
-  storefront
+  storefront,
+  closeCircleOutline
 } from 'ionicons/icons';
 import { ChallengeService } from '../../services/challenge.service';
 import { RouterModule, Router } from '@angular/router';
@@ -59,7 +60,8 @@ export class ChallengesPage implements OnInit {
       'shirt-outline': shirtOutline,
       'watch-outline': watchOutline,
       'storefront': storefront,
-      'gift': giftOutline
+      'gift': giftOutline,
+      'close-circle-outline': closeCircleOutline
     });
   }
 
