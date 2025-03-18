@@ -1,1 +1,106 @@
-  <h2>{{ task.name }}</h2> 
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/challenges"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ challenge?.title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="quitChallenge()" color="danger">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="challenge-details" *ngIf="challenge">
+    <!-- Заголовок та опис -->
+    <div class="challenge-header">
+      <h1>{{ challenge.title }}</h1>
+      <p class="description">{{ challenge.description }}</p>
+      
+      <!-- Інформація про складність -->
+      <div class="difficulty-info">
+        <ion-chip [color]="getDifficultyColor(challenge.difficulty)">
+          <ion-icon [name]="getDifficultyIcon(challenge.difficulty)" slot="start"></ion-icon>
+          <ion-label>{{ getDifficultyLabel(challenge.difficulty) }}</ion-label>
+        </ion-chip>
+      </div>
+    </div>
+
+    <!-- Прогрес -->
+    <div class="progress-section" *ngIf="challenge.status === 'active'">
+      <div class="progress-info">
+        <h3>Прогрес</h3>
+        <p>День {{ currentDay }} з {{ challenge.duration }}</p>
+      </div>
+      <ion-progress-bar [value]="currentDay / challenge.duration"></ion-progress-bar>
+    </div>
+
+    <!-- Завдання -->
+    <div class="tasks-section">
+      <h2>Щоденні завдання</h2>
+      <ion-list>
+        <ion-item *ngFor="let task of challenge.tasks">
+          <ion-icon [name]="task.icon" slot="start" [color]="task.completed ? 'success' : 'medium'"></ion-icon>
+          <ion-label>
+            <h3>{{ task.title }}</h3>
+            <p>{{ task.description }}</p>
+          </ion-label>
+          <ion-checkbox 
+            slot="end" 
+            [(ngModel)]="task.completed"
+            (ionChange)="updateTaskStatus(task)">
+          </ion-checkbox>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <!-- Нагороди -->
+    <div class="rewards-section">
+      <h2>Нагороди</h2>
+      <div class="rewards-grid">
+        <div class="reward-item">
+          <ion-icon name="star-outline"></ion-icon>
+          <h3>{{ challenge.rewards.points }} балів</h3>
+        </div>
+        <div class="reward-item" *ngFor="let discount of challenge.rewards.discounts">
+          <ion-icon name="pricetag-outline"></ion-icon>
+          <h3>{{ discount.amount }} знижка</h3>
+          <p>{{ discount.brand }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Кнопки дій -->
+    <div class="action-buttons">
+      <ion-button 
+        expand="block" 
+        color="primary" 
+        (click)="activateChallenge()"
+        *ngIf="challenge.status === 'available'">
+        Розпочати челендж
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        color="success" 
+        (click)="completeChallenge()"
+        *ngIf="challenge.status === 'active' && isChallengeCompleted()">
+        Завершити челендж
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Стан завантаження -->
+  <div class="loading-state" *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+    <p>Завантаження...</p>
+  </div>
+
+  <!-- Стан помилки -->
+  <div class="error-state" *ngIf="error">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ error }}</p>
+  </div>
+</ion-content> 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,6 +15,7 @@ import {
   bookOutline,
   checkmarkCircleOutline
 } from 'ionicons/icons';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-challenge-details',
@@ -59,6 +60,7 @@ import {
             <ion-checkbox 
               slot="start" 
               [checked]="task.completed"
+              [aria-label]="task.title"
               (ionChange)="updateTaskProgress(task, $event)">
               {{ task.title }}
             </ion-checkbox>
@@ -150,7 +152,8 @@ import {
     }
   `],
   standalone: true,
-  imports: [IonicModule, CommonModule, TranslateModule]
+  imports: [IonicModule, CommonModule, TranslateModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ChallengeDetailsPage implements OnInit {
   challenge: Challenge | undefined;
@@ -167,7 +170,8 @@ export class ChallengeDetailsPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private challengeService: ChallengeService
+    private challengeService: ChallengeService,
+    private toastController: ToastController
   ) {
     addIcons({
       closeCircleOutline,
@@ -184,7 +188,7 @@ export class ChallengeDetailsPage implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       await this.loadChallenge(id);
-      await this.loadStatistics(id);
+      await this.calculateStatistics(id);
     }
   }
 
@@ -201,11 +205,28 @@ export class ChallengeDetailsPage implements OnInit {
     }
   }
 
-  async loadStatistics(id: string) {
+  async calculateStatistics(id: string) {
     try {
-      this.statistics = await this.challengeService.getStatistics(id);
+      const challenge = await this.challengeService.getChallenge(id);
+      if (!challenge) return;
+
+      const today = new Date();
+      const startDate = challenge.startDate ? new Date(challenge.startDate) : today;
+      const completedDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      const completedTasks = challenge.tasks.filter(task => task.completed).length;
+      const totalTasks = challenge.tasks.length;
+      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+      this.statistics = {
+        completedDays,
+        totalDays: challenge.duration,
+        completedTasks,
+        totalTasks,
+        progress
+      };
     } catch (error) {
-      console.error('Error loading statistics:', error);
+      console.error('Error calculating statistics:', error);
     }
   }
 
@@ -214,7 +235,7 @@ export class ChallengeDetailsPage implements OnInit {
     if (this.challenge) {
       await this.challengeService.updateTodayProgress(this.challenge.id, task.id, completed);
       task.completed = completed;
-      await this.loadStatistics(this.challenge.id);
+      await this.calculateStatistics(this.challenge.id);
     }
   }
 

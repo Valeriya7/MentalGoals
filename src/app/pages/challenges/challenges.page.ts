@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { 
-  trophyOutline, 
+import {
+  trophyOutline,
   giftOutline,
   informationCircleOutline,
   iceCreamOutline,
@@ -20,7 +20,10 @@ import {
   shirtOutline,
   watchOutline,
   storefront,
-  closeCircleOutline
+  closeCircleOutline,
+  starOutline,
+  starHalfOutline,
+  star
 } from 'ionicons/icons';
 import { ChallengeService } from '../../services/challenge.service';
 import { RouterModule, Router } from '@angular/router';
@@ -38,6 +41,14 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 })
 export class ChallengesPage implements OnInit {
   challenges: Challenge[] = [];
+  filteredChallenges: Challenge[] = [];
+  selectedFilter: string = 'all';
+  difficultyColors = {
+    'beginner': 'success',
+    'intermediate': 'warning',
+    'advanced': 'tertiary',
+    'expert': 'danger'
+  };
 
   constructor(
     private challengeService: ChallengeService,
@@ -61,7 +72,10 @@ export class ChallengesPage implements OnInit {
       'watch-outline': watchOutline,
       'storefront': storefront,
       'gift': giftOutline,
-      'close-circle-outline': closeCircleOutline
+      'close-circle-outline': closeCircleOutline,
+      'star-outline': starOutline,
+      'star-half-outline': starHalfOutline,
+      'star': star
     });
   }
 
@@ -73,7 +87,8 @@ export class ChallengesPage implements OnInit {
     try {
       this.challenges = await this.challengeService.getChallenges();
       console.log('Loaded challenges:', this.challenges);
-      
+      this.filterChallenges(this.selectedFilter);
+
       // Перевірка наявності завдань у активному челенджі
       const activeChallenge = this.challenges.find(c => c.status === 'active');
       if (activeChallenge) {
@@ -90,6 +105,44 @@ export class ChallengesPage implements OnInit {
     }
   }
 
+  filterChallenges(filter: string) {
+    this.selectedFilter = filter;
+
+    switch (filter) {
+      case 'active':
+        this.filteredChallenges = this.challenges.filter(c => c.status === 'active');
+        break;
+      case 'completed':
+        this.filteredChallenges = this.challenges.filter(c => c.status === 'completed');
+        break;
+      case 'available':
+        this.filteredChallenges = this.challenges.filter(c => c.status === 'available');
+        break;
+      default:
+        this.filteredChallenges = this.challenges;
+    }
+  }
+
+  getDifficultyColor(difficulty: string): string {
+    return this.difficultyColors[difficulty as keyof typeof this.difficultyColors] || 'medium';
+  }
+
+  getDifficultyLabel(difficulty: string): string {
+    const labels = {
+      'beginner': 'Початківець',
+      'intermediate': 'Середній',
+      'advanced': 'Просунутий',
+      'expert': 'Експерт'
+    };
+    return labels[difficulty as keyof typeof labels] || difficulty;
+  }
+
+  getProgressPercentage(challenge: Challenge): number {
+    if (!challenge.tasks || challenge.tasks.length === 0) return 0;
+    const completed = challenge.tasks.filter(task => task.completed).length;
+    return Math.round((completed / challenge.tasks.length) * 100);
+  }
+
   async startNewChallenge(type: string) {
     const success = await this.challengeService.startNewChallenge(type);
     if (success) {
@@ -99,7 +152,9 @@ export class ChallengesPage implements OnInit {
 
   async activateChallenge(challenge: Challenge) {
     try {
+      console.log("challenge: ", challenge);
       const success = await this.challengeService.activateChallenge(challenge.id);
+      console.log("challenge: ", challenge);
       if (success) {
         await this.loadChallenges();
         console.log('Challenge activated successfully:', challenge.id);
@@ -111,8 +166,16 @@ export class ChallengesPage implements OnInit {
     }
   }
 
-  goToChallenge(challenge: Challenge) {
-    this.router.navigate(['/challenge-details', challenge.id]);
+  viewChallengeDetails(challenge: Challenge) {
+    console.log("Navigating to challenge details:", challenge);
+    console.log("Current route:", this.router.url);
+    this.router.navigate(['/challenge-details', challenge.id])
+      .then(success => {
+        console.log("Navigation success:", success);
+      })
+      .catch(error => {
+        console.error("Navigation error:", error);
+      });
   }
 
   goToNotifications() {
@@ -121,6 +184,21 @@ export class ChallengesPage implements OnInit {
 
   goToBookmarks() {
     this.router.navigate(['/bookmarks']);
+  }
+
+  getDifficultyIcon(difficulty: string): string {
+    switch (difficulty) {
+      case 'beginner':
+        return 'star-outline';
+      case 'intermediate':
+        return 'star-half-outline';
+      case 'advanced':
+        return 'star';
+      case 'expert':
+        return 'trophy-outline';
+      default:
+        return 'star-outline';
+    }
   }
 
   getPartnerIcon(brand: string): string {

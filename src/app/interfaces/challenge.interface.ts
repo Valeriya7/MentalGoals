@@ -3,12 +3,21 @@ export interface Challenge {
   title: string;
   description: string;
   duration: number;
-  status: 'active' | 'completed';
-  currentDay?: number;
+  tasks: ChallengeTask[];
+  status: 'active' | 'completed' | 'available' | 'failed';
   startDate?: string;
   endDate?: string;
-  tasks: ChallengeTask[];
-  rewards: Rewards;
+  currentDay?: number;
+  completedDate?: string;
+  rewards: {
+    points: number;
+    discounts: {
+      brand: string;
+      amount: string;
+    }[];
+  };
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  difficultyLevel: number; // 1-5, де 1 - найлегший, 5 - найскладніший
 }
 
 export interface ChallengePhase {

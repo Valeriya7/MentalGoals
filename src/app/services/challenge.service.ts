@@ -51,38 +51,33 @@ export class ChallengeService {
     try {
       // Перевіряємо, чи ми в iframe
       if (window.top !== window.self) {
-        const frameElement = window.frameElement;
-        
         // Перевіряємо атрибути sandbox
+        const frameElement = window.frameElement;
         if (frameElement && frameElement.hasAttribute('sandbox')) {
           const sandbox = frameElement.getAttribute('sandbox') || '';
-          
-          // Перевіряємо небезпечну комбінацію атрибутів
+          // Перевіряємо небезпечну комбінацію
           if (sandbox.includes('allow-scripts') && sandbox.includes('allow-same-origin')) {
             console.error('Unsafe iframe configuration detected');
             return false;
           }
-          
-          // Перевіряємо необхідні безпечні атрибути
-          const requiredAttributes = ['allow-forms', 'allow-scripts'];
-          const hasAllRequired = requiredAttributes.every(attr => sandbox.includes(attr));
-          
-          if (!hasAllRequired) {
-            console.error('Missing required sandbox attributes');
-            return false;
-          }
         }
         
-        // Перевіряємо CSP заголовки
-        const csp = document.head.querySelector('meta[http-equiv="Content-Security-Policy"]');
-        if (!csp) {
-          console.warn('No CSP meta tag found');
+        // Перевіряємо походження батьківського вікна
+        try {
+          const parentOrigin = window.parent.location.origin;
+          if (!this.ALLOWED_ORIGINS.some(origin => parentOrigin.includes(origin))) {
+            console.error('Parent frame origin not allowed');
+            return false;
+          }
+        } catch {
+          // Якщо не можемо отримати походження батьківського вікна, вважаємо це небезпечним
+          console.error('Cannot access parent frame origin');
+          return false;
         }
       }
-      
       return true;
-    } catch (error) {
-      console.error('Error checking iframe safety:', error);
+    } catch {
+      // Якщо виникла помилка при перевірці, вважаємо це небезпечним
       return false;
     }
   }
@@ -301,6 +296,8 @@ export class ChallengeService {
         duration: 40,
         tasks: tasks,
         status: 'active',
+        difficulty: 'expert',
+        difficultyLevel: 5,
         rewards: {
           points: 40,
           discounts: [
@@ -358,9 +355,12 @@ export class ChallengeService {
 
   async getChallenge(id: string): Promise<Challenge | undefined> {
     try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      return challenges.find((c: Challenge) => c.id === id);
+      const challenges = await this.getChallenges();
+      const challenge = challenges.find(c => c.id === id);
+      if (challenge && challenge.status === 'active') {
+        this.updateCurrentDay(challenge);
+      }
+      return challenge;
     } catch (error) {
       console.error('Error getting challenge:', error);
       return undefined;
@@ -422,32 +422,148 @@ export class ChallengeService {
     }
   }
 
-  async quitChallenge(challengeId: string): Promise<boolean> {
+  async getChallenges(): Promise<Challenge[]> {
+    try {
+      const storage = await this.ensureStorageReady();
+      let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
+      
+      console.log('Current challenges in storage:', challenges);
+      
+      // Якщо немає челенджів, ініціалізуємо дефолтні
+      if (!challenges || challenges.length === 0) {
+        console.log('No challenges found, initializing defaults');
+        challenges = this.getDefaultChallenges();
+        await this.saveToAllStorages(challenges);
+      }
+      
+      // Перевіряємо наявність всіх дефолтних челенджів
+      const defaultChallenges = this.getDefaultChallenges();
+      const existingIds = new Set(challenges.map((c: Challenge) => c.id));
+      
+      defaultChallenges.forEach(defaultChallenge => {
+        if (!existingIds.has(defaultChallenge.id)) {
+          console.log('Adding missing default challenge:', defaultChallenge.id);
+          challenges.push(defaultChallenge);
+        }
+      });
+      
+      await this.saveToAllStorages(challenges);
+      console.log('Final challenges list:', challenges);
+      
+      return challenges;
+    } catch (error) {
+      console.error('Error getting challenges:', error);
+      return [];
+    }
+  }
+
+  async addChallenge(challenge: Challenge): Promise<void> {
     try {
       const storage = await this.ensureStorageReady();
       const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      const challengeIndex = challenges.findIndex((c: Challenge) => c.id === challengeId);
-      
-      if (challengeIndex === -1) {
-        throw new Error('Challenge not found');
-      }
+      challenges.push(challenge);
+      await this.saveToAllStorages(challenges);
+    } catch (error) {
+      console.error('Error adding challenge:', error);
+      throw error;
+    }
+  }
 
-      challenges[challengeIndex].status = 'failed';
-      await this.storageService.set(this.STORAGE_KEY, challenges);
-      
-      if (this.activeChallenge.value?.id === challengeId) {
-        this.activeChallenge.next(null);
+  async updateChallenge(challenge: Challenge): Promise<void> {
+    try {
+      const storage = await this.ensureStorageReady();
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
+      const index = challenges.findIndex((c: Challenge) => c.id === challenge.id);
+      if (index !== -1) {
+        challenges[index] = challenge;
+        await this.saveToAllStorages(challenges);
       }
+    } catch (error) {
+      console.error('Error updating challenge:', error);
+      throw error;
+    }
+  }
 
-      const toast = await this.toastController.create({
-        message: 'Ви відмовились від челенджу. Не засмучуйтесь, спробуйте знову коли будете готові!',
-        duration: 3000,
-        position: 'bottom',
-        color: 'warning',
-        buttons: [{ text: 'OK', role: 'cancel' }]
+  async deleteChallenge(id: string): Promise<void> {
+    try {
+      const storage = await this.ensureStorageReady();
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
+      const filtered = challenges.filter((c: Challenge) => c.id !== id);
+      await this.saveToAllStorages(filtered);
+    } catch (error) {
+      console.error('Error deleting challenge:', error);
+      throw error;
+    }
+  }
+
+  async activateChallenge(challengeId: string): Promise<boolean> {
+    try {
+      const challenges = await this.getChallenges();
+      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      
+      if (challengeIndex === -1) return false;
+      
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + challenges[challengeIndex].duration);
+      
+      challenges[challengeIndex].status = 'active';
+      challenges[challengeIndex].startDate = startDate.toISOString();
+      challenges[challengeIndex].endDate = endDate.toISOString();
+      challenges[challengeIndex].currentDay = 1;
+      
+      await this.saveToAllStorages(challenges);
+      return true;
+    } catch (error) {
+      console.error('Error activating challenge:', error);
+      return false;
+    }
+  }
+
+  private updateCurrentDay(challenge: Challenge): void {
+    if (challenge.status === 'active' && challenge.startDate) {
+      const startDate = new Date(challenge.startDate);
+      const today = new Date();
+      const diffTime = Math.abs(today.getTime() - startDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      challenge.currentDay = Math.min(diffDays, challenge.duration);
+    }
+  }
+
+  async deactivateAllChallenges(): Promise<boolean> {
+    try {
+      const storage = await this.ensureStorageReady();
+      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
+      
+      challenges.forEach((challenge: Challenge) => {
+        if (challenge.status === 'active') {
+          challenge.status = 'available';
+          delete challenge.startDate;
+          delete challenge.endDate;
+          delete challenge.currentDay;
+        }
       });
-      await toast.present();
 
+      await this.saveToAllStorages(challenges);
+      return true;
+    } catch (error) {
+      console.error('Error deactivating challenges:', error);
+      return false;
+    }
+  }
+
+  async quitChallenge(challengeId: string): Promise<boolean> {
+    try {
+      const challenges = await this.getChallenges();
+      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      
+      if (challengeIndex === -1) return false;
+
+      challenges[challengeIndex].status = 'available';
+      delete challenges[challengeIndex].startDate;
+      delete challenges[challengeIndex].endDate;
+      
+      await this.saveToAllStorages(challenges);
       return true;
     } catch (error) {
       console.error('Error quitting challenge:', error);
@@ -455,56 +571,41 @@ export class ChallengeService {
     }
   }
 
-  async getStatistics(challengeId: string): Promise<{
-    completedDays: number;
-    totalDays: number;
-    completedTasks: number;
-    totalTasks: number;
-    progress: number;
-  }> {
+  async completeChallenge(challengeId: string): Promise<boolean> {
     try {
-      const challenge = await this.getChallenge(challengeId);
-      if (!challenge) {
-        throw new Error('Challenge not found');
-      }
-
-      const startDate = challenge.startDate ? new Date(challenge.startDate) : new Date();
-      const currentDate = new Date();
-      const daysDiff = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const challenges = await this.getChallenges();
+      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
       
-      const completedDays = Math.min(daysDiff + 1, 40);
-      const totalDays = 40;
+      if (challengeIndex === -1) return false;
 
-      const tasks = challenge.tasks || [];
-      const totalTasks = tasks.length * totalDays;
-
-      let completedTasks = 0;
-      for (let i = 0; i < completedDays; i++) {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
-        const dayProgress = await this.getTodayProgress(challengeId, dateStr);
-        completedTasks += Object.values(dayProgress).filter(Boolean).length;
-      }
-
-      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-      return {
-        completedDays,
-        totalDays,
-        completedTasks,
-        totalTasks,
-        progress
-      };
+      challenges[challengeIndex].status = 'completed';
+      challenges[challengeIndex].completedDate = new Date().toISOString();
+      
+      await this.saveToAllStorages(challenges);
+      return true;
     } catch (error) {
-      console.error('Error getting statistics:', error);
-      return {
-        completedDays: 0,
-        totalDays: 40,
-        completedTasks: 0,
-        totalTasks: 0,
-        progress: 0
-      };
+      console.error('Error completing challenge:', error);
+      return false;
+    }
+  }
+
+  async updateTaskStatus(challengeId: string, taskId: string, completed: boolean): Promise<boolean> {
+    try {
+      const challenges = await this.getChallenges();
+      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      
+      if (challengeIndex === -1) return false;
+
+      const taskIndex = challenges[challengeIndex].tasks.findIndex(t => t.id === taskId);
+      if (taskIndex === -1) return false;
+
+      challenges[challengeIndex].tasks[taskIndex].completed = completed;
+      
+      await this.saveToAllStorages(challenges);
+      return true;
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      return false;
     }
   }
 
@@ -540,6 +641,8 @@ export class ChallengeService {
         title: '40 Днів Здорових Звичок',
         description: 'Покращіть своє здоров\'я за 40 днів, формуючи корисні звички',
         duration: 40,
+        difficulty: 'expert',
+        difficultyLevel: 5,
         tasks: [
           {
             id: 'no-sweets',
@@ -595,173 +698,192 @@ export class ChallengeService {
             }
           ]
         }
+      },
+      {
+        id: 'challenge-gratitude',
+        title: 'Ранкова подяка',
+        description: 'Формування позитивного мислення та зменшення стресу через щоденну практику вдячності',
+        duration: 7,
+        difficulty: 'beginner',
+        difficultyLevel: 1,
+        tasks: [
+          {
+            id: 'gratitude-list',
+            title: 'Список вдячності',
+            description: 'Запишіть 3 речі, за які ви вдячні сьогодні',
+            icon: 'heart-outline',
+            completed: false
+          }
+        ],
+        status: 'available',
+        rewards: {
+          points: 10,
+          discounts: [
+            {
+              brand: 'Книгарня',
+              amount: '10%'
+            }
+          ]
+        }
+      },
+      {
+        id: 'challenge-steps',
+        title: '10 000 кроків до спокою',
+        description: 'Покращення настрою через щоденну фізичну активність',
+        duration: 7,
+        difficulty: 'intermediate',
+        difficultyLevel: 2,
+        tasks: [
+          {
+            id: 'daily-steps',
+            title: '10 000 кроків',
+            description: 'Пройдіть мінімум 10 000 кроків за день',
+            icon: 'footsteps-outline',
+            completed: false
+          }
+        ],
+        status: 'available',
+        rewards: {
+          points: 40,
+          discounts: [
+            {
+              brand: 'Nike',
+              amount: '15%'
+            },
+            {
+              brand: 'Adidas',
+              amount: '15%'
+            },
+            {
+              brand: 'Columbia',
+              amount: '15%'
+            }
+          ]
+        }
+      },
+      {
+        id: 'challenge-digital-detox',
+        title: 'Цифровий детокс',
+        description: 'Поліпшення сну та зниження рівня тривожності через контроль використання гаджетів',
+        duration: 10,
+        difficulty: 'intermediate',
+        difficultyLevel: 3,
+        tasks: [
+          {
+            id: 'evening-offline',
+            title: 'Вечірній офлайн',
+            description: 'Вимкніть телефон за 1 годину до сну',
+            icon: 'moon-outline',
+            completed: false
+          },
+          {
+            id: 'morning-offline',
+            title: 'Ранковий офлайн',
+            description: 'Не користуйтесь соцмережами 1 годину після пробудження',
+            icon: 'sunny-outline',
+            completed: false
+          }
+        ],
+        status: 'available',
+        rewards: {
+          points: 10,
+          discounts: [
+            {
+              brand: 'СПА-центр',
+              amount: '20%'
+            }
+          ]
+        }
+      },
+      {
+        id: 'challenge-meditation',
+        title: 'Медитація для початківців',
+        description: 'Контроль думок та розслаблення через щоденну практику медитації',
+        duration: 14,
+        difficulty: 'intermediate',
+        difficultyLevel: 3,
+        tasks: [
+          {
+            id: 'daily-meditation',
+            title: '5-хвилинна медитація',
+            description: 'Виконайте медитацію протягом 5 хвилин',
+            icon: 'leaf-outline',
+            completed: false
+          }
+        ],
+        status: 'available',
+        rewards: {
+          points: 60,
+          discounts: [
+            {
+              brand: 'Преміум медитації',
+              amount: '100%'
+            },
+            {
+              brand: 'Аудіокниги',
+              amount: '10%'
+            }
+          ]
+        }
+      },
+      {
+        id: 'challenge-no-stress',
+        title: 'Ні стресу',
+        description: 'Контроль та подолання стресових ситуацій',
+        duration: 21,
+        difficulty: 'advanced',
+        difficultyLevel: 4,
+        tasks: [
+          {
+            id: 'stress-tracking',
+            title: 'Відстеження стресу',
+            description: 'Запишіть тригери стресу та способи їх подолання',
+            icon: 'clipboard-outline',
+            completed: false
+          }
+        ],
+        status: 'available',
+        rewards: {
+          points: 100,
+          discounts: [
+            {
+              brand: 'Вікенд-подорож',
+              amount: '25%'
+            },
+            {
+              brand: 'Йога-клас',
+              amount: '100%'
+            }
+          ]
+        }
+      },
+      {
+        id: 'challenge-no-complaints',
+        title: '30 днів без скарг',
+        description: 'Покращення мислення та зменшення токсичності через контроль негативних висловлювань',
+        duration: 30,
+        difficulty: 'expert',
+        difficultyLevel: 5,
+        tasks: [
+          {
+            id: 'no-complaints',
+            title: 'Без скарг',
+            description: 'Утримуйтесь від скарг та негативних висловлювань',
+            icon: 'happy-outline',
+            completed: false
+          }
+        ],
+        status: 'available',
+        rewards: {
+          points: 100,
+          discounts: [
+            {
+              brand: 'Подарунок-сюрприз',
+              amount: '100%'
+            }
+          ]
+        }
       }
     ];
-  }
-
-  async getChallenges(): Promise<Challenge[]> {
-    try {
-      await this.cleanupStorage();
-      const storage = await this.ensureStorageReady();
-      let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      
-      // Якщо челенджів немає, створюємо базові
-      if (challenges.length === 0) {
-        challenges = this.getDefaultChallenges();
-        await this.saveToAllStorages(challenges);
-      }
-      
-      return challenges.map((challenge: Challenge) => ({
-        ...challenge,
-        rewards: challenge.rewards || {
-          points: 0,
-          discounts: []
-        }
-      }));
-    } catch (error) {
-      console.error('Error getting challenges:', error);
-      return [];
-    }
-  }
-
-  async addChallenge(challenge: Challenge): Promise<void> {
-    try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      challenges.push(challenge);
-      await this.saveToAllStorages(challenges);
-    } catch (error) {
-      console.error('Error adding challenge:', error);
-      throw error;
-    }
-  }
-
-  async updateChallenge(challenge: Challenge): Promise<void> {
-    try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      const index = challenges.findIndex((c: Challenge) => c.id === challenge.id);
-      if (index !== -1) {
-        challenges[index] = challenge;
-        await this.saveToAllStorages(challenges);
-      }
-    } catch (error) {
-      console.error('Error updating challenge:', error);
-      throw error;
-    }
-  }
-
-  async deleteChallenge(id: string): Promise<void> {
-    try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      const filtered = challenges.filter((c: Challenge) => c.id !== id);
-      await this.saveToAllStorages(filtered);
-    } catch (error) {
-      console.error('Error deleting challenge:', error);
-      throw error;
-    }
-  }
-
-  async activateChallenge(challengeId: string): Promise<boolean> {
-    try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      
-      // Перевіряємо, чи немає вже активного челенджу
-      const hasActiveChallenge = challenges.some((c: Challenge) => c.status === 'active');
-      if (hasActiveChallenge) {
-        const toast = await this.toastController.create({
-          message: 'У вас вже є активний челендж. Спочатку завершіть або відмовтесь від поточного.',
-          duration: 3000,
-          position: 'bottom',
-          color: 'warning'
-        });
-        await toast.present();
-        return false;
-      }
-
-      const challengeIndex = challenges.findIndex((c: Challenge) => c.id === challengeId);
-      if (challengeIndex === -1) {
-        throw new Error('Challenge not found');
-      }
-
-      // Оновлюємо дати при активації
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setDate(startDate.getDate() + (challenges[challengeIndex].duration || 40));
-
-      // Форматуємо дати в ISO string з обробкою помилок
-      let startDateISO: string;
-      let endDateISO: string;
-      
-      try {
-        startDateISO = startDate.toISOString();
-        endDateISO = endDate.toISOString();
-      } catch (error) {
-        console.error('Error converting dates to ISO:', error);
-        startDateISO = new Date().toISOString();
-        endDateISO = new Date(Date.now() + (40 * 24 * 60 * 60 * 1000)).toISOString();
-      }
-
-      challenges[challengeIndex] = {
-        ...challenges[challengeIndex],
-        status: 'active',
-        startDate: startDateISO,
-        endDate: endDateISO
-      };
-
-      await this.saveToAllStorages(challenges);
-      
-      // Update active challenge
-      this.activeChallenge.next(challenges[challengeIndex]);
-
-      const toast = await this.toastController.create({
-        message: `Челендж "${challenges[challengeIndex].title}" активовано!`,
-        duration: 2000,
-        position: 'bottom',
-        color: 'success'
-      });
-      await toast.present();
-
-      return true;
-    } catch (error) {
-      console.error('Error activating challenge:', error);
-      return false;
-    }
-  }
-
-  async deactivateAllChallenges(): Promise<boolean> {
-    try {
-      const storage = await this.ensureStorageReady();
-      let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      
-      // Змінюємо статус всіх челенджів на 'completed' та скидаємо дати
-      challenges = challenges.map((challenge: Challenge) => ({
-        ...challenge,
-        status: 'completed',
-        startDate: undefined,
-        endDate: undefined,
-        currentDay: undefined
-      }));
-
-      await this.saveToAllStorages(challenges);
-      
-      // Очищаємо активний челендж
-      this.activeChallenge.next(null);
-
-      const toast = await this.toastController.create({
-        message: 'Всі челенджі доступні для активації',
-        duration: 2000,
-        position: 'bottom',
-        color: 'success'
-      });
-      await toast.present();
-
-      return true;
-    } catch (error) {
-      console.error('Error deactivating challenges:', error);
-      return false;
-    }
   }
 } 

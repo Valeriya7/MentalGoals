@@ -1,5 +1,8 @@
 ion-content {
   --background: var(--ion-color-light);
+  .item-native{
+    padding-left: 5px !important;
+  }
 }
 
 h2 {
@@ -216,16 +219,19 @@ h2 {
 }
 
 .challenges-list {
-  padding: 10px;
+  //padding: 10px;
 
+  h1, h2, h3, h4, h5, h6,
+  p, .challenge-info, .discount-item, .challenge-card .difficulty {
+    padding: 10px;
+  }
   .challenge-card {
     background: white;
     border-radius: 16px;
-    padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
-    .btn-challenge{   
+    .btn-challenge{
       font-weight: 600;
       text-shadow: 1px 1px #92949c;
     }
@@ -239,7 +245,6 @@ h2 {
     p {
       font-size: 14px;
       color: var(--ion-color-medium);
-      margin-bottom: 15px;
     }
 
     .status {
@@ -258,6 +263,41 @@ h2 {
       &.completed {
         background: var(--ion-color-medium-light);
         color: var(--ion-color-medium);
+      }
+    }
+
+    .difficulty {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 10px;
+
+      &.beginner {
+        background: var(--ion-color-success-light);
+        color: var(--ion-color-success);
+      }
+
+      &.intermediate {
+        background: var(--ion-color-warning-light);
+        color: var(--ion-color-warning);
+      }
+
+      &.advanced {
+        background: var(--ion-color-primary-light);
+        color: var(--ion-color-primary);
+      }
+
+      &.expert {
+        background: var(--ion-color-danger-light);
+        color: var(--ion-color-danger);
+      }
+
+      ion-icon {
+        font-size: 14px;
       }
     }
 
@@ -298,6 +338,9 @@ h2 {
         flex-direction: column;
         gap: 12px;
 
+        .task-item div{
+          padding: 0!important;
+        }
         .task-item {
           display: flex;
           align-items: flex-start;
@@ -410,7 +453,7 @@ h2 {
         --background: var(--ion-color-light);
         --border-radius: 12px;
         margin: 8px 0;
-        
+
         ion-icon {
           font-size: 24px;
           color: var(--ion-color-primary);
@@ -440,7 +483,7 @@ h2 {
       .discount-note {
         --background: transparent;
         margin-top: 16px;
-        
+
         ion-icon {
           color: var(--ion-color-medium);
           font-size: 20px;
@@ -456,13 +499,13 @@ h2 {
     }
 
     ::ng-deep .item-native {
-      --padding-start: 2px !important;
-      --inner-padding-end: 2px !important;
+      padding-left: 5px !important;
     }
   }
 
   .icon-only {
     font-size: 24px;
+    -padding-start: 2px !important;
     color: var(--ion-color-primary);
     pointer-events: none;
     margin-inline-end: 4px;
@@ -471,4 +514,8 @@ h2 {
 :host {
   -padding-start: 2px !important;
   --inner-padding-end: 2px !important;
+}
+
+.item-native {
+  padding-left: 5px;
 }

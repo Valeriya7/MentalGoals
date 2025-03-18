@@ -98,7 +98,7 @@ ion-header {
     ion-buttons {
       display: flex !important;
       gap: 2px !important;
-      
+
       .button-native {
         margin: 0 !important;
         padding: 4px !important;
@@ -108,7 +108,7 @@ ion-header {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        
+
         ion-icon {
           font-size: 20px !important;
           --ionicon-stroke-width: 32px;
@@ -123,8 +123,8 @@ ion-header {
 }
 
 // Existing button styles
-ion-toolbar ion-buttons, 
-.home-header-buttons button.button-native, 
+ion-toolbar ion-buttons,
+.home-header-buttons button.button-native,
 .home-header-buttons button,
 ion-button,
 .home-header-buttons .button-native {
@@ -141,4 +141,8 @@ ion-button,
       --padding-start: 0 !important
     }
   }
+}
+
+.item-native {
+  --padding-start: 5px !important;
 }
