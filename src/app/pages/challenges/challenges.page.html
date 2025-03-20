@@ -20,16 +20,19 @@
     <div class="challenge-card" *ngFor="let challenge of challenges" role="article">
       <h2>{{ challenge.title }}</h2>
       <p>{{ challenge.description }}</p>
-      
-      <div class="difficulty" [ngClass]="challenge.difficulty">
-        <ion-icon [name]="getDifficultyIcon(challenge.difficulty)"></ion-icon>
-        <span>{{ challenge.difficulty | titlecase }}</span>
+
+      <div class="challenge-info">
+        <div class="difficulty" [ngClass]="challenge.difficulty">
+          <ion-icon [name]="getDifficultyIcon(challenge.difficulty)"></ion-icon>
+          <span>{{ challenge.difficulty | titlecase }}</span>
+        </div>
+        <div class="info-item">
+          <span class="status" [ngClass]="challenge.status" role="status">
+            {{ 'CHALLENGES.STATUS_' + challenge.status.toUpperCase() | translate }}
+          </span>
+        </div>
       </div>
 
-      <span class="status" [ngClass]="challenge.status" role="status">
-        {{ 'CHALLENGES.STATUS_' + challenge.status.toUpperCase() | translate }}
-      </span>
-      
       <div class="challenge-info">
         <div class="info-item" role="complementary">
           <ion-icon name="calendar-outline" class="icon-only" [attr.aria-label]="'DAYS' | translate"></ion-icon>
@@ -39,17 +42,26 @@
           <ion-icon name="time-outline" class="icon-only" [attr.aria-label]="'CHALLENGES.DAY' | translate"></ion-icon>
           <span>{{ 'CHALLENGES.DAY' | translate }} {{ challenge.currentDay }} {{ 'CHALLENGES.OF' | translate }} {{ challenge.duration }}</span>
         </div>
+
+        <div class="toggle-buttons">
+          <ion-button fill="clear" size="small" (click)="toggleRewards(challenge)" class="toggle-tasks">
+            <ion-icon [name]="isRewardsExpanded(challenge) ? 'chevron-up-outline' : 'chevron-down-outline'" slot="icon-only"></ion-icon>
+          </ion-button>
+         <!-- <ion-button fill="clear" size="small" (click)="toggleTasks(challenge)" class="toggle-tasks">
+            <ion-icon [name]="isExpanded(challenge) ? 'chevron-up-outline' : 'chevron-down-outline'" slot="icon-only"></ion-icon>
+          </ion-button>-->
+        </div>
       </div>
 
-      <div class="tasks" *ngIf="challenge.status === 'active' && challenge.tasks" role="region" [attr.aria-label]="'CHALLENGES.DAILY_TASKS' | translate">
+      <div class="tasks" *ngIf="challenge.status === 'active' && challenge.tasks && isExpanded(challenge)" role="region" [attr.aria-label]="'CHALLENGES.DAILY_TASKS' | translate">
         <h3>{{ 'CHALLENGES.DAILY_TASKS' | translate }}</h3>
-        
-        <!-- Debug output -->
+
+        <!-- Debug output
         <div style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
           <p>Challenge status: {{ challenge.status }}</p>
           <p>Tasks count: {{ challenge.tasks ? challenge.tasks.length : 0 }}</p>
           <pre>{{ challenge.tasks | json }}</pre>
-        </div>
+        </div> -->
 
         <ion-list *ngIf="challenge.tasks.length > 0">
           <ion-item *ngFor="let task of challenge.tasks; let i = index" role="listitem">
@@ -63,58 +75,58 @@
             </ion-badge>
           </ion-item>
         </ion-list>
-        
+
         <div *ngIf="!challenge.tasks.length" class="ion-text-center ion-padding">
           <p>{{ 'CHALLENGES.NO_TASKS' | translate }}</p>
         </div>
-
-        <div class="rewards" *ngIf="challenge.rewards" role="region" [attr.aria-label]="'CHALLENGES.REWARDS' | translate">
-          <h3>Rewards: {{ 'CHALLENGES.REWARDS' | translate }}</h3>
-          <ion-list>
-            <ion-item role="listitem">
-              <ion-icon name="trophy-outline" slot="start" class="icon-only" [attr.aria-hidden]="true"></ion-icon>
-              <ion-label>
-                <h3>{{ challenge.rewards.points }} {{ 'CHALLENGES.POINTS' | translate }}</h3>
-                <p>{{ 'CHALLENGES.FOR_COMPLETION' | translate }}</p>
-              </ion-label>
-            </ion-item>
-            
-            <ion-item-divider>
-              <ion-label>
-                <h3>{{ 'CHALLENGES.PARTNER_DISCOUNTS' | translate }}</h3>
-              </ion-label>
-            </ion-item-divider>
-
-            <ion-item *ngFor="let discount of challenge.rewards.discounts" role="listitem" lines="none" class="discount-item">
-              <ion-icon [name]="getPartnerIcon(discount.brand)" slot="start" class="icon-only" [attr.aria-hidden]="true"></ion-icon>
-              <ion-label>
-                <h3>{{ discount.brand }}</h3>
-                <p>{{ 'CHALLENGES.DISCOUNT_OF' | translate: { amount: discount.amount } }}</p>
-              </ion-label>
-              <ion-chip [color]="getDiscountColor(discount.amount)" slot="end">
-                <ion-label>{{ discount.amount }}</ion-label>
-              </ion-chip>
-            </ion-item>
-
-            <ion-item lines="none" class="discount-note">
-              <ion-icon name="information-circle-outline" slot="start" class="icon-only" inert></ion-icon>
-              <ion-label class="ion-text-wrap">
-                <p>{{ 'CHALLENGES.DISCOUNT_NOTE' | translate }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-        </div>
       </div>
 
-      <ion-button expand="block" 
+      <div class="rewards" *ngIf="challenge.rewards && isRewardsExpanded(challenge)" role="region" [attr.aria-label]="'CHALLENGES.REWARDS' | translate">
+        <h3>{{ 'CHALLENGES.REWARDS' | translate }}</h3>
+        <ion-list>
+          <ion-item role="listitem">
+            <ion-icon name="trophy-outline" slot="start" class="icon-only" [attr.aria-hidden]="true"></ion-icon>
+            <ion-label>
+              <h3>{{ challenge.rewards.points }} {{ 'CHALLENGES.POINTS' | translate }}</h3>
+              <p>{{ 'CHALLENGES.FOR_COMPLETION' | translate }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item-divider>
+            <ion-label>
+              <h3>{{ 'CHALLENGES.PARTNER_DISCOUNTS' | translate }}</h3>
+            </ion-label>
+          </ion-item-divider>
+
+          <ion-item *ngFor="let discount of challenge.rewards.discounts" role="listitem" lines="none" class="discount-item">
+            <ion-icon [name]="getPartnerIcon(discount.brand)" slot="start" class="icon-only" [attr.aria-hidden]="true"></ion-icon>
+            <ion-label>
+              <h3>{{ discount.brand }}</h3>
+              <p>{{ 'CHALLENGES.DISCOUNT_OF' | translate: { amount: discount.amount } }}</p>
+            </ion-label>
+            <ion-chip [color]="getDiscountColor(discount.amount)" slot="end">
+              <ion-label>{{ discount.amount }}</ion-label>
+            </ion-chip>
+          </ion-item>
+
+          <ion-item lines="none" class="discount-note">
+            <ion-icon name="information-circle-outline" slot="start" class="icon-only" inert></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <p>{{ 'CHALLENGES.DISCOUNT_NOTE' | translate }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <ion-button expand="block"
                   class="btn-challenge"
-                  (click)="activateChallenge(challenge)" 
-                  *ngIf="!challenge.status || challenge.status === 'completed'"
+                  (click)="activateChallenge(challenge)"
+                  *ngIf="!challenge.status || challenge.status === 'available'"
                   [attr.aria-label]="'CHALLENGES.ACTIVATE' | translate">
         {{ 'CHALLENGES.ACTIVATE' | translate }}
       </ion-button>
-      <ion-button expand="block" 
-                  (click)="viewChallengeDetails(challenge)" 
+      <ion-button expand="block"
+                  (click)="viewChallengeDetails(challenge)"
                   *ngIf="challenge.status === 'active'"
                   color="success"
                   class="btn-challenge"

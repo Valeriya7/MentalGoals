@@ -23,7 +23,9 @@ import {
   closeCircleOutline,
   starOutline,
   starHalfOutline,
-  star
+  star,
+  chevronDownOutline,
+  chevronUpOutline
 } from 'ionicons/icons';
 import { ChallengeService } from '../../services/challenge.service';
 import { RouterModule, Router } from '@angular/router';
@@ -43,6 +45,8 @@ export class ChallengesPage implements OnInit {
   challenges: Challenge[] = [];
   filteredChallenges: Challenge[] = [];
   selectedFilter: string = 'all';
+  expandedChallenges = new Set<string>();
+  expandedRewards = new Set<string>();
   difficultyColors = {
     'beginner': 'success',
     'intermediate': 'warning',
@@ -75,7 +79,9 @@ export class ChallengesPage implements OnInit {
       'close-circle-outline': closeCircleOutline,
       'star-outline': starOutline,
       'star-half-outline': starHalfOutline,
-      'star': star
+      'star': star,
+      'chevron-down-outline': chevronDownOutline,
+      'chevron-up-outline': chevronUpOutline
     });
   }
 
@@ -161,8 +167,8 @@ export class ChallengesPage implements OnInit {
   }
 
   viewChallengeDetails(challenge: Challenge) {
-    console.log("challenge: ", challenge);
-    this.router.navigate(['/tabs/challenges', challenge.id]);
+    console.log("Navigating to challenge details: ", challenge);
+    this.router.navigate(['/challenge-details', challenge.id]);
   }
 
   goToNotifications() {
@@ -226,5 +232,29 @@ export class ChallengesPage implements OnInit {
     } catch (error) {
       console.error('Error deactivating challenges:', error);
     }
+  }
+
+  toggleTasks(challenge: Challenge) {
+    if (this.expandedChallenges.has(challenge.id)) {
+      this.expandedChallenges.delete(challenge.id);
+    } else {
+      this.expandedChallenges.add(challenge.id);
+    }
+  }
+
+  isExpanded(challenge: Challenge): boolean {
+    return this.expandedChallenges.has(challenge.id);
+  }
+
+  toggleRewards(challenge: Challenge) {
+    if (this.expandedRewards.has(challenge.id)) {
+      this.expandedRewards.delete(challenge.id);
+    } else {
+      this.expandedRewards.add(challenge.id);
+    }
+  }
+
+  isRewardsExpanded(challenge: Challenge): boolean {
+    return this.expandedRewards.has(challenge.id);
   }
 }

@@ -31,9 +31,12 @@ export interface ChallengePhase {
 export interface ChallengeTask {
   id: string;
   title: string;
-  description: string;
-  icon: string;
+  description?: string;
+  icon?: string;
   completed: boolean;
+  progress?: number;
+  type?: string;
+  duration?: number;
 }
 
 export interface ChallengeProgress {

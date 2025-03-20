@@ -41,18 +41,84 @@
     <div class="tasks-section">
       <h2>Щоденні завдання</h2>
       <ion-list>
-        <ion-item *ngFor="let task of challenge.tasks">
-          <ion-icon [name]="task.icon" slot="start" [color]="task.completed ? 'success' : 'medium'"></ion-icon>
-          <ion-label>
-            <h3>{{ task.title }}</h3>
-            <p>{{ task.description }}</p>
-          </ion-label>
-          <ion-checkbox 
-            slot="end" 
-            [(ngModel)]="task.completed"
-            (ionChange)="updateTaskStatus(task)">
-          </ion-checkbox>
-        </ion-item>
+        <ion-list-header>
+          <ion-label>{{ 'CHALLENGES.DAILY_TASKS' | translate }}</ion-label>
+        </ion-list-header>
+
+        <!-- Completed Tasks (100%) -->
+        <div *ngIf="getTasksByProgress(100).length > 0">
+          <ion-item-divider>
+            <ion-label>100% {{ 'CHALLENGES.COMPLETED' | translate }}</ion-label>
+          </ion-item-divider>
+          <ion-item *ngFor="let task of getTasksByProgress(100)">
+            <ion-checkbox 
+              slot="start" 
+              [checked]="task.completed"
+              [aria-label]="task.title"
+              (ionChange)="updateTaskProgress(task, $event)">
+            </ion-checkbox>
+            <ion-label>
+              {{ task.title }}
+              <p *ngIf="task.description">{{ task.description }}</p>
+            </ion-label>
+            <ion-icon 
+              *ngIf="task.icon" 
+              [name]="task.icon" 
+              slot="end" 
+              color="success">
+            </ion-icon>
+          </ion-item>
+        </div>
+
+        <!-- In Progress Tasks (1-99%) -->
+        <div *ngIf="getTasksByProgress(50).length > 0">
+          <ion-item-divider>
+            <ion-label>{{ 'CHALLENGES.IN_PROGRESS' | translate }}</ion-label>
+          </ion-item-divider>
+          <ion-item *ngFor="let task of getTasksByProgress(50)">
+            <ion-checkbox 
+              slot="start" 
+              [checked]="task.completed"
+              [aria-label]="task.title"
+              (ionChange)="updateTaskProgress(task, $event)">
+            </ion-checkbox>
+            <ion-label>
+              {{ task.title }}
+              <p *ngIf="task.description">{{ task.description }}</p>
+            </ion-label>
+            <ion-icon 
+              *ngIf="task.icon" 
+              [name]="task.icon" 
+              slot="end" 
+              color="warning">
+            </ion-icon>
+          </ion-item>
+        </div>
+
+        <!-- Not Started Tasks (0%) -->
+        <div *ngIf="getTasksByProgress(0).length > 0">
+          <ion-item-divider>
+            <ion-label>{{ 'CHALLENGES.NOT_STARTED' | translate }}</ion-label>
+          </ion-item-divider>
+          <ion-item *ngFor="let task of getTasksByProgress(0)">
+            <ion-checkbox 
+              slot="start" 
+              [checked]="task.completed"
+              [aria-label]="task.title"
+              (ionChange)="updateTaskProgress(task, $event)">
+            </ion-checkbox>
+            <ion-label>
+              {{ task.title }}
+              <p *ngIf="task.description">{{ task.description }}</p>
+            </ion-label>
+            <ion-icon 
+              *ngIf="task.icon" 
+              [name]="task.icon" 
+              slot="end" 
+              color="medium">
+            </ion-icon>
+          </ion-item>
+        </div>
       </ion-list>
     </div>
 

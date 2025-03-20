@@ -230,12 +230,36 @@ export class ChallengeDetailsPage implements OnInit {
     }
   }
 
-  async updateTaskProgress(task: ChallengeTask, event: any) {
-    const completed = event.detail.checked;
-    if (this.challenge) {
-      await this.challengeService.updateTodayProgress(this.challenge.id, task.id, completed);
-      task.completed = completed;
-      await this.calculateStatistics(this.challenge.id);
+  getTasksByProgress(progress: number): ChallengeTask[] {
+    if (!this.currentPhase?.tasks) return [];
+    
+    switch(progress) {
+      case 100: // Completed tasks
+        return this.currentPhase.tasks.filter(task => task.completed);
+      case 50: // In progress tasks
+        return this.currentPhase.tasks.filter(task => !task.completed && ((task.progress ?? 0) > 0));
+      case 0: // Not started tasks
+        return this.currentPhase.tasks.filter(task => !task.completed && ((task.progress ?? 0) === 0));
+      default:
+        return [];
+    }
+  }
+
+  updateTaskProgress(task: ChallengeTask, event: any) {
+    const isCompleted = event.detail.checked;
+    task.completed = isCompleted;
+    task.progress = isCompleted ? 100 : 0;
+    this.saveTaskProgress(task);
+  }
+
+  async saveTaskProgress(task: ChallengeTask) {
+    try {
+      if (this.challenge) {
+        await this.challengeService.updateTodayProgress(this.challenge.id, task.id, task.completed);
+        await this.calculateStatistics(this.challenge.id);
+      }
+    } catch (error) {
+      console.error('Error saving task progress:', error);
     }
   }
 

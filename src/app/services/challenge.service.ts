@@ -886,4 +886,130 @@ export class ChallengeService {
       }
     ];
   }
+
+  private getDefaultTasks(): ChallengeTask[] {
+    return [
+      {
+        id: 'no-sweets',
+        title: 'Відмова від солодкого',
+        description: 'Не їсти солодке протягом дня',
+        icon: 'ice-cream-outline',
+        completed: false,
+        progress: 0
+      },
+      {
+        id: 'no-coffee',
+        title: 'Відмова від кави',
+        description: 'Не пити каву протягом дня',
+        icon: 'cafe-outline',
+        completed: false,
+        progress: 0
+      },
+      {
+        id: 'exercise',
+        title: 'Фізичні вправи',
+        description: 'Зробити 30 хвилин фізичних вправ',
+        icon: 'fitness-outline',
+        completed: false,
+        progress: 0
+      },
+      {
+        id: 'steps',
+        title: 'Кроки',
+        description: 'Пройти 10000 кроків',
+        icon: 'footsteps-outline',
+        completed: false,
+        progress: 0
+      },
+      {
+        id: 'english',
+        title: 'Вивчення англійської',
+        description: 'Вивчити 10 нових слів',
+        icon: 'book-outline',
+        completed: false,
+        progress: 0
+      }
+    ];
+  }
+
+  private getAdvancedTasks(): ChallengeTask[] {
+    return [
+      {
+        id: 'gratitude-list',
+        title: 'Список вдячності',
+        description: 'Записати 5 речей, за які ви вдячні',
+        icon: 'heart-outline',
+        completed: false,
+        progress: 0
+      },
+      {
+        id: 'daily-steps',
+        title: 'Щоденні кроки',
+        description: 'Пройти 15000 кроків',
+        icon: 'footsteps-outline',
+        completed: false,
+        progress: 0
+      }
+    ];
+  }
+
+  private getExpertTasks(): ChallengeTask[] {
+    return [
+      {
+        id: 'evening-offline',
+        title: 'Вечір без гаджетів',
+        description: 'Не використовувати гаджети після 21:00',
+        icon: 'moon-outline',
+        completed: false,
+        progress: 0
+      },
+      {
+        id: 'morning-offline',
+        title: 'Ранок без гаджетів',
+        description: 'Не використовувати гаджети до 9:00',
+        icon: 'sunny-outline',
+        completed: false,
+        progress: 0
+      }
+    ];
+  }
+
+  private getMeditationTasks(): ChallengeTask[] {
+    return [
+      {
+        id: 'daily-meditation',
+        title: 'Щоденна медитація',
+        description: 'Медитувати 20 хвилин',
+        icon: 'leaf-outline',
+        completed: false,
+        progress: 0
+      }
+    ];
+  }
+
+  private getStressManagementTasks(): ChallengeTask[] {
+    return [
+      {
+        id: 'stress-tracking',
+        title: 'Відстеження стресу',
+        description: 'Записати рівень стресу та причини',
+        icon: 'pulse-outline',
+        completed: false,
+        progress: 0
+      }
+    ];
+  }
+
+  private getPositiveThinkingTasks(): ChallengeTask[] {
+    return [
+      {
+        id: 'no-complaints',
+        title: 'День без скарг',
+        description: 'Не скаржитися протягом дня',
+        icon: 'happy-outline',
+        completed: false,
+        progress: 0
+      }
+    ];
+  }
 } 
