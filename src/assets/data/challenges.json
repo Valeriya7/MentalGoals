@@ -1,0 +1,104 @@
+{
+  "challenges": [
+    {
+      "id": "challenge-default-1",
+      "title": {
+        "uk": "40 Днів Здорових Звичок",
+        "en": "40 Days of Healthy Habits",
+        "de": "40 Tage gesunder Gewohnheiten"
+      },
+      "description": {
+        "uk": "Покращіть своє здоров'я за 40 днів, формуючи корисні звички",
+        "en": "Improve your health over 40 days by forming healthy habits",
+        "de": "Verbessern Sie Ihre Gesundheit in 40 Tagen durch gesunde Gewohnheiten"
+      },
+      "duration": 40,
+      "difficulty": "expert",
+      "difficultyLevel": 5,
+      "tasks": [
+        {
+          "id": "no-sweets",
+          "title": {
+            "uk": "Без солодкого",
+            "en": "No sweets",
+            "de": "Keine Süßigkeiten"
+          },
+          "description": {
+            "uk": "Уникайте солодощів протягом дня",
+            "en": "Avoid sweets throughout the day",
+            "de": "Vermeiden Sie den ganzen Tag über Süßigkeiten"
+          },
+          "icon": "ice-cream-outline"
+        },
+        {
+          "id": "water-intake",
+          "title": {
+            "uk": "Пити воду",
+            "en": "Drink water",
+            "de": "Wasser trinken"
+          },
+          "description": {
+            "uk": "Випийте 2 літри води протягом дня",
+            "en": "Drink 2 liters of water throughout the day",
+            "de": "Trinken Sie 2 Liter Wasser über den Tag verteilt"
+          },
+          "icon": "water-outline"
+        }
+      ],
+      "rewards": {
+        "points": 100,
+        "discounts": [
+          {
+            "brand": "Adidas",
+            "amount": "20%"
+          },
+          {
+            "brand": "Nike",
+            "amount": "15%"
+          }
+        ]
+      }
+    },
+    {
+      "id": "challenge-gratitude",
+      "title": {
+        "uk": "Ранкова подяка",
+        "en": "Morning Gratitude",
+        "de": "Morgendliche Dankbarkeit"
+      },
+      "description": {
+        "uk": "Формування позитивного мислення та зменшення стресу через щоденну практику вдячності",
+        "en": "Form positive thinking and reduce stress through daily gratitude practice",
+        "de": "Entwickeln Sie positives Denken und reduzieren Sie Stress durch tägliche Dankbarkeitspraxis"
+      },
+      "duration": 7,
+      "difficulty": "beginner",
+      "difficultyLevel": 1,
+      "tasks": [
+        {
+          "id": "gratitude-list",
+          "title": {
+            "uk": "Список вдячності",
+            "en": "Gratitude List",
+            "de": "Dankbarkeitsliste"
+          },
+          "description": {
+            "uk": "Запишіть 3 речі, за які ви вдячні сьогодні",
+            "en": "Write down 3 things you are grateful for today",
+            "de": "Schreiben Sie 3 Dinge auf, für die Sie heute dankbar sind"
+          },
+          "icon": "heart-outline"
+        }
+      ],
+      "rewards": {
+        "points": 10,
+        "discounts": [
+          {
+            "brand": "Книгарня",
+            "amount": "10%"
+          }
+        ]
+      }
+    }
+  ]
+} 

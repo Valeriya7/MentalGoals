@@ -1,0 +1,23 @@
+{
+  "HOME": {
+    "TITLE": "Startseite",
+    "WELCOME": "Willkommen",
+    "TODAY_PROGRESS": "Heutiger Fortschritt",
+    "CHALLENGES": {
+      "TITLE": "Ihre Herausforderungen",
+      "ACTIVE": "Aktiv",
+      "COMPLETED": "Abgeschlossen",
+      "AVAILABLE": "Verfügbar"
+    },
+    "STATS": {
+      "TITLE": "Ihre Statistiken",
+      "POINTS": "Punkte",
+      "STREAK": "Tagesstreak",
+      "COMPLETED_CHALLENGES": "Abgeschlossene Herausforderungen"
+    },
+    "RECOMMENDATIONS": {
+      "TITLE": "Empfohlen für Sie",
+      "VIEW_ALL": "Alle anzeigen"
+    }
+  }
+} 

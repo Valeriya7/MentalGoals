@@ -128,13 +128,7 @@ export class ChallengesPage implements OnInit {
   }
 
   getDifficultyLabel(difficulty: string): string {
-    const labels = {
-      'beginner': 'Початківець',
-      'intermediate': 'Середній',
-      'advanced': 'Просунутий',
-      'expert': 'Експерт'
-    };
-    return labels[difficulty as keyof typeof labels] || difficulty;
+    return `CHALLENGES.DIFFICULTY.${difficulty.toUpperCase()}`;
   }
 
   getProgressPercentage(challenge: Challenge): number {
@@ -167,15 +161,8 @@ export class ChallengesPage implements OnInit {
   }
 
   viewChallengeDetails(challenge: Challenge) {
-    console.log("Navigating to challenge details:", challenge);
-    console.log("Current route:", this.router.url);
-    this.router.navigate(['/challenge-details', challenge.id])
-      .then(success => {
-        console.log("Navigation success:", success);
-      })
-      .catch(error => {
-        console.error("Navigation error:", error);
-      });
+    console.log("challenge: ", challenge);
+    this.router.navigate(['/tabs/challenges', challenge.id]);
   }
 
   goToNotifications() {

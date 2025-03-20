@@ -1,0 +1,23 @@
+{
+  "HOME": {
+    "TITLE": "Home",
+    "WELCOME": "Welcome",
+    "TODAY_PROGRESS": "Today's Progress",
+    "CHALLENGES": {
+      "TITLE": "Your Challenges",
+      "ACTIVE": "Active",
+      "COMPLETED": "Completed",
+      "AVAILABLE": "Available"
+    },
+    "STATS": {
+      "TITLE": "Your Statistics",
+      "POINTS": "Points",
+      "STREAK": "Day Streak",
+      "COMPLETED_CHALLENGES": "Completed Challenges"
+    },
+    "RECOMMENDATIONS": {
+      "TITLE": "Recommended for You",
+      "VIEW_ALL": "View All"
+    }
+  }
+} 

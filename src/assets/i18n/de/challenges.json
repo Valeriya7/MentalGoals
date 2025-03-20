@@ -1,0 +1,104 @@
+{
+  "CHALLENGES": {
+    "TITLE": "Herausforderungen",
+    "ALL": "Alle",
+    "ACTIVE": "Aktiv",
+    "AVAILABLE": "Verfügbar",
+    "COMPLETED": "Abgeschlossen",
+    "VIEW_DETAILS": "Details anzeigen",
+    "START": "Starten",
+    "DAY": "Tag",
+    "OF": "von",
+    "DAILY_TASKS": "Tägliche Aufgaben",
+    "REWARDS": "Belohnungen",
+    "POINTS": "Punkte",
+    "DISCOUNT": "Rabatt bei",
+    "DIFFICULTY": {
+      "BEGINNER": "Anfänger",
+      "INTERMEDIATE": "Fortgeschritten",
+      "ADVANCED": "Experte",
+      "EXPERT": "Profi"
+    },
+    "TITLES": {
+      "WATER_CHALLENGE": "Wasser-Trink-Challenge",
+      "SLEEP_CHALLENGE": "Gesunder Schlaf-Challenge",
+      "STEPS_CHALLENGE": "Aktivitäts-Challenge",
+      "MEDITATION_CHALLENGE": "Meditations-Challenge",
+      "READING_CHALLENGE": "Lese-Challenge",
+      "EXERCISE_CHALLENGE": "Trainings-Challenge",
+      "NUTRITION_CHALLENGE": "Gesunde Ernährung-Challenge",
+      "STRESS_CHALLENGE": "Stress-Reduktions-Challenge"
+    },
+    "DESCRIPTIONS": {
+      "WATER_CHALLENGE": "Trinken Sie täglich genug Wasser für Gesundheit und Energie",
+      "SLEEP_CHALLENGE": "Verbessern Sie Ihre Schlafqualität und erholen Sie sich besser",
+      "STEPS_CHALLENGE": "Steigern Sie Ihre tägliche Aktivität und erreichen Sie Ihr Schrittziel",
+      "MEDITATION_CHALLENGE": "Entwickeln Sie eine Meditationspraxis für bessere psychische Gesundheit",
+      "READING_CHALLENGE": "Lesen Sie täglich für Entwicklung und Horizonterweiterung",
+      "EXERCISE_CHALLENGE": "Trainieren Sie regelmäßig für körperliche Fitness",
+      "NUTRITION_CHALLENGE": "Ernähren Sie sich gesund und ausgewogen",
+      "STRESS_CHALLENGE": "Lernen Sie, Stress zu bewältigen und Ruhe zu bewahren"
+    },
+    "TASKS": {
+      "WATER_CHALLENGE": {
+        "TASK1": "Trinken Sie 2 Liter Wasser",
+        "TASK2": "Trinken Sie alle 2 Stunden Wasser",
+        "TASK3": "Starten Sie den Tag mit einem Glas Wasser"
+      },
+      "SLEEP_CHALLENGE": {
+        "TASK1": "Gehen Sie vor 23:00 Uhr ins Bett",
+        "TASK2": "Schlafen Sie 7-8 Stunden",
+        "TASK3": "Erstellen Sie eine Abendroutine"
+      },
+      "STEPS_CHALLENGE": {
+        "TASK1": "Machen Sie 10.000 Schritte",
+        "TASK2": "Nehmen Sie die Treppe statt den Aufzug",
+        "TASK3": "Machen Sie kurze Gehpausen"
+      },
+      "MEDITATION_CHALLENGE": {
+        "TASK1": "Meditieren Sie 10 Minuten",
+        "TASK2": "Praktizieren Sie Atemübungen",
+        "TASK3": "Verfolgen Sie Ihre Gedanken"
+      },
+      "READING_CHALLENGE": {
+        "TASK1": "Lesen Sie 20 Seiten",
+        "TASK2": "Lesen Sie vor dem Schlafengehen",
+        "TASK3": "Führen Sie ein Lesetagebuch"
+      },
+      "EXERCISE_CHALLENGE": {
+        "TASK1": "Trainieren Sie 30 Minuten",
+        "TASK2": "Absolvieren Sie 3 Übungssätze",
+        "TASK3": "Dehnen Sie sich nach dem Training"
+      },
+      "NUTRITION_CHALLENGE": {
+        "TASK1": "Essen Sie 5 Portionen Gemüse",
+        "TASK2": "Verzichten Sie auf Süßigkeiten",
+        "TASK3": "Planen Sie Mahlzeiten im Voraus"
+      },
+      "STRESS_CHALLENGE": {
+        "TASK1": "Praktizieren Sie tiefes Atmen",
+        "TASK2": "Führen Sie ein Dankbarkeitstagebuch",
+    }
+  },
+  "CHALLENGE_DETAILS": {
+    "TITLE": "Herausforderungsdetails",
+    "START_DATE": "Startdatum",
+    "END_DATE": "Enddatum",
+    "COMPLETED_DATE": "Abgeschlossen am",
+    "PROGRESS": "Fortschritt",
+    "TASKS": {
+      "TITLE": "Aufgaben",
+      "COMPLETED": "Abgeschlossen",
+      "REMAINING": "Verbleibend"
+    },
+    "REWARDS": {
+      "TITLE": "Belohnungen",
+      "POINTS": "Punkte",
+      "DISCOUNTS": "Rabatte"
+    },
+    "QUIT": "Beenden",
+    "QUIT_CONFIRM": "Sind Sie sicher, dass Sie diese Herausforderung beenden möchten?",
+    "QUIT_CANCEL": "Abbrechen",
+    "QUIT_CONFIRM_BUTTON": "Ja, beenden"
+  }
+} 

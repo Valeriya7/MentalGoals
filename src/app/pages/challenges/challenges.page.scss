@@ -1,8 +1,5 @@
 ion-content {
   --background: var(--ion-color-light);
-  .item-native{
-    padding-left: 5px !important;
-  }
 }
 
 h2 {
@@ -219,15 +216,12 @@ h2 {
 }
 
 .challenges-list {
-  //padding: 10px;
+  padding: 10px;
 
-  h1, h2, h3, h4, h5, h6,
-  p, .challenge-info, .discount-item, .challenge-card .difficulty {
-    padding: 10px;
-  }
   .challenge-card {
     background: white;
     border-radius: 16px;
+    padding: 10px;
     margin-bottom: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
@@ -245,6 +239,7 @@ h2 {
     p {
       font-size: 14px;
       color: var(--ion-color-medium);
+      margin-bottom: 15px;
     }
 
     .status {
@@ -338,9 +333,6 @@ h2 {
         flex-direction: column;
         gap: 12px;
 
-        .task-item div{
-          padding: 0!important;
-        }
         .task-item {
           display: flex;
           align-items: flex-start;

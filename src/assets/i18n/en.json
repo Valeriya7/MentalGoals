@@ -53,8 +53,10 @@
   },
   "CHALLENGES": {
     "TITLE": "Challenges 🎯",
+    "AVAILABLE_CHALLENGES": "Available Challenges",
     "CURRENT_CHALLENGE": "Current Challenge",
     "DAY": "Day",
+    "OF": "of",
     "DAILY_TASKS": "Daily Tasks",
     "COMPLETED": "Completed",
     "NOT_COMPLETED": "Not Completed",
@@ -62,14 +64,30 @@
     "POINTS": "points",
     "FOR_COMPLETION": "For successful completion",
     "PARTNER_DISCOUNTS": "Partner Discounts",
+    "DISCOUNT_OF": "{{amount}} discount",
+    "DISCOUNT_NOTE": "* Discounts can be used within a month after successful challenge completion. Discounts cannot be combined with other promotions.",
     "UPCOMING_CHALLENGES": "Upcoming Challenges",
-    "DAYS": "days",
     "CONDITION": "Condition",
     "REWARDS_PREVIEW": "Rewards",
     "BONUS_POINTS": "bonus points",
     "START_CHALLENGE": "Start Challenge",
     "SYNC_NOTE": "Data will be synced with Garmin, Samsung Health or Apple Health",
-    "OF": "of"
+    "STATUS_ACTIVE": "Active",
+    "STATUS_COMPLETED": "Completed",
+    "STATUS_FAILED": "Failed",
+    "ACTIVATE": "Activate Challenge",
+    "VIEW_DETAILS": "View Details",
+    "CHALLENGE_ACTIVATED": "Challenge activated",
+    "CHALLENGE_ALREADY_ACTIVE": "You already have an active challenge",
+    "CHALLENGE_NOT_FOUND": "Challenge not found",
+    "NO_TASKS": "No tasks available",
+    "STATUS_AVAILABLE": "Available",
+    "DIFFICULTY": {
+      "BEGINNER": "Beginner",
+      "INTERMEDIATE": "Intermediate",
+      "ADVANCED": "Advanced",
+      "EXPERT": "Expert"
+    }
   },
   "HABITS": {
     "TITLE": "Habits",

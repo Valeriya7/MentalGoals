@@ -1,0 +1,23 @@
+{
+  "HOME": {
+    "TITLE": "Головна",
+    "WELCOME": "Ласкаво просимо",
+    "TODAY_PROGRESS": "Прогрес за сьогодні",
+    "CHALLENGES": {
+      "TITLE": "Ваші челенджі",
+      "ACTIVE": "Активні",
+      "COMPLETED": "Завершені",
+      "AVAILABLE": "Доступні"
+    },
+    "STATS": {
+      "TITLE": "Ваша статистика",
+      "POINTS": "Бали",
+      "STREAK": "Серія днів",
+      "COMPLETED_CHALLENGES": "Завершені челенджі"
+    },
+    "RECOMMENDATIONS": {
+      "TITLE": "Рекомендовано для вас",
+      "VIEW_ALL": "Переглянути все"
+    }
+  }
+} 

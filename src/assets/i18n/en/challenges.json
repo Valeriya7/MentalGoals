@@ -1,0 +1,117 @@
+{
+  "CHALLENGES": {
+    "TITLE": "Challenges",
+    "ALL": "All",
+    "ACTIVE": "Active",
+    "AVAILABLE": "Available",
+    "COMPLETED": "Completed",
+    "VIEW_DETAILS": "View Details",
+    "START": "Start",
+    "DAY": "Day",
+    "OF": "of",
+    "DAILY_TASKS": "Daily Tasks",
+    "REWARDS": "Rewards",
+    "POINTS": "points",
+    "DISCOUNT": "discount at",
+    "DIFFICULTY": {
+      "BEGINNER": "Beginner",
+      "INTERMEDIATE": "Intermediate",
+      "ADVANCED": "Advanced",
+      "EXPERT": "Expert"
+    },
+    "STATUS_ACTIVE": "Active",
+    "STATUS_COMPLETED": "Completed",
+    "STATUS_AVAILABLE": "Available",
+    "NOT_COMPLETED": "Not Completed",
+    "NO_TASKS": "No tasks available",
+    "FOR_COMPLETION": "for completion",
+    "PARTNER_DISCOUNTS": "Partner Discounts",
+    "DISCOUNT_OF": "{{amount}} discount",
+    "DISCOUNT_NOTE": "Discounts can be used at partner stores after completing the challenge",
+    "ACTIVATE": "Activate Challenge",
+    "AVAILABLE_CHALLENGES": "Available Challenges",
+    "TITLES": {
+      "WATER_CHALLENGE": "Water Drinking Challenge",
+      "SLEEP_CHALLENGE": "Healthy Sleep Challenge",
+      "STEPS_CHALLENGE": "Activity Challenge",
+      "MEDITATION_CHALLENGE": "Meditation Challenge",
+      "READING_CHALLENGE": "Reading Challenge",
+      "EXERCISE_CHALLENGE": "Exercise Challenge",
+      "NUTRITION_CHALLENGE": "Healthy Nutrition Challenge",
+      "STRESS_CHALLENGE": "Stress Reduction Challenge"
+    },
+    "DESCRIPTIONS": {
+      "WATER_CHALLENGE": "Drink enough water daily to maintain health and energy",
+      "SLEEP_CHALLENGE": "Improve your sleep quality and recover better",
+      "STEPS_CHALLENGE": "Increase your daily activity and reach your step goal",
+      "MEDITATION_CHALLENGE": "Develop meditation practice for better mental health",
+      "READING_CHALLENGE": "Read daily for development and expanding horizons",
+      "EXERCISE_CHALLENGE": "Exercise regularly to maintain physical fitness",
+      "NUTRITION_CHALLENGE": "Eat healthy and balanced",
+      "STRESS_CHALLENGE": "Learn to manage stress and maintain calm"
+    },
+    "TASKS": {
+      "WATER_CHALLENGE": {
+        "TASK1": "Drink 2 liters of water",
+        "TASK2": "Drink water every 2 hours",
+        "TASK3": "Start your day with a glass of water"
+      },
+      "SLEEP_CHALLENGE": {
+        "TASK1": "Go to bed before 11:00 PM",
+        "TASK2": "Sleep 7-8 hours",
+        "TASK3": "Create an evening routine"
+      },
+      "STEPS_CHALLENGE": {
+        "TASK1": "Take 10,000 steps",
+        "TASK2": "Take stairs instead of elevator",
+        "TASK3": "Take short walking breaks"
+      },
+      "MEDITATION_CHALLENGE": {
+        "TASK1": "Meditate for 10 minutes",
+        "TASK2": "Practice breathing exercises",
+        "TASK3": "Track your thoughts"
+      },
+      "READING_CHALLENGE": {
+        "TASK1": "Read 20 pages",
+        "TASK2": "Read before bed",
+        "TASK3": "Keep a reading journal"
+      },
+      "EXERCISE_CHALLENGE": {
+        "TASK1": "Exercise for 30 minutes",
+        "TASK2": "Complete 3 sets of exercises",
+        "TASK3": "Stretch after workout"
+      },
+      "NUTRITION_CHALLENGE": {
+        "TASK1": "Eat 5 servings of vegetables",
+        "TASK2": "Skip sweets",
+        "TASK3": "Plan meals ahead"
+      },
+      "STRESS_CHALLENGE": {
+        "TASK1": "Practice deep breathing",
+        "TASK2": "Keep a gratitude journal",
+        "TASK3": "Take relaxation breaks"
+      }
+    }
+  },
+  "CHALLENGE_DETAILS": {
+    "TITLE": "Challenge Details",
+    "START_DATE": "Start Date",
+    "END_DATE": "End Date",
+    "COMPLETED_DATE": "Completed Date",
+    "PROGRESS": "Progress",
+    "TASKS": {
+      "TITLE": "Tasks",
+      "COMPLETED": "Completed",
+      "REMAINING": "Remaining"
+    },
+    "REWARDS": {
+      "TITLE": "Rewards",
+      "POINTS": "Points",
+      "DISCOUNTS": "Discounts"
+    },
+    "QUIT": "Quit",
+    "QUIT_CONFIRM": "Are you sure you want to quit this challenge?",
+    "QUIT_CANCEL": "Cancel",
+    "QUIT_CONFIRM_BUTTON": "Yes, quit"
+  }
+} 
