@@ -3,6 +3,7 @@ import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { Device } from '@capacitor/device';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { LangChangeEvent } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,14 @@ export class TranslateService {
     this.translate.addLangs(this.availableLanguages);
     this.translate.setDefaultLang(this.defaultLang);
     this.initializeLanguage();
+  }
+
+  get onLangChange(): Observable<LangChangeEvent> {
+    return this.translate.onLangChange;
+  }
+
+  get currentLanguage(): string {
+    return this.translate.currentLang;
   }
 
   private async initializeLanguage() {

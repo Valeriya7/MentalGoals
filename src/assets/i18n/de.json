@@ -38,7 +38,7 @@
     "HABITS": "Gewohnheiten",
     "NOTIFICATIONS": "Benachrichtigungen",
     "PROFILE": "Profil",
-    "CHALLENGES": "Herausforderungen"
+    "CHALLENGES": "Aufgaben"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Aktuelle Herausforderung",
@@ -46,10 +46,22 @@
     "OF": "von",
     "DAILY_TASKS": "Tägliche Aufgaben",
     "STATS": "Statistiken",
-    "HYDRATION_LEVEL": "Hydrationslevel",
+    "HYDRATION_LEVEL": "Hydrationsniveau",
     "NEED_MORE_WATER": "Sie müssen mehr Wasser trinken",
-    "DAILY_WISH": "Täglicher Wunsch",
-    "TITLE": "Startseite"
+    "DAILY_WISH": "Tageswunsch",
+    "TITLE": "Startseite",
+    "LIFE_WHEEL": "Lebensrad",
+    "CHALLENGE": "Herausforderung",
+    "START_CHALLENGE": "Neue Herausforderung starten",
+    "DAY_OF": "Tag {{current}} von {{total}}",
+    "PHASES": "Phasen",
+    "NO_ACTIVE_CHALLENGE": "Keine aktive Herausforderung",
+    "START_CHALLENGE_DESC": "Beginnen Sie Ihre Reise zur Verbesserung mit einer neuen Herausforderung",
+    "VIEW_CHALLENGE_DETAILS": "Details anzeigen",
+    "STEPS": "Schritte",
+    "SLEEP": "Schlaf",
+    "WATER": "Wasser",
+    "EMPTY_SET": "Durchschnitt"
   },
   "CHALLENGES": {
     "TITLE": "Herausforderungen 🎯",
@@ -128,4 +140,4 @@
     "LOGOUT": "Abmelden",
     "POINTS": "Punkte"
   }
-} 
+}

@@ -59,10 +59,17 @@
           <span>{{ task.name }}</span>
         </div>
       </div>
+
+      <ion-button expand="block" (click)="goToCurrentChallenge()" class="view-details-btn">
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+        {{ 'HOME.VIEW_CHALLENGE_DETAILS' | translate }}
+      </ion-button>
     </div>
   </div>
 
   <div class="no-challenge" *ngIf="!activeChallenge">
+    <h2>{{ 'HOME.NO_ACTIVE_CHALLENGE' | translate }}</h2>
+    <p>{{ 'HOME.START_CHALLENGE_DESC' | translate }}</p>
     <ion-button expand="block" (click)="goToCurrentChallenge()">
       <ion-icon name="add-outline" slot="start" [attr.aria-hidden]="true"></ion-icon>
       {{ 'HOME.START_CHALLENGE' | translate }}
@@ -109,7 +116,6 @@
   <!-- Щоденні завдання -->
   <ion-list *ngIf="activeChallenge && dailyTasks.length > 0">
     <ion-list-header>
-      <ion-label>Щоденні завдання</ion-label>
       <ion-label>{{ 'HOME.DAILY_TASKS' | translate }}</ion-label>
     </ion-list-header>
 

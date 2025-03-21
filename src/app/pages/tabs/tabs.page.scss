@@ -1,0 +1,13 @@
+ion-tab-bar {
+  ion-tab-button {
+    flex: 1;
+    max-width: 20%;
+    ion-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+      display: block;
+    }
+  }
+}

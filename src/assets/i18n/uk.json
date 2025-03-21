@@ -39,7 +39,14 @@
     "CHALLENGE": "Челендж",
     "START_CHALLENGE": "Почати новий челендж",
     "DAY_OF": "День {{current}} з {{total}}",
-    "PHASES": "фази"
+    "PHASES": "фази",
+    "NO_ACTIVE_CHALLENGE": "Немає активного челенджу",
+    "START_CHALLENGE_DESC": "Почніть свій шлях до покращення з нового челенджу",
+    "VIEW_CHALLENGE_DETAILS": "Переглянути деталі",
+    "STEPS": "Кроки",
+    "SLEEP": "Сон",
+    "WATER": "Вода",
+    "EMPTY_SET": "Середнє значення"
   },
   "CHALLENGES": {
     "TITLE": "Челенджі",

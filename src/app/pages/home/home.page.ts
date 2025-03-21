@@ -130,6 +130,17 @@ export class HomePage implements OnInit, OnDestroy {
       return;
     }
 
+    console.log('Initializing home page...');
+    
+    // Підписуємось на зміни мови
+    this.subscriptions.push(
+      this.translate.onLangChange.subscribe(() => {
+        console.log('Language changed to:', this.translate.currentLang);
+        // Оновлюємо дні тижня при зміні мови
+        this.generateWeekDays();
+      })
+    );
+
     await this.getUserData();
     this.subscriptions.push(
       this.wishesService.getHasUnreadWish().subscribe(hasUnread => {

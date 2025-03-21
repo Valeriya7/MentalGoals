@@ -18,6 +18,19 @@
     "RECOMMENDATIONS": {
       "TITLE": "Empfohlen für Sie",
       "VIEW_ALL": "Alle anzeigen"
-    }
+    },
+    "CURRENT_CHALLENGE": "Aktuelle Herausforderung",
+    "DAY_OF": "Tag {{current}} von {{total}}",
+    "NO_ACTIVE_CHALLENGE": "Keine aktive Herausforderung",
+    "START_CHALLENGE_DESC": "Beginnen Sie Ihre Reise zur Verbesserung mit einer neuen Herausforderung",
+    "START_CHALLENGE": "Herausforderung starten",
+    "VIEW_CHALLENGE_DETAILS": "Details anzeigen",
+    "DAILY_TASKS": "Tägliche Aufgaben",
+    "LIFE_WHEEL": "Lebensrad",
+    "CHALLENGE": "Herausforderung",
+    "STEPS": "Schritte",
+    "SLEEP": "Schlaf",
+    "WATER": "Wasser",
+    "EMPTY_SET": "Durchschnitt"
   }
 } 

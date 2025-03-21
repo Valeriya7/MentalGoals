@@ -18,6 +18,19 @@
     "RECOMMENDATIONS": {
       "TITLE": "Recommended for You",
       "VIEW_ALL": "View All"
-    }
+    },
+    "CURRENT_CHALLENGE": "Current Challenge",
+    "DAY_OF": "Day {{current}} of {{total}}",
+    "NO_ACTIVE_CHALLENGE": "No Active Challenge",
+    "START_CHALLENGE_DESC": "Start your journey to improvement with a new challenge",
+    "START_CHALLENGE": "Start Challenge",
+    "VIEW_CHALLENGE_DETAILS": "View Details",
+    "DAILY_TASKS": "Daily Tasks",
+    "LIFE_WHEEL": "Life Wheel",
+    "CHALLENGE": "Challenge",
+    "STEPS": "Steps",
+    "SLEEP": "Sleep",
+    "WATER": "Water",
+    "EMPTY_SET": "Average"
   }
 } 

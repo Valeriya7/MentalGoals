@@ -18,6 +18,19 @@
     "RECOMMENDATIONS": {
       "TITLE": "Рекомендовано для вас",
       "VIEW_ALL": "Переглянути все"
-    }
+    },
+    "CURRENT_CHALLENGE": "Поточний челендж",
+    "DAY_OF": "День {{current}} з {{total}}",
+    "NO_ACTIVE_CHALLENGE": "Немає активного челенджу",
+    "START_CHALLENGE_DESC": "Почніть свій шлях до покращення з нового челенджу",
+    "START_CHALLENGE": "Почати челендж",
+    "VIEW_CHALLENGE_DETAILS": "Переглянути деталі",
+    "DAILY_TASKS": "Щоденні завдання",
+    "LIFE_WHEEL": "Колесо життя",
+    "CHALLENGE": "Челендж",
+    "STEPS": "Кроки",
+    "SLEEP": "Сон",
+    "WATER": "Вода",
+    "EMPTY_SET": "Середнє значення"
   }
 } 
