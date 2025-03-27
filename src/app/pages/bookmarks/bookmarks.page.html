@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Закладки</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadBookmarks()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Стан завантаження -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Завантаження...</p>
+  </div>
+
+  <!-- Стан помилки -->
+  <div *ngIf="error" class="error-container">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Список закладок -->
+  <div *ngIf="!isLoading && !error">
+    <ion-list *ngIf="bookmarks.length > 0">
+      <ion-item *ngFor="let bookmark of bookmarks">
+        <ion-label>
+          <h2>{{ bookmark.title }}</h2>
+          <p>{{ bookmark.description }}</p>
+        </ion-label>
+        <ion-button slot="end" fill="clear" (click)="removeBookmark(bookmark)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <!-- Повідомлення про відсутність закладок -->
+    <div *ngIf="bookmarks.length === 0" class="empty-state">
+      <ion-icon name="bookmark-outline"></ion-icon>
+      <p>У вас поки немає закладок</p>
+    </div>
+  </div>
+</ion-content> 

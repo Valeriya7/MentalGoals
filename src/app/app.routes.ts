@@ -42,6 +42,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage)
       },
       {
+        path: 'bookmarks',
+        loadComponent: () => import('./pages/bookmarks/bookmarks.page').then(m => m.BookmarksPage)
+      },
+      {
         path: '',
         redirectTo: 'home',
         pathMatch: 'full'

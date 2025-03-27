@@ -60,6 +60,8 @@ interface DailyTask {
   name: string;
   icon: string;
   completed: boolean;
+  title: string;
+  description?: string;
 }
 
 @Component({
@@ -189,7 +191,9 @@ export class HomePage implements OnInit, OnDestroy {
           this.dailyTasks = this.activeChallenge.tasks.map(task => ({
             name: task.title,
             icon: task.icon || 'checkmark-circle-outline',
-            completed: todayProgress[task.id] || false
+            completed: todayProgress[task.id] || false,
+            title: task.title,
+            description: task.description
           }));
         }
         
@@ -456,6 +460,21 @@ export class HomePage implements OnInit, OnDestroy {
       this.averageSteps = 0;
       this.averageSleep = 0;
       this.averageWater = 0;
+    }
+  }
+
+  async updateTaskProgress(task: DailyTask, event: any) {
+    if (!this.activeChallenge) return;
+    
+    const isCompleted = event.detail.checked;
+    task.completed = isCompleted;
+    
+    try {
+      await this.challengeService.updateTodayProgress(this.activeChallenge.id, task.name, isCompleted);
+      await this.loadActiveChallenge(); // Перезавантажуємо дані після оновлення
+    } catch (error) {
+      console.error('Error updating task progress:', error);
+      task.completed = !isCompleted; // Повертаємо попередній стан у випадку помилки
     }
   }
 }

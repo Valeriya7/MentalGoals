@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Challenge, ChallengePhase, ChallengeTask } from '../interfaces/challenge.interface';
+import { Challenge, ChallengePhase, ChallengeTask, ChallengeProgress } from '../interfaces/challenge.interface';
 import { ModalService } from './modal.service';
 import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';
@@ -17,6 +17,9 @@ export class ChallengeService {
   private readonly STORAGE_KEY = 'challenges';
   private readonly ALLOWED_ORIGINS = ['localhost', 'mentalgoals.app'];
   private preferenceStorage = true;
+  private progressCache = new Map<string, ChallengeProgress>();
+  private lastSyncTime = new Map<string, number>();
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 хвилин
 
   constructor(
     private toastController: ToastController,
@@ -254,35 +257,40 @@ export class ChallengeService {
           title: 'Без солодкого',
           description: 'Уникайте солодощів протягом дня',
           icon: 'ice-cream-outline',
-          completed: false
+          completed: false,
+          progress: 0
         },
         {
           id: 'no-coffee',
           title: 'Без кави',
           description: 'Замініть каву на здорові альтернативи',
           icon: 'cafe-outline',
-          completed: false
+          completed: false,
+          progress: 0
         },
         {
           id: 'exercise',
           title: '10 хвилин вправ',
           description: 'Виконайте комплекс вправ',
           icon: 'fitness-outline',
-          completed: false
+          completed: false,
+          progress: 0
         },
         {
           id: 'steps',
           title: '8000 кроків',
           description: 'Пройдіть мінімум 8000 кроків',
           icon: 'footsteps-outline',
-          completed: false
+          completed: false,
+          progress: 0
         },
         {
           id: 'english',
           title: '5 англійських слів',
           description: 'Вивчіть нові слова',
           icon: 'book-outline',
-          completed: false
+          completed: false,
+          progress: 0
         }
       ];
 
@@ -314,7 +322,14 @@ export class ChallengeService {
               amount: '15%'
             }
           ]
-        }
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Основна фаза',
+          tasks: tasks,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
+        }]
       };
 
       // Save the challenge to storage
@@ -394,31 +409,163 @@ export class ChallengeService {
     }
   }
 
-  async getTodayProgress(challengeId: string, date?: string): Promise<{ [key: string]: boolean }> {
-    const challenge = await this.getChallenge(challengeId);
-    if (!challenge) return {};
-
-    const tasks = challenge.tasks || [];
-    const dateStr = date || new Date().toISOString().split('T')[0];
-    const progress = await this.getProgress(challengeId, dateStr);
+  private validateProgress(progress: any): boolean {
+    if (!progress || typeof progress !== 'object') return false;
     
-    return tasks.reduce((acc, task) => {
-      acc[task.id] = progress[task.id] || false;
-      return acc;
-    }, {} as { [key: string]: boolean });
+    // Перевіряємо структуру прогресу
+    for (const dateKey in progress) {
+      const dayProgress = progress[dateKey];
+      
+      if (!dayProgress.date || !dayProgress.tasks || typeof dayProgress.tasks !== 'object') {
+        return false;
+      }
+      
+      if (typeof dayProgress.completedTasks !== 'number' || typeof dayProgress.totalTasks !== 'number') {
+        return false;
+      }
+      
+      // Перевіряємо кожне завдання
+      for (const taskId in dayProgress.tasks) {
+        const task = dayProgress.tasks[taskId];
+        if (typeof task.completed !== 'boolean' || typeof task.progress !== 'number') {
+          return false;
+        }
+      }
+    }
+    
+    return true;
   }
 
-  async updateTodayProgress(challengeId: string, taskId: string, completed: boolean) {
+  private async saveProgress(challenge: Challenge): Promise<boolean> {
     try {
-      const storage = await this.ensureStorageReady();
-      const today = new Date().toISOString().split('T')[0];
-      const key = `progress_${challengeId}_${today}`;
-      const progress = await this.getTodayProgress(challengeId, today);
-      progress[taskId] = completed;
-      await this.storageService.set(key, progress);
+      if (!this.validateProgress(challenge.progress)) {
+        console.error('Invalid progress data structure');
+        return false;
+      }
+
+      const challenges = await this.getChallenges();
+      const index = challenges.findIndex(c => c.id === challenge.id);
+      
+      if (index === -1) {
+        console.error('Challenge not found');
+        return false;
+      }
+      
+      challenges[index] = challenge;
+      await this.saveToAllStorages(challenges);
+      
+      if (challenge.status === 'active') {
+        this.activeChallenge.next(challenge);
+      }
+      
+      return true;
     } catch (error) {
-      console.error('Error updating today progress:', error);
+      console.error('Error saving progress:', error);
+      return false;
+    }
+  }
+
+  async getTodayProgress(challengeId: string, date?: string): Promise<{ [key: string]: boolean }> {
+    try {
+      const challenge = await this.getChallenge(challengeId);
+      if (!challenge?.progress) return {};
+
+      const targetDate = date || new Date().toISOString().split('T')[0];
+      const dayProgress = challenge.progress[targetDate]?.tasks || {};
+
+      return Object.entries(dayProgress).reduce((acc, [taskId, task]) => {
+        acc[taskId] = task.completed;
+        return acc;
+      }, {} as { [key: string]: boolean });
+    } catch (error) {
+      console.error('Error getting today progress:', error);
+      return {};
+    }
+  }
+
+  async updateTodayProgress(challengeId: string, taskId: string, completed: boolean): Promise<void> {
+    try {
+      const challenge = await this.getChallenge(challengeId);
+      if (!challenge) {
+        throw new Error('Challenge not found');
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const dateKey = today.toISOString().split('T')[0];
+
+      if (!challenge.progress) {
+        challenge.progress = {};
+      }
+
+      if (!challenge.progress[dateKey]) {
+        challenge.progress[dateKey] = {
+          date: dateKey,
+          tasks: {},
+          completedTasks: 0,
+          totalTasks: challenge.tasks.length,
+          lastUpdated: new Date().toISOString()
+        };
+      }
+
+      const dayProgress = challenge.progress[dateKey];
+      
+      if (!dayProgress.tasks[taskId]) {
+        dayProgress.tasks[taskId] = {
+          completed: false,
+          progress: 0
+        };
+      }
+
+      dayProgress.tasks[taskId].completed = completed;
+      if (completed) {
+        dayProgress.tasks[taskId].progress = 100;
+        dayProgress.tasks[taskId].completedAt = new Date().toISOString();
+      } else {
+        dayProgress.tasks[taskId].progress = 0;
+        dayProgress.tasks[taskId].completedAt = null;
+      }
+
+      // Оновлюємо кількість виконаних завдань
+      dayProgress.completedTasks = Object.values(dayProgress.tasks)
+        .filter(task => task.completed).length;
+
+      // Перевіряємо чи всі завдання виконані
+      if (dayProgress.completedTasks === dayProgress.totalTasks) {
+        if (typeof challenge.currentDay === 'undefined') {
+          challenge.currentDay = 1;
+        } else {
+          challenge.currentDay++;
+        }
+        
+        if (challenge.currentDay > challenge.duration) {
+          challenge.status = 'completed';
+          challenge.completedDate = new Date().toISOString();
+        }
+      }
+
+      const saved = await this.saveProgress(challenge);
+      if (!saved) {
+        throw new Error('Failed to save progress');
+      }
+
+    } catch (error) {
+      console.error('Error updating progress:', error);
       throw error;
+    }
+  }
+
+  async getChallengeProgress(challengeId: string): Promise<ChallengeProgress[]> {
+    try {
+      const challenge = await this.getChallenge(challengeId);
+      if (!challenge?.progress) return [];
+
+      return Object.values(challenge.progress).sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+    } catch (error) {
+      console.error('Error getting challenge progress:', error);
+      return [];
     }
   }
 
@@ -649,35 +796,40 @@ export class ChallengeService {
             title: 'Без солодкого',
             description: 'Уникайте солодощів протягом дня',
             icon: 'ice-cream-outline',
-            completed: false
+            completed: false,
+            progress: 0
           },
           {
             id: 'no-coffee',
             title: 'Без кави',
             description: 'Замініть каву на здорові альтернативи',
             icon: 'cafe-outline',
-            completed: false
+            completed: false,
+            progress: 0
           },
           {
             id: 'exercise',
             title: '10 хвилин вправ',
             description: 'Виконайте комплекс вправ',
             icon: 'fitness-outline',
-            completed: false
+            completed: false,
+            progress: 0
           },
           {
             id: 'steps',
             title: '8000 кроків',
             description: 'Пройдіть мінімум 8000 кроків',
             icon: 'footsteps-outline',
-            completed: false
+            completed: false,
+            progress: 0
           },
           {
             id: 'english',
             title: '5 англійських слів',
             description: 'Вивчіть нові слова',
             icon: 'book-outline',
-            completed: false
+            completed: false,
+            progress: 0
           }
         ],
         status: 'active',
@@ -697,7 +849,55 @@ export class ChallengeService {
               amount: '15%'
             }
           ]
-        }
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Основна фаза',
+          tasks: [
+            {
+              id: 'no-sweets',
+              title: 'Без солодкого',
+              description: 'Уникайте солодощів протягом дня',
+              icon: 'ice-cream-outline',
+              completed: false,
+              progress: 0
+            },
+            {
+              id: 'no-coffee',
+              title: 'Без кави',
+              description: 'Замініть каву на здорові альтернативи',
+              icon: 'cafe-outline',
+              completed: false,
+              progress: 0
+            },
+            {
+              id: 'exercise',
+              title: '10 хвилин вправ',
+              description: 'Виконайте комплекс вправ',
+              icon: 'fitness-outline',
+              completed: false,
+              progress: 0
+            },
+            {
+              id: 'steps',
+              title: '8000 кроків',
+              description: 'Пройдіть мінімум 8000 кроків',
+              icon: 'footsteps-outline',
+              completed: false,
+              progress: 0
+            },
+            {
+              id: 'english',
+              title: '5 англійських слів',
+              description: 'Вивчіть нові слова',
+              icon: 'book-outline',
+              completed: false,
+              progress: 0
+            }
+          ],
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000).toISOString()
+        }]
       },
       {
         id: 'challenge-gratitude',
@@ -712,7 +912,8 @@ export class ChallengeService {
             title: 'Список вдячності',
             description: 'Запишіть 3 речі, за які ви вдячні сьогодні',
             icon: 'heart-outline',
-            completed: false
+            completed: false,
+            progress: 0
           }
         ],
         status: 'available',
@@ -724,7 +925,23 @@ export class ChallengeService {
               amount: '10%'
             }
           ]
-        }
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Фаза вдячності',
+          tasks: [
+            {
+              id: 'gratitude-list',
+              title: 'Список вдячності',
+              description: 'Запишіть 3 речі, за які ви вдячні сьогодні',
+              icon: 'heart-outline',
+              completed: false,
+              progress: 0
+            }
+          ],
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        }]
       },
       {
         id: 'challenge-steps',
@@ -739,7 +956,8 @@ export class ChallengeService {
             title: '10 000 кроків',
             description: 'Пройдіть мінімум 10 000 кроків за день',
             icon: 'footsteps-outline',
-            completed: false
+            completed: false,
+            progress: 0
           }
         ],
         status: 'available',
@@ -759,7 +977,23 @@ export class ChallengeService {
               amount: '15%'
             }
           ]
-        }
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Фаза активності',
+          tasks: [
+            {
+              id: 'daily-steps',
+              title: '10 000 кроків',
+              description: 'Пройдіть мінімум 10 000 кроків за день',
+              icon: 'footsteps-outline',
+              completed: false,
+              progress: 0
+            }
+          ],
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        }]
       },
       {
         id: 'challenge-digital-detox',
@@ -774,14 +1008,16 @@ export class ChallengeService {
             title: 'Вечірній офлайн',
             description: 'Вимкніть телефон за 1 годину до сну',
             icon: 'moon-outline',
-            completed: false
+            completed: false,
+            progress: 0
           },
           {
             id: 'morning-offline',
             title: 'Ранковий офлайн',
             description: 'Не користуйтесь соцмережами 1 годину після пробудження',
             icon: 'sunny-outline',
-            completed: false
+            completed: false,
+            progress: 0
           }
         ],
         status: 'available',
@@ -793,7 +1029,31 @@ export class ChallengeService {
               amount: '20%'
             }
           ]
-        }
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Фаза цифрового детоксу',
+          tasks: [
+            {
+              id: 'evening-offline',
+              title: 'Вечірній офлайн',
+              description: 'Вимкніть телефон за 1 годину до сну',
+              icon: 'moon-outline',
+              completed: false,
+              progress: 0
+            },
+            {
+              id: 'morning-offline',
+              title: 'Ранковий офлайн',
+              description: 'Не користуйтесь соцмережами 1 годину після пробудження',
+              icon: 'sunny-outline',
+              completed: false,
+              progress: 0
+            }
+          ],
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+        }]
       },
       {
         id: 'challenge-meditation',
@@ -808,7 +1068,8 @@ export class ChallengeService {
             title: '5-хвилинна медитація',
             description: 'Виконайте медитацію протягом 5 хвилин',
             icon: 'leaf-outline',
-            completed: false
+            completed: false,
+            progress: 0
           }
         ],
         status: 'available',
@@ -824,7 +1085,23 @@ export class ChallengeService {
               amount: '10%'
             }
           ]
-        }
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Фаза медитації',
+          tasks: [
+            {
+              id: 'daily-meditation',
+              title: '5-хвилинна медитація',
+              description: 'Виконайте медитацію протягом 5 хвилин',
+              icon: 'leaf-outline',
+              completed: false,
+              progress: 0
+            }
+          ],
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        }]
       },
       {
         id: 'challenge-no-stress',
@@ -839,7 +1116,8 @@ export class ChallengeService {
             title: 'Відстеження стресу',
             description: 'Запишіть тригери стресу та способи їх подолання',
             icon: 'clipboard-outline',
-            completed: false
+            completed: false,
+            progress: 0
           }
         ],
         status: 'available',
@@ -855,7 +1133,23 @@ export class ChallengeService {
               amount: '100%'
             }
           ]
-        }
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Фаза зменшення стресу',
+          tasks: [
+            {
+              id: 'stress-tracking',
+              title: 'Відстеження стресу',
+              description: 'Запишіть тригери стресу та способи їх подолання',
+              icon: 'clipboard-outline',
+              completed: false,
+              progress: 0
+            }
+          ],
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString()
+        }]
       },
       {
         id: 'challenge-no-complaints',
@@ -870,7 +1164,8 @@ export class ChallengeService {
             title: 'Без скарг',
             description: 'Утримуйтесь від скарг та негативних висловлювань',
             icon: 'happy-outline',
-            completed: false
+            completed: false,
+            progress: 0
           }
         ],
         status: 'available',
@@ -882,133 +1177,23 @@ export class ChallengeService {
               amount: '100%'
             }
           ]
-        }
-      }
-    ];
-  }
-
-  private getDefaultTasks(): ChallengeTask[] {
-    return [
-      {
-        id: 'no-sweets',
-        title: 'Відмова від солодкого',
-        description: 'Не їсти солодке протягом дня',
-        icon: 'ice-cream-outline',
-        completed: false,
-        progress: 0
-      },
-      {
-        id: 'no-coffee',
-        title: 'Відмова від кави',
-        description: 'Не пити каву протягом дня',
-        icon: 'cafe-outline',
-        completed: false,
-        progress: 0
-      },
-      {
-        id: 'exercise',
-        title: 'Фізичні вправи',
-        description: 'Зробити 30 хвилин фізичних вправ',
-        icon: 'fitness-outline',
-        completed: false,
-        progress: 0
-      },
-      {
-        id: 'steps',
-        title: 'Кроки',
-        description: 'Пройти 10000 кроків',
-        icon: 'footsteps-outline',
-        completed: false,
-        progress: 0
-      },
-      {
-        id: 'english',
-        title: 'Вивчення англійської',
-        description: 'Вивчити 10 нових слів',
-        icon: 'book-outline',
-        completed: false,
-        progress: 0
-      }
-    ];
-  }
-
-  private getAdvancedTasks(): ChallengeTask[] {
-    return [
-      {
-        id: 'gratitude-list',
-        title: 'Список вдячності',
-        description: 'Записати 5 речей, за які ви вдячні',
-        icon: 'heart-outline',
-        completed: false,
-        progress: 0
-      },
-      {
-        id: 'daily-steps',
-        title: 'Щоденні кроки',
-        description: 'Пройти 15000 кроків',
-        icon: 'footsteps-outline',
-        completed: false,
-        progress: 0
-      }
-    ];
-  }
-
-  private getExpertTasks(): ChallengeTask[] {
-    return [
-      {
-        id: 'evening-offline',
-        title: 'Вечір без гаджетів',
-        description: 'Не використовувати гаджети після 21:00',
-        icon: 'moon-outline',
-        completed: false,
-        progress: 0
-      },
-      {
-        id: 'morning-offline',
-        title: 'Ранок без гаджетів',
-        description: 'Не використовувати гаджети до 9:00',
-        icon: 'sunny-outline',
-        completed: false,
-        progress: 0
-      }
-    ];
-  }
-
-  private getMeditationTasks(): ChallengeTask[] {
-    return [
-      {
-        id: 'daily-meditation',
-        title: 'Щоденна медитація',
-        description: 'Медитувати 20 хвилин',
-        icon: 'leaf-outline',
-        completed: false,
-        progress: 0
-      }
-    ];
-  }
-
-  private getStressManagementTasks(): ChallengeTask[] {
-    return [
-      {
-        id: 'stress-tracking',
-        title: 'Відстеження стресу',
-        description: 'Записати рівень стресу та причини',
-        icon: 'pulse-outline',
-        completed: false,
-        progress: 0
-      }
-    ];
-  }
-
-  private getPositiveThinkingTasks(): ChallengeTask[] {
-    return [
-      {
-        id: 'no-complaints',
-        title: 'День без скарг',
-        description: 'Не скаржитися протягом дня',
-        icon: 'happy-outline',
-        completed: false,
-        progress: 0
+        },
+        phases: [{
+          id: 'phase-1',
+          title: 'Фаза позитивного мислення',
+          tasks: [
+            {
+              id: 'no-complaints',
+              title: 'Без скарг',
+              description: 'Утримуйтесь від скарг та негативних висловлювань',
+              icon: 'happy-outline',
+              completed: false,
+              progress: 0
+            }
+          ],
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }]
       }
     ];
   }

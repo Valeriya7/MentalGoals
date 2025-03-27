@@ -6,151 +6,24 @@ import { ChallengeService } from '../../services/challenge.service';
 import { Challenge, ChallengeTask, ChallengePhase } from '../../interfaces/challenge.interface';
 import { TranslateModule } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
-import { 
+import {
   closeCircleOutline,
   iceCreamOutline,
   cafeOutline,
   fitnessOutline,
   footstepsOutline,
   bookOutline,
-  checkmarkCircleOutline
+  checkmarkCircleOutline,
+  starOutline,
+  pricetagOutline,
+  alertCircleOutline
 } from 'ionicons/icons';
 import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-challenge-details',
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/tabs/challenges"></ion-back-button>
-        </ion-buttons>
-        <ion-title>{{ challenge?.title }}</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="quitChallenge()" color="danger">
-            <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-      <ng-container *ngIf="challenge">
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>{{ challenge.title }}</ion-card-title>
-            <ion-card-subtitle>{{ challenge.description }}</ion-card-subtitle>
-          </ion-card-header>
-          
-          <ion-card-content>
-            <ion-text color="medium">
-              <p>День {{ statistics.completedDays }} з {{ statistics.totalDays }}</p>
-              <p>Початок: {{ challenge.startDate | date }}</p>
-              <p>Кінець: {{ challenge.endDate | date }}</p>
-            </ion-text>
-          </ion-card-content>
-        </ion-card>
-
-        <ion-list>
-          <ion-list-header>
-            <ion-label>Завдання на сьогодні</ion-label>
-          </ion-list-header>
-
-          <ion-item *ngFor="let task of currentPhase?.tasks">
-            <ion-checkbox 
-              slot="start" 
-              [checked]="task.completed"
-              [aria-label]="task.title"
-              (ionChange)="updateTaskProgress(task, $event)">
-              {{ task.title }}
-            </ion-checkbox>
-            <ion-label>
-              <p *ngIf="task.description">{{ task.description }}</p>
-            </ion-label>
-            <ion-icon 
-              *ngIf="task.icon" 
-              [name]="task.icon" 
-              slot="end" 
-              [color]="task.completed ? 'success' : 'medium'">
-            </ion-icon>
-          </ion-item>
-        </ion-list>
-
-        <ion-card class="statistics-card">
-          <ion-card-header>
-            <ion-card-title>Статистика</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-grid>
-              <ion-row>
-                <ion-col>
-                  <div class="stat-item">
-                    <ion-text color="primary">
-                      <h2>{{ statistics.completedTasks }}</h2>
-                    </ion-text>
-                    <ion-text color="medium">
-                      <p>Виконано завдань</p>
-                    </ion-text>
-                  </div>
-                </ion-col>
-                <ion-col>
-                  <div class="stat-item">
-                    <ion-text color="primary">
-                      <h2>{{ statistics.totalTasks }}</h2>
-                    </ion-text>
-                    <ion-text color="medium">
-                      <p>Всього завдань</p>
-                    </ion-text>
-                  </div>
-                </ion-col>
-                <ion-col>
-                  <div class="stat-item">
-                    <ion-text [color]="statistics.progress >= 70 ? 'success' : 'warning'">
-                      <h2>{{ statistics.progress }}%</h2>
-                    </ion-text>
-                    <ion-text color="medium">
-                      <p>Прогрес</p>
-                    </ion-text>
-                  </div>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
-
-            <ion-progress-bar
-              [value]="statistics.progress / 100"
-              [color]="statistics.progress >= 70 ? 'success' : 'warning'"
-              class="progress-bar">
-            </ion-progress-bar>
-          </ion-card-content>
-        </ion-card>
-      </ng-container>
-    </ion-content>
-  `,
-  styles: [`
-    .statistics-card {
-      margin-top: 20px;
-    }
-    
-    .stat-item {
-      text-align: center;
-      
-      h2 {
-        font-size: 24px;
-        margin: 0;
-      }
-      
-      p {
-        margin: 5px 0 0;
-        font-size: 14px;
-      }
-    }
-
-    .progress-bar {
-      margin-top: 16px;
-      height: 8px;
-      border-radius: 4px;
-    }
-  `],
+  templateUrl: './challenge-details.page.html',
+  styleUrls: ['./challenge-details.page.scss'],
   standalone: true,
   imports: [IonicModule, CommonModule, TranslateModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -164,8 +37,12 @@ export class ChallengeDetailsPage implements OnInit {
     totalDays: 40,
     completedTasks: 0,
     totalTasks: 0,
-    progress: 0
+    progress: 0,
+    totalCompletedTasks: 0
   };
+  progressHistory: any[] | null = null;
+  isLoading = false;
+  error: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -180,7 +57,10 @@ export class ChallengeDetailsPage implements OnInit {
       fitnessOutline,
       footstepsOutline,
       bookOutline,
-      checkmarkCircleOutline
+      checkmarkCircleOutline,
+      starOutline,
+      pricetagOutline,
+      alertCircleOutline
     });
   }
 
@@ -189,10 +69,13 @@ export class ChallengeDetailsPage implements OnInit {
     if (id) {
       await this.loadChallenge(id);
       await this.calculateStatistics(id);
+      await this.loadProgress();
     }
   }
 
   async loadChallenge(id: string) {
+    this.isLoading = true;
+    this.error = null;
     try {
       this.challenge = await this.challengeService.getChallenge(id);
       if (this.challenge) {
@@ -202,6 +85,9 @@ export class ChallengeDetailsPage implements OnInit {
       }
     } catch (error) {
       console.error('Error loading challenge:', error);
+      this.error = 'Помилка завантаження челенджу';
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -214,59 +100,149 @@ export class ChallengeDetailsPage implements OnInit {
       const startDate = challenge.startDate ? new Date(challenge.startDate) : today;
       const completedDays = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-      const completedTasks = challenge.tasks.filter(task => task.completed).length;
+      // Отримуємо прогрес за сьогодні
+      const todayKey = today.toISOString().split('T')[0];
+      const todayProgress = challenge.progress?.[todayKey];
+
+      // Отримуємо загальний прогрес
+      let totalCompletedTasks = 0;
+      let totalDaysWithProgress = 0;
+
+      if (challenge.progress) {
+        Object.values(challenge.progress).forEach(dayProgress => {
+          if (dayProgress.completedTasks > 0) {
+            totalDaysWithProgress++;
+          }
+          totalCompletedTasks += dayProgress.completedTasks;
+        });
+      }
+
+      // Рахуємо виконані завдання за сьогодні
+      const completedTasks = todayProgress?.completedTasks || 0;
       const totalTasks = challenge.tasks.length;
       const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
       this.statistics = {
-        completedDays,
+        completedDays: totalDaysWithProgress,
         totalDays: challenge.duration,
         completedTasks,
         totalTasks,
-        progress
+        progress,
+        totalCompletedTasks
       };
     } catch (error) {
       console.error('Error calculating statistics:', error);
     }
   }
 
+  async loadProgress() {
+    if (!this.challenge) return;
+
+    try {
+      // Оновлюємо прогрес за сьогодні
+      this.todayProgress = await this.challengeService.getTodayProgress(this.challenge.id);
+
+      // Оновлюємо статус завдань
+      this.updateTasksStatus();
+
+      // Оновлюємо статистику
+      await this.calculateStatistics(this.challenge.id);
+
+      // Отримуємо історію прогресу
+      const progress = await this.challengeService.getChallengeProgress(this.challenge.id);
+      this.progressHistory = progress;
+      console.log('- - - progress - - ', progress);
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  }
+
+  getTaskCompletionTime(taskId: string): string | null {
+    console.log('taskId: ',taskId);
+    console.log('this.progressHistory: ',this.progressHistory);
+   // const progress = await this.challengeService.getChallengeProgress(this.challenge.id);
+    //this.progressHistory = progress;
+
+    console.log('this.progressHistory: ',this.progressHistory);
+    if (!this.progressHistory) return null;
+
+    for (const day of this.progressHistory) {
+      const task = day.tasks[taskId];
+      console.log('task: ',task);
+      if (task?.completedAt) {
+
+        console.log('task.completedAt: ',task.completedAt);
+        return task.completedAt;
+      }
+    }
+    return null;
+  }
+
   getTasksByProgress(progress: number): ChallengeTask[] {
     if (!this.currentPhase?.tasks) return [];
-    
+
     switch(progress) {
       case 100: // Completed tasks
         return this.currentPhase.tasks.filter(task => task.completed);
       case 50: // In progress tasks
-        return this.currentPhase.tasks.filter(task => !task.completed && ((task.progress ?? 0) > 0));
+        return this.currentPhase.tasks.filter(task => !task.completed && task.progress > 0);
       case 0: // Not started tasks
-        return this.currentPhase.tasks.filter(task => !task.completed && ((task.progress ?? 0) === 0));
+        return this.currentPhase.tasks.filter(task => !task.completed && task.progress === 0);
       default:
         return [];
     }
   }
 
-  updateTaskProgress(task: ChallengeTask, event: any) {
-    const isCompleted = event.detail.checked;
-    task.completed = isCompleted;
-    task.progress = isCompleted ? 100 : 0;
-    this.saveTaskProgress(task);
-  }
+  async updateTaskProgress(task: ChallengeTask, event: any) {
+    if (!this.challenge) return;
 
-  async saveTaskProgress(task: ChallengeTask) {
+    const isCompleted = event.detail.checked;
+
     try {
-      if (this.challenge) {
-        await this.challengeService.updateTodayProgress(this.challenge.id, task.id, task.completed);
-        await this.calculateStatistics(this.challenge.id);
-      }
+      // Спочатку оновлюємо на сервері
+      await this.challengeService.updateTodayProgress(this.challenge.id, task.id, isCompleted);
+
+      // Якщо оновлення успішне, оновлюємо локальний стан
+      task.completed = isCompleted;
+      task.progress = isCompleted ? 100 : 0;
+      this.todayProgress[task.id] = isCompleted;
+
+      // Оновлюємо статистику
+      await this.calculateStatistics(this.challenge.id);
+
+      // Показуємо повідомлення про успіх
+      const toast = await this.toastController.create({
+        message: isCompleted ? 'Завдання виконано!' : 'Завдання скасовано',
+        duration: 2000,
+        color: isCompleted ? 'success' : 'medium',
+        position: 'bottom'
+      });
+      toast.present();
     } catch (error) {
-      console.error('Error saving task progress:', error);
+      console.error('Error updating task status:', error);
+
+      // У випадку помилки показуємо повідомлення
+      const toast = await this.toastController.create({
+        message: 'Помилка оновлення завдання',
+        duration: 2000,
+        color: 'danger',
+        position: 'bottom'
+      });
+      toast.present();
+
+      // Повертаємо попередній стан чекбокса
+      task.completed = !isCompleted;
+      task.progress = !isCompleted ? 100 : 0;
+      this.todayProgress[task.id] = !isCompleted;
     }
   }
 
   updateTasksStatus() {
-    if (this.currentPhase) {
+    if (this.currentPhase?.tasks) {
       this.currentPhase.tasks.forEach(task => {
-        task.completed = this.todayProgress[task.id] || false;
+        const isCompleted = this.todayProgress[task.id] || false;
+        task.completed = isCompleted;
+        task.progress = isCompleted ? 100 : 0;
       });
     }
   }
@@ -297,4 +273,4 @@ export class ChallengeDetailsPage implements OnInit {
       await alert.present();
     }
   }
-} 
+}

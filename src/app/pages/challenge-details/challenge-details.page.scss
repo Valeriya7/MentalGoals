@@ -153,6 +153,101 @@
       margin: 0;
     }
   }
+
+  ion-card {
+    margin: 16px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    ion-card-header {
+      padding: 16px;
+
+      ion-card-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      ion-card-subtitle {
+        margin-top: 4px;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    ion-card-content {
+      padding: 16px;
+      line-height: 1.5;
+    }
+  }
+
+  ion-list {
+    margin-top: 16px;
+    background: transparent;
+
+    ion-list-header {
+      padding-left: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 16px;
+      --background: transparent;
+      margin-bottom: 8px;
+
+      ion-checkbox {
+        margin-right: 16px;
+        --size: 24px;
+        --checkbox-background-checked: var(--ion-color-primary);
+      }
+
+      ion-label {
+        h2 {
+          font-size: 16px;
+          font-weight: 500;
+          margin: 0;
+        }
+
+        .task-description {
+          color: var(--ion-color-medium);
+          font-size: 14px;
+          margin: 4px 0;
+        }
+
+        .completion-time {
+          font-size: 12px;
+          color: var(--ion-color-success);
+          margin: 4px 0 0;
+        }
+      }
+
+      ion-icon {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .statistics-card {
+    .stat-item {
+      text-align: center;
+      
+      h2 {
+        font-size: 24px;
+        margin: 0;
+      }
+      
+      p {
+        margin: 5px 0 0;
+        font-size: 14px;
+      }
+    }
+
+    .progress-bar {
+      margin-top: 16px;
+      height: 8px;
+      border-radius: 4px;
+    }
+  }
 }
 
 .loading-state, .error-state {
@@ -191,69 +286,6 @@
       margin-top: 8px;
       color: var(--ion-color-medium);
       font-size: 14px;
-    }
-  }
-
-  ion-card {
-    margin: 16px 0;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-    ion-card-header {
-      padding: 16px;
-
-      ion-card-title {
-        font-size: 18px;
-        font-weight: 600;
-      }
-
-      ion-card-subtitle {
-        margin-top: 4px;
-        color: var(--ion-color-medium);
-      }
-    }
-
-    ion-card-content {
-      padding: 0 16px 16px;
-      line-height: 1.5;
-    }
-  }
-
-  ion-list {
-    margin-top: 16px;
-    background: transparent;
-
-    ion-list-header {
-      padding-left: 0;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    ion-item {
-      --padding-start: 0;
-      --inner-padding-end: 0;
-      --background: transparent;
-      margin-bottom: 8px;
-
-      ion-checkbox {
-        margin-right: 16px;
-        --size: 24px;
-        --checkbox-background-checked: var(--ion-color-primary);
-      }
-
-      ion-label {
-        h2 {
-          font-size: 16px;
-          font-weight: 500;
-          margin-bottom: 4px;
-        }
-
-        p {
-          color: var(--ion-color-medium);
-          font-size: 14px;
-          line-height: 1.4;
-        }
-      }
     }
   }
 } 

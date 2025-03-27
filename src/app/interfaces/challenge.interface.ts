@@ -18,6 +18,10 @@ export interface Challenge {
   };
   difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   difficultyLevel: number; // 1-5, де 1 - найлегший, 5 - найскладніший
+  progress?: {
+    [date: string]: ChallengeProgress;
+  };
+  phases: ChallengePhase[];
 }
 
 export interface ChallengePhase {
@@ -34,13 +38,36 @@ export interface ChallengeTask {
   description?: string;
   icon?: string;
   completed: boolean;
-  progress?: number;
+  progress: number;
   type?: string;
   duration?: number;
 }
 
+export interface TaskProgress {
+  completed: boolean;
+  progress: number;
+  completedAt?: string | null;
+}
+
+export interface DayProgress {
+  date: string;
+  tasks: { [taskId: string]: TaskProgress };
+  completedTasks: number;
+  totalTasks: number;
+  lastUpdated: string;
+}
+
 export interface ChallengeProgress {
-  [taskId: string]: boolean;
+  date: string;
+  tasks: { [taskId: string]: TaskProgress };
+  completedTasks: number;
+  totalTasks: number;
+  lastUpdated: string;
+  taskDetails?: Array<{
+    taskId: string;
+    title: string;
+    completedAt?: string | null;
+  }>;
 }
 
 export interface Rewards {
