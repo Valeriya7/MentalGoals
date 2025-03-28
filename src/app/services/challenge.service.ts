@@ -484,30 +484,26 @@ export class ChallengeService {
     }
   }
 
-  async updateTodayProgress(
-    challengeId: string, 
-    taskId: string, 
-    completed: boolean,
-    completedAt?: string | null
-  ): Promise<void> {
+  async updateTodayProgress(challengeId: string, taskId: string, completed: boolean): Promise<void> {
     try {
-      const challenge = await this.getChallenge(challengeId);
-      if (!challenge) {
+      const today = new Date().toISOString().split('T')[0];
+      const challenges = await this.getChallenges();
+      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      
+      if (challengeIndex === -1) {
         throw new Error('Challenge not found');
       }
 
-      // Отримуємо поточну дату в UTC
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const dateKey = today.toISOString().split('T')[0];
-
+      const challenge = challenges[challengeIndex];
+      
+      // Ініціалізуємо прогрес для сьогоднішнього дня, якщо його ще немає
       if (!challenge.progress) {
         challenge.progress = {};
       }
-
-      if (!challenge.progress[dateKey]) {
-        challenge.progress[dateKey] = {
-          date: dateKey,
+      
+      if (!challenge.progress[today]) {
+        challenge.progress[today] = {
+          date: today,
           tasks: {},
           completedTasks: 0,
           totalTasks: challenge.tasks.length,
@@ -515,53 +511,31 @@ export class ChallengeService {
         };
       }
 
-      const dayProgress = challenge.progress[dateKey];
-      
-      if (!dayProgress.tasks[taskId]) {
-        dayProgress.tasks[taskId] = {
-          completed: false,
-          progress: 0
-        };
-      }
-
-      dayProgress.tasks[taskId].completed = completed;
-      if (completed) {
-        dayProgress.tasks[taskId].progress = 100;
-        // Використовуємо переданий час виконання або поточний час
-        dayProgress.tasks[taskId].completedAt = completedAt || new Date().toISOString();
-      } else {
-        dayProgress.tasks[taskId].progress = 0;
-        dayProgress.tasks[taskId].completedAt = null;
-      }
+      // Оновлюємо стан завдання
+      challenge.progress[today].tasks[taskId] = {
+        completed,
+        completedAt: completed ? new Date().toISOString() : null,
+        progress: completed ? 100 : 0,
+        date: today
+      };
 
       // Оновлюємо кількість виконаних завдань
-      dayProgress.completedTasks = Object.values(dayProgress.tasks)
+      challenge.progress[today].completedTasks = Object.values(challenge.progress[today].tasks)
         .filter(task => task.completed).length;
 
       // Оновлюємо час останнього оновлення
-      dayProgress.lastUpdated = new Date().toISOString();
+      challenge.progress[today].lastUpdated = new Date().toISOString();
 
-      // Перевіряємо чи всі завдання виконані
-      if (dayProgress.completedTasks === dayProgress.totalTasks) {
-        if (typeof challenge.currentDay === 'undefined') {
-          challenge.currentDay = 1;
-        } else {
-          challenge.currentDay++;
-        }
-        
-        if (challenge.currentDay > challenge.duration) {
-          challenge.status = 'completed';
-          challenge.completedDate = new Date().toISOString();
-        }
-      }
+      // Зберігаємо оновлений челендж
+      await this.saveToAllStorages(challenges);
 
-      const saved = await this.saveProgress(challenge);
-      if (!saved) {
-        throw new Error('Failed to save progress');
+      // Оновлюємо локальний стан
+      if (challenge.status === 'active') {
+        this.activeChallenge.next(challenge);
       }
 
     } catch (error) {
-      console.error('Error updating progress:', error);
+      console.error('Error updating today progress:', error);
       throw error;
     }
   }
@@ -1219,9 +1193,5 @@ export class ChallengeService {
     } catch (error) {
       console.error('Error initializing active challenge:', error);
     }
-  }
-
-  async setActiveChallenge(challenge: Challenge | null) {
-    this.activeChallenge.next(challenge);
   }
 } 

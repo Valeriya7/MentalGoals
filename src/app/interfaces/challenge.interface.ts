@@ -45,8 +45,9 @@ export interface ChallengeTask {
 
 export interface TaskProgress {
   completed: boolean;
+  completedAt: string | null;
   progress: number;
-  completedAt?: string | null;
+  date: string;
 }
 
 export interface DayProgress {

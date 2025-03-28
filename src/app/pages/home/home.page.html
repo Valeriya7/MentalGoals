@@ -4,7 +4,7 @@
       <ion-avatar (click)="goToProfile()">
         <img *ngIf="userPhotoUrl" [src]="userPhotoUrl"  />
         <img *ngIf="!userPhotoUrl" src="../../../assets/images/avatar/4.jpg" />
-       
+
         <!--
         <img *ngIf="userPhotoUrl" [src]="userPhotoUrl" alt="User avatar" (error)="handleAvatarError($event)">
         <ion-icon *ngIf="!userPhotoUrl" name="person-circle-outline" class="avatar-icon"></ion-icon>
@@ -30,8 +30,8 @@
   <!-- Календар -->
   <div class="calendar-strip" (click)="goToCalendar()">
     <div class="week-days">
-      <div *ngFor="let day of weekDays" 
-           class="day-item" 
+      <div *ngFor="let day of weekDays"
+           class="day-item"
            [class.current]="isCurrentDay(day.date)"
            [class.marked]="day.marked">
         <span class="day-name">{{ day.name }}</span>
@@ -40,40 +40,78 @@
     </div>
   </div>
 
-  <!-- Челендж -->
-  <div class="challenge-phase" *ngIf="activeChallenge">
-    <div class="phase-circle">
-      <h2>{{ 'HOME.CURRENT_CHALLENGE' | translate }}</h2>
-      <h1>{{ activeChallenge.title }}</h1>
-      <p>{{ 'HOME.DAY_OF' | translate: { current: currentDay, total: totalDays } }}</p>
-      
-      <!-- Прогрес-бар -->
-      <div class="progress-bar">
-        <div class="progress" [style.width.%]="(currentDay/totalDays)*100"></div>
-      </div>
-
-      <!-- Завдання -->
-      <div class="challenge-tasks">
-        <div class="task-item" [class.completed]="task.completed" *ngFor="let task of dailyTasks">
-          <ion-icon [name]="task.icon" [attr.aria-hidden]="true"></ion-icon>
-          <span>{{ task.name }}</span>
+  <!-- Active Challenges Progress -->
+  <div *ngIf="activeChallenges.length > 0" class="active-challenges">
+    <div class="challenges-grid">
+      <div *ngFor="let challenge of activeChallenges" class="challenge-card">
+        <div class="challenge-progress">
+          <div class="circular-progress">
+            <svg class="progress-ring" width="120" height="120">
+              <circle
+                class="progress-ring__circle-bg"
+                cx="60"
+                cy="60"
+                r="54"
+                fill="none"
+                stroke="var(--ion-color-light)"
+                stroke-width="8"
+              />
+              <circle
+                class="progress-ring__circle"
+                cx="60"
+                cy="60"
+                r="54"
+                fill="none"
+                stroke="var(--ion-color-primary)"
+                stroke-width="8"
+                [style.stroke-dasharray]="getProgressCircumference(challenge)"
+                [style.stroke-dashoffset]="getProgressOffset(challenge)"
+              />
+            </svg>
+            <div class="progress-text">
+              <span class="percentage">{{ getProgressPercentage(challenge) }}%</span>
+              <span class="days">{{ getCurrentDay(challenge) }}/{{ challenge.duration }}</span>
+            </div>
+          </div>
+          <h3 class="challenge-title">{{ challenge.title }}</h3>
         </div>
       </div>
-
-      <ion-button expand="block" (click)="goToCurrentChallenge()" class="view-details-btn">
-        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-        {{ 'HOME.VIEW_CHALLENGE_DETAILS' | translate }}
-      </ion-button>
     </div>
   </div>
 
-  <div class="no-challenge" *ngIf="!activeChallenge">
-    <h2>{{ 'HOME.NO_ACTIVE_CHALLENGE' | translate }}</h2>
-    <p>{{ 'HOME.START_CHALLENGE_DESC' | translate }}</p>
-    <ion-button expand="block" (click)="goToCurrentChallenge()">
-      <ion-icon name="add-outline" slot="start" [attr.aria-hidden]="true"></ion-icon>
-      {{ 'HOME.START_CHALLENGE' | translate }}
-    </ion-button>
+  <!-- All Active Tasks -->
+  <div *ngIf="allDailyTasks.length > 0" class="all-tasks">
+    <h2>Всі активні завдання</h2>
+    <ion-list>
+      <ion-item *ngFor="let task of allDailyTasks" [class.completed]="task.completed">
+        <ion-checkbox
+          slot="start"
+          [checked]="task.completed"
+          (ionChange)="updateTaskProgress(task, $event)"
+        ></ion-checkbox>
+        <ion-label>
+          <h2>{{ task.title }}</h2>
+          <p>{{ task.description }}</p>
+          <span class="challenge-title">{{ task.challengeTitle }}</span>
+        </ion-label>
+        <ion-icon [name]="task.icon" slot="end"></ion-icon>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <!-- No Active Challenge -->
+  <div *ngIf="!activeChallenges.length && allDailyTasks.length === 0" class="no-challenge">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Немає активного челенджу</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Оберіть челендж, щоб почати працювати над своїми цілями</p>
+        <ion-button expand="block" routerLink="/challenges">
+          Перейти до челенджів
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
   </div>
 
   <!-- Статистика -->
@@ -113,25 +151,6 @@
     </div>
   </div>
 
-  <!-- Щоденні завдання -->
-  <ion-list *ngIf="activeChallenge && dailyTasks.length > 0">
-    <ion-list-header>
-      <ion-label>{{ 'HOME.DAILY_TASKS' | translate }}</ion-label>
-    </ion-list-header>
-
-    <ion-item *ngFor="let task of dailyTasks">
-      <ion-icon [name]="task.icon" slot="start" [attr.aria-hidden]="true"></ion-icon>
-      <ion-label>
-        <ion-checkbox 
-          [checked]="task.completed"
-          (ionChange)="updateTaskProgress(task, $event)">
-          {{ task.title }}
-        </ion-checkbox>
-        <p *ngIf="task.description">{{ task.description }}</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-
   <!-- Побажання -->
   <ion-card class="wish-card" (click)="showWish()" *ngIf="currentWish">
     <ion-card-content>
@@ -157,4 +176,4 @@
       </ion-col>
     </ion-row>
   </ion-grid>
-</ion-content> 
+</ion-content>

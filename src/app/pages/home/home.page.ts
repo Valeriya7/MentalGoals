@@ -62,6 +62,8 @@ interface DailyTask {
   completed: boolean;
   title: string;
   description?: string;
+  challengeId?: string;
+  challengeTitle?: string;
 }
 
 @Component({
@@ -84,6 +86,8 @@ export class HomePage implements OnInit, OnDestroy {
   totalDays = 40;
 
   dailyTasks: DailyTask[] = [];
+  activeChallenges: Challenge[] = [];
+  allDailyTasks: DailyTask[] = [];
 
   hasUnreadWish = false;
   currentWish = '';
@@ -95,6 +99,10 @@ export class HomePage implements OnInit, OnDestroy {
   averageSleep: number = 0;
   averageWater: number = 0;
   challenges: Challenge[] = [];
+  Math = Math;
+
+  // Константа для розрахунку довжини кола
+  private readonly CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 54; // 2πr, де r = 54 (радіус кола)
 
   constructor(
     private router: Router,
@@ -172,8 +180,9 @@ export class HomePage implements OnInit, OnDestroy {
 
   async loadActiveChallenge() {
     try {
-      // Підписуємось на зміни активного челенджу
+      // Підписуємось на зміни активних челенджів
       this.challengeService.getActiveChallenge().subscribe(async challenge => {
+        console.log('Active challenge received:', challenge);
         this.activeChallenge = challenge;
         
         if (this.activeChallenge) {
@@ -187,22 +196,64 @@ export class HomePage implements OnInit, OnDestroy {
           this.totalDays = this.activeChallenge.duration;
           
           // Оновлюємо щоденні завдання з активного челенджу
-          if (this.activeChallenge.tasks) {
+          if (this.activeChallenge && this.activeChallenge.tasks) {
             const todayProgress = await this.challengeService.getTodayProgress(this.activeChallenge.id);
+            console.log('Today progress:', todayProgress);
+            
             this.dailyTasks = this.activeChallenge.tasks.map(task => ({
               name: task.title,
               icon: task.icon || 'checkmark-circle-outline',
               completed: todayProgress[task.id] || false,
               title: task.title,
-              description: task.description
+              description: task.description,
+              challengeId: this.activeChallenge?.id || '',
+              challengeTitle: this.activeChallenge?.title || ''
             }));
+
+            // Сортуємо завдання: невиконані зверху, виконані знизу
+            this.dailyTasks.sort((a, b) => {
+              if (a.completed === b.completed) return 0;
+              return a.completed ? 1 : -1;
+            });
           }
         } else {
           this.dailyTasks = [];
+          this.challengeDay = 0;
+          this.currentDay = 0;
+          this.totalDays = 0;
         }
       });
+
+      // Завантажуємо всі активні челенджі
+      const challenges = await this.challengeService.getChallenges();
+      this.activeChallenges = challenges.filter(c => c.status === 'active');
+      
+      // Завантажуємо завдання для всіх активних челенджів
+      this.allDailyTasks = [];
+      for (const challenge of this.activeChallenges) {
+        if (challenge.tasks) {
+          const todayProgress = await this.challengeService.getTodayProgress(challenge.id);
+          const tasks = challenge.tasks.map(task => ({
+            name: task.title,
+            icon: task.icon || 'checkmark-circle-outline',
+            completed: todayProgress[task.id] || false,
+            title: task.title,
+            description: task.description,
+            challengeId: challenge.id,
+            challengeTitle: challenge.title
+          }));
+          this.allDailyTasks.push(...tasks);
+        }
+      }
+
+      // Сортуємо всі завдання: невиконані зверху, виконані знизу
+      this.allDailyTasks.sort((a, b) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+      });
+
     } catch (error) {
-      console.error('Error loading active challenge:', error);
+      console.error('Error loading active challenges:', error);
     }
   }
 
@@ -458,39 +509,41 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async updateTaskProgress(task: DailyTask, event: any) {
-    if (!this.activeChallenge) return;
+    if (!task.challengeId) return;
 
     const isCompleted = event.detail.checked;
-    const taskId = this.activeChallenge.tasks.find(t => t.title === task.name)?.id;
-
-    if (!taskId) {
-      console.error('Task ID not found');
-      return;
-    }
 
     try {
       // Оновлюємо локальний стан
       task.completed = isCompleted;
 
       // Оновлюємо прогрес на сервері
-      await this.challengeService.updateTodayProgress(this.activeChallenge.id, taskId, isCompleted);
+      await this.challengeService.updateTodayProgress(task.challengeId, task.name, isCompleted);
 
-      // Оновлюємо список завдань
-      const todayProgress = await this.challengeService.getTodayProgress(this.activeChallenge.id);
-      this.dailyTasks = this.activeChallenge.tasks.map(t => ({
-        name: t.title,
-        icon: t.icon || 'checkmark-circle-outline',
-        completed: todayProgress[t.id] || false,
-        title: t.title,
-        description: t.description
-      }));
+      // Оновлюємо завдання в обох списках
+      this.dailyTasks = this.dailyTasks.map(t => 
+        t.name === task.name ? { ...t, completed: isCompleted } : t
+      );
+      this.allDailyTasks = this.allDailyTasks.map(t => 
+        t.name === task.name ? { ...t, completed: isCompleted } : t
+      );
+
+      // Сортуємо завдання
+      this.dailyTasks.sort((a, b) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+      });
+      this.allDailyTasks.sort((a, b) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+      });
 
       // Показуємо повідомлення про успіх
       const toast = await this.toastController.create({
         message: isCompleted ? 'Завдання виконано!' : 'Завдання скасовано',
         duration: 2000,
         position: 'bottom',
-        color: 'success'
+        color: isCompleted ? 'success' : 'medium'
       });
       await toast.present();
 
@@ -508,5 +561,40 @@ export class HomePage implements OnInit, OnDestroy {
       });
       await toast.present();
     }
+  }
+
+  // Отримуємо довжину кола для SVG
+  getProgressCircumference(challenge: Challenge): string {
+    return this.CIRCLE_CIRCUMFERENCE.toString();
+  }
+
+  // Отримуємо зміщення для SVG (прогрес)
+  getProgressOffset(challenge: Challenge): string {
+    const startDate = challenge.startDate ? new Date(challenge.startDate) : new Date();
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const currentDay = Math.min(diffDays + 1, challenge.duration);
+    const progress = currentDay / challenge.duration;
+    return (this.CIRCLE_CIRCUMFERENCE * (1 - progress)).toString();
+  }
+
+  // Отримуємо відсоток прогресу
+  getProgressPercentage(challenge: Challenge): number {
+    const startDate = challenge.startDate ? new Date(challenge.startDate) : new Date();
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const currentDay = Math.min(diffDays + 1, challenge.duration);
+    return Math.round((currentDay / challenge.duration) * 100);
+  }
+
+  // Отримуємо поточний день челенджу
+  getCurrentDay(challenge: Challenge): number {
+    const startDate = challenge.startDate ? new Date(challenge.startDate) : new Date();
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.min(diffDays + 1, challenge.duration);
   }
 }
