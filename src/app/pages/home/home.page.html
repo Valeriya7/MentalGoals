@@ -121,14 +121,12 @@
 
     <ion-item *ngFor="let task of dailyTasks">
       <ion-icon [name]="task.icon" slot="start" [attr.aria-hidden]="true"></ion-icon>
-      <ion-checkbox 
-        slot="start" 
-        [checked]="task.completed"
-        [aria-label]="task.title"
-        (ionChange)="updateTaskProgress(task, $event)">
-        {{ task.title }}
-      </ion-checkbox>
       <ion-label>
+        <ion-checkbox 
+          [checked]="task.completed"
+          (ionChange)="updateTaskProgress(task, $event)">
+          {{ task.title }}
+        </ion-checkbox>
         <p *ngIf="task.description">{{ task.description }}</p>
       </ion-label>
     </ion-item>

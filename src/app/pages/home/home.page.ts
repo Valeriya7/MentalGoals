@@ -14,11 +14,11 @@ import { ChallengeService } from '../../services/challenge.service';
 import { Challenge, ChallengePhase, ChallengeTask } from '../../interfaces/challenge.interface';
 import { ModalService } from '../../services/modal.service';
 import { addIcons } from 'ionicons';
-import { 
-  iceCreamOutline, 
-  cafeOutline, 
-  fitnessOutline, 
-  footstepsOutline, 
+import {
+  iceCreamOutline,
+  cafeOutline,
+  fitnessOutline,
+  footstepsOutline,
   bookOutline,
   notificationsOutline,
   calendarOutline,
@@ -82,9 +82,9 @@ export class HomePage implements OnInit, OnDestroy {
   challengeDay: number = 0;
   currentDay = 0;
   totalDays = 40;
-  
+
   dailyTasks: DailyTask[] = [];
-  
+
   hasUnreadWish = false;
   currentWish = '';
   private subscriptions: Subscription[] = [];
@@ -94,6 +94,7 @@ export class HomePage implements OnInit, OnDestroy {
   averageSteps: number = 0;
   averageSleep: number = 0;
   averageWater: number = 0;
+  challenges: Challenge[] = [];
 
   constructor(
     private router: Router,
@@ -106,11 +107,11 @@ export class HomePage implements OnInit, OnDestroy {
     private translate: TranslateService,
     private progressService: ProgressService
   ) {
-    addIcons({ 
-      iceCreamOutline, 
-      cafeOutline, 
-      fitnessOutline, 
-      footstepsOutline, 
+    addIcons({
+      iceCreamOutline,
+      cafeOutline,
+      fitnessOutline,
+      footstepsOutline,
       bookOutline,
       notificationsOutline,
       calendarOutline,
@@ -133,7 +134,7 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     console.log('Initializing home page...');
-    
+
     // Підписуємось на зміни мови
     this.subscriptions.push(
       this.translate.onLangChange.subscribe(() => {
@@ -171,42 +172,35 @@ export class HomePage implements OnInit, OnDestroy {
 
   async loadActiveChallenge() {
     try {
-      const activeChallenge = await firstValueFrom(this.challengeService.getActiveChallenge());
-      console.log('Active challenge loaded:', activeChallenge);
-      this.activeChallenge = activeChallenge;
-      
-      if (this.activeChallenge) {
-        const startDate = this.activeChallenge.startDate ? new Date(this.activeChallenge.startDate) : new Date();
-        const today = new Date();
-        const diffTime = Math.abs(today.getTime() - startDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // Підписуємось на зміни активного челенджу
+      this.challengeService.getActiveChallenge().subscribe(async challenge => {
+        this.activeChallenge = challenge;
         
-        this.challengeDay = diffDays;
-        this.currentDay = Math.min(diffDays + 1, this.activeChallenge.duration);
-        this.totalDays = this.activeChallenge.duration;
-        
-        // Оновлюємо щоденні завдання з активного челенджу
-        if (this.activeChallenge.tasks) {
-          const todayProgress = await this.challengeService.getTodayProgress(this.activeChallenge.id);
-          this.dailyTasks = this.activeChallenge.tasks.map(task => ({
-            name: task.title,
-            icon: task.icon || 'checkmark-circle-outline',
-            completed: todayProgress[task.id] || false,
-            title: task.title,
-            description: task.description
-          }));
+        if (this.activeChallenge) {
+          const startDate = this.activeChallenge.startDate ? new Date(this.activeChallenge.startDate) : new Date();
+          const today = new Date();
+          const diffTime = Math.abs(today.getTime() - startDate.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          
+          this.challengeDay = diffDays;
+          this.currentDay = Math.min(diffDays + 1, this.activeChallenge.duration);
+          this.totalDays = this.activeChallenge.duration;
+          
+          // Оновлюємо щоденні завдання з активного челенджу
+          if (this.activeChallenge.tasks) {
+            const todayProgress = await this.challengeService.getTodayProgress(this.activeChallenge.id);
+            this.dailyTasks = this.activeChallenge.tasks.map(task => ({
+              name: task.title,
+              icon: task.icon || 'checkmark-circle-outline',
+              completed: todayProgress[task.id] || false,
+              title: task.title,
+              description: task.description
+            }));
+          }
+        } else {
+          this.dailyTasks = [];
         }
-        
-        console.log('Challenge days calculated:', {
-          challengeDay: this.challengeDay,
-          currentDay: this.currentDay,
-          totalDays: this.totalDays,
-          tasks: this.dailyTasks
-        });
-      } else {
-        console.log('No active challenge found');
-        this.dailyTasks = [];
-      }
+      });
     } catch (error) {
       console.error('Error loading active challenge:', error);
     }
@@ -280,11 +274,11 @@ export class HomePage implements OnInit, OnDestroy {
 
   isChallengeDay(date: Date): boolean {
     if (!this.activeChallenge) return false;
-    
+
     const challengeStart = this.activeChallenge.startDate ? new Date(this.activeChallenge.startDate) : new Date();
     const challengeEnd = this.activeChallenge.endDate ? new Date(this.activeChallenge.endDate) : new Date();
     const checkDate = new Date(date);
-    
+
     return checkDate >= challengeStart && checkDate <= challengeEnd;
   }
 
@@ -432,7 +426,7 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       // Отримуємо всі записи користувача
       const userEntries = await this.progressService.getAllUserProgress();
-      
+
       if (userEntries && userEntries.length > 0) {
         // Підраховуємо суму всіх значень
         const totals = userEntries.reduce((acc: { steps: number; sleep: number; water: number }, entry: UserProgress) => {
@@ -465,16 +459,54 @@ export class HomePage implements OnInit, OnDestroy {
 
   async updateTaskProgress(task: DailyTask, event: any) {
     if (!this.activeChallenge) return;
-    
+
     const isCompleted = event.detail.checked;
-    task.completed = isCompleted;
-    
+    const taskId = this.activeChallenge.tasks.find(t => t.title === task.name)?.id;
+
+    if (!taskId) {
+      console.error('Task ID not found');
+      return;
+    }
+
     try {
-      await this.challengeService.updateTodayProgress(this.activeChallenge.id, task.name, isCompleted);
-      await this.loadActiveChallenge(); // Перезавантажуємо дані після оновлення
+      // Оновлюємо локальний стан
+      task.completed = isCompleted;
+
+      // Оновлюємо прогрес на сервері
+      await this.challengeService.updateTodayProgress(this.activeChallenge.id, taskId, isCompleted);
+
+      // Оновлюємо список завдань
+      const todayProgress = await this.challengeService.getTodayProgress(this.activeChallenge.id);
+      this.dailyTasks = this.activeChallenge.tasks.map(t => ({
+        name: t.title,
+        icon: t.icon || 'checkmark-circle-outline',
+        completed: todayProgress[t.id] || false,
+        title: t.title,
+        description: t.description
+      }));
+
+      // Показуємо повідомлення про успіх
+      const toast = await this.toastController.create({
+        message: isCompleted ? 'Завдання виконано!' : 'Завдання скасовано',
+        duration: 2000,
+        position: 'bottom',
+        color: 'success'
+      });
+      await toast.present();
+
     } catch (error) {
       console.error('Error updating task progress:', error);
-      task.completed = !isCompleted; // Повертаємо попередній стан у випадку помилки
+      // Повертаємо попередній стан у випадку помилки
+      task.completed = !isCompleted;
+      
+      // Показуємо повідомлення про помилку
+      const toast = await this.toastController.create({
+        message: 'Помилка при оновленні завдання',
+        duration: 2000,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
     }
   }
 }

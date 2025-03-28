@@ -28,6 +28,7 @@ export class ChallengeService {
     private platform: Platform
   ) {
     this.init();
+    this.initializeActiveChallenge();
   }
 
   private isOriginAllowed(): boolean {
@@ -483,13 +484,19 @@ export class ChallengeService {
     }
   }
 
-  async updateTodayProgress(challengeId: string, taskId: string, completed: boolean): Promise<void> {
+  async updateTodayProgress(
+    challengeId: string, 
+    taskId: string, 
+    completed: boolean,
+    completedAt?: string | null
+  ): Promise<void> {
     try {
       const challenge = await this.getChallenge(challengeId);
       if (!challenge) {
         throw new Error('Challenge not found');
       }
 
+      // Отримуємо поточну дату в UTC
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const dateKey = today.toISOString().split('T')[0];
@@ -520,7 +527,8 @@ export class ChallengeService {
       dayProgress.tasks[taskId].completed = completed;
       if (completed) {
         dayProgress.tasks[taskId].progress = 100;
-        dayProgress.tasks[taskId].completedAt = new Date().toISOString();
+        // Використовуємо переданий час виконання або поточний час
+        dayProgress.tasks[taskId].completedAt = completedAt || new Date().toISOString();
       } else {
         dayProgress.tasks[taskId].progress = 0;
         dayProgress.tasks[taskId].completedAt = null;
@@ -529,6 +537,9 @@ export class ChallengeService {
       // Оновлюємо кількість виконаних завдань
       dayProgress.completedTasks = Object.values(dayProgress.tasks)
         .filter(task => task.completed).length;
+
+      // Оновлюємо час останнього оновлення
+      dayProgress.lastUpdated = new Date().toISOString();
 
       // Перевіряємо чи всі завдання виконані
       if (dayProgress.completedTasks === dayProgress.totalTasks) {
@@ -1196,5 +1207,21 @@ export class ChallengeService {
         }]
       }
     ];
+  }
+
+  private async initializeActiveChallenge() {
+    try {
+      const challenges = await this.getChallenges();
+      const activeChallenge = challenges.find(c => c.status === 'active');
+      if (activeChallenge) {
+        this.activeChallenge.next(activeChallenge);
+      }
+    } catch (error) {
+      console.error('Error initializing active challenge:', error);
+    }
+  }
+
+  async setActiveChallenge(challenge: Challenge | null) {
+    this.activeChallenge.next(challenge);
   }
 } 
