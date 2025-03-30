@@ -1,66 +1,68 @@
 .calendar-section {
+  margin-bottom: 20px;
+  padding: 15px;
   background: var(--ion-color-light);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 24px;
+  border-radius: 10px;
 
   h2 {
-    margin: 0 0 16px;
+    margin: 0 0 15px 0;
     font-size: 1.2rem;
-    font-weight: 600;
-  }
-}
-
-.calendar-grid {
-  .calendar-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-weight: 500;
-    margin-bottom: 8px;
-    color: var(--ion-color-medium);
+    color: var(--ion-color-dark);
   }
 
-  .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    padding: 8px;
+  .calendar-grid {
+    .calendar-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: var(--ion-color-medium);
+    }
 
-    .calendar-day {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 40px;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
 
-      &.other-month {
-        color: var(--ion-color-medium);
-        opacity: 0.5;
-      }
+      .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        //background: var(--ion-color-light-shade);
+        border-radius: 22px;
+        cursor: pointer;
+        transition: all 0.3s ease;
 
-      &.today {
-        background-color: var(--ion-color-primary);
-        color: white;
-      }
-
-      &.has-activity {
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: 2px;
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
-          background-color: var(--ion-color-success);
+        &:hover {
+          background: var(--ion-color-primary-tint);
+          color: var(--ion-color-primary-contrast);
         }
-      }
 
-      &:hover {
-        background-color: var(--ion-color-light);
+        &.today {
+          background: var(--ion-color-primary);
+          color: var(--ion-color-primary-contrast);
+          font-weight: bold;
+        }
+
+        &.has-activity {
+          position: relative;
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            width: 6px;
+            height: 6px;
+            background: var(--ion-color-success);
+            border-radius: 50%;
+          }
+        }
+
+        &.other-month {
+          color: var(--ion-color-medium);
+          opacity: 0.5;
+        }
       }
     }
   }

@@ -46,22 +46,10 @@
     "OF": "von",
     "DAILY_TASKS": "Tägliche Aufgaben",
     "STATS": "Statistiken",
-    "HYDRATION_LEVEL": "Hydrationsniveau",
+    "HYDRATION_LEVEL": "Hydrationslevel",
     "NEED_MORE_WATER": "Sie müssen mehr Wasser trinken",
-    "DAILY_WISH": "Tageswunsch",
-    "TITLE": "Startseite",
-    "LIFE_WHEEL": "Lebensrad",
-    "CHALLENGE": "Herausforderung",
-    "START_CHALLENGE": "Neue Herausforderung starten",
-    "DAY_OF": "Tag {{current}} von {{total}}",
-    "PHASES": "Phasen",
-    "NO_ACTIVE_CHALLENGE": "Keine aktive Herausforderung",
-    "START_CHALLENGE_DESC": "Beginnen Sie Ihre Reise zur Verbesserung mit einer neuen Herausforderung",
-    "VIEW_CHALLENGE_DETAILS": "Details anzeigen",
-    "STEPS": "Schritte",
-    "SLEEP": "Schlaf",
-    "WATER": "Wasser",
-    "EMPTY_SET": "Durchschnitt"
+    "DAILY_WISH": "Täglicher Wunsch",
+    "TITLE": "Startseite"
   },
   "CHALLENGES": {
     "TITLE": "Herausforderungen 🎯",
@@ -101,7 +89,42 @@
     "DIFFICULTY_EASY": "Einfach",
     "DIFFICULTY_MEDIUM": "Mittel",
     "DIFFICULTY_HARD": "Schwer",
-    "POINTS": "Punkte"
+    "POINTS": "Punkte",
+    "EDIT": "Bearbeiten",
+    "DELETE": "Löschen",
+    "EDIT_HABIT": "Gewohnheit bearbeiten",
+    "UPDATE": "Aktualisieren",
+    "DELETE_CONFIRMATION": "Sind Sie sicher, dass Sie diese Gewohnheit löschen möchten?",
+    "YES": "Ja",
+    "NO": "Nein",
+    "CREATE_HABIT": "Gewohnheit erstellen",
+    "NAME": "Name der Gewohnheit",
+    "DESCRIPTION": "Beschreibung der Gewohnheit",
+    "HABIT_NAME": "Name der Gewohnheit",
+    "HABIT_DESCRIPTION": "Beschreibung der Gewohnheit",
+    "SELECT_DAYS": "Tage auswählen",
+    "SAVE": "Speichern",
+    "CANCEL": "Abbrechen",
+    "CATEGORY": "Kategorie",
+    "TARGET": "Zielwert",
+    "UNIT": "Einheiten",
+    "FREQUENCY": "Häufigkeit",
+    "FREQUENCY_DAILY": "Täglich",
+    "FREQUENCY_WEEKLY": "Wöchentlich",
+    "FREQUENCY_MONTHLY": "Monatlich",
+    "CATEGORIES": {
+      "HEALTH": "Gesundheit",
+      "FITNESS": "Fitness",
+      "MINDFULNESS": "Persönliche Entwicklung",
+      "NUTRITION": "Ernährung",
+      "SLEEP": "Schlaf",
+      "PRODUCTIVITY": "Produktivität",
+      "LEARNING": "Lernen",
+      "CREATIVITY": "Kreativität",
+      "SOCIAL": "Soziales Leben",
+      "FINANCE": "Finanzen",
+      "OTHER": "Sonstiges"
+    }
   },
   "PROFILE": {
     "TITLE": "Profil",
@@ -140,4 +163,4 @@
     "LOGOUT": "Abmelden",
     "POINTS": "Punkte"
   }
-}
+} 

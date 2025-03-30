@@ -63,19 +63,23 @@ export class HabitsService {
     });
   }
 
-  async toggleHabit(habitId: number, date: string, status: 'completed' | 'partial' | 'not_completed') {
+  async toggleHabit(habitId: string, date: string, status: 'completed' | 'partial' | 'not_completed') {
     const habits = this.habits.value;
     const habitIndex = habits.findIndex(h => h.id === habitId);
 
     if (habitIndex !== -1) {
-      habits[habitIndex].completionStatus[date] = status;
+      const habit = habits[habitIndex];
+      if (!habit.isActive) {
+        throw new Error('Cannot toggle inactive habit');
+      }
+      habit.completionStatus[date] = status;
       this.habits.next(habits);
       await this.saveHabits(habits);
       this.updateStreak(habitId);
     }
   }
 
-  async activateHabit(habitId: number) {
+  async activateHabit(habitId: string) {
     const habits = this.habits.value;
     const habitIndex = habits.findIndex(h => h.id === habitId);
 
@@ -86,7 +90,7 @@ export class HabitsService {
     }
   }
 
-  async deactivateHabit(habitId: number) {
+  async deactivateHabit(habitId: string) {
     const habits = this.habits.value;
     const habitIndex = habits.findIndex(h => h.id === habitId);
 
@@ -97,33 +101,65 @@ export class HabitsService {
     }
   }
 
-  private formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  private updateStreak(habitId: number) {
+  private updateStreak(habitId: string) {
     const habits = this.habits.value;
     const habitIndex = habits.findIndex(h => h.id === habitId);
 
     if (habitIndex !== -1) {
       const habit = habits[habitIndex];
-      const today = this.formatDate(new Date());
-      const yesterday = this.formatDate(new Date(Date.now() - 86400000));
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-      if (habit.completionStatus[today] === 'completed') {
-        if (habit.completionStatus[yesterday] === 'completed') {
-          habit.streak.current++;
-          if (habit.streak.current > habit.streak.best) {
-            habit.streak.best = habit.streak.current;
+      // Перевіряємо частоту звички
+      if (habit.frequency === 'daily') {
+        if (habit.completionStatus[today] === 'completed') {
+          if (habit.completionStatus[yesterday] === 'completed') {
+            habit.streak.current++;
+            if (habit.streak.current > habit.streak.best) {
+              habit.streak.best = habit.streak.current;
+            }
+          } else {
+            habit.streak.current = 1;
           }
-        } else {
-          habit.streak.current = 1;
+        } else if (habit.completionStatus[today] === 'not_completed') {
+          habit.streak.current = 0;
         }
-      } else if (habit.completionStatus[today] === 'not_completed') {
-        habit.streak.current = 0;
+      } else if (habit.frequency === 'weekly') {
+        // Логіка для тижневої звички
+        const weekStart = new Date(today);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        const weekStartStr = weekStart.toISOString().split('T')[0];
+        
+        if (habit.completionStatus[today] === 'completed') {
+          if (habit.completionStatus[weekStartStr] === 'completed') {
+            habit.streak.current++;
+            if (habit.streak.current > habit.streak.best) {
+              habit.streak.best = habit.streak.current;
+            }
+          } else {
+            habit.streak.current = 1;
+          }
+        } else if (habit.completionStatus[today] === 'not_completed') {
+          habit.streak.current = 0;
+        }
+      } else if (habit.frequency === 'monthly') {
+        // Логіка для місячної звички
+        const monthStart = new Date(today);
+        monthStart.setDate(1);
+        const monthStartStr = monthStart.toISOString().split('T')[0];
+        
+        if (habit.completionStatus[today] === 'completed') {
+          if (habit.completionStatus[monthStartStr] === 'completed') {
+            habit.streak.current++;
+            if (habit.streak.current > habit.streak.best) {
+              habit.streak.best = habit.streak.current;
+            }
+          } else {
+            habit.streak.current = 1;
+          }
+        } else if (habit.completionStatus[today] === 'not_completed') {
+          habit.streak.current = 0;
+        }
       }
 
       this.habits.next(habits);
@@ -134,7 +170,7 @@ export class HabitsService {
   private getInitialHabits(): Habit[] {
     return [
       {
-        id: 1,
+        id: '1',
         name: 'Ранкова медитація',
         description: '10 хвилин медитації щодня',
         icon: 'leaf-outline',
@@ -143,6 +179,7 @@ export class HabitsService {
         points: 10,
         isActive: true,
         isChallengeHabit: false,
+        isBaseHabit: true,
         completionStatus: {},
         streak: { current: 0, best: 0 },
         target: 10,
@@ -150,7 +187,7 @@ export class HabitsService {
         frequency: 'daily'
       },
       {
-        id: 2,
+        id: '2',
         name: 'Дихальні вправи',
         description: '5 хвилин дихальних вправ',
         icon: 'heart-outline',
@@ -159,6 +196,7 @@ export class HabitsService {
         points: 5,
         isActive: true,
         isChallengeHabit: false,
+        isBaseHabit: true,
         completionStatus: {},
         streak: { current: 0, best: 0 },
         target: 5,
@@ -166,7 +204,7 @@ export class HabitsService {
         frequency: 'daily'
       },
       {
-        id: 3,
+        id: '3',
         name: '8000 кроків',
         description: 'Пройдіть мінімум 8000 кроків',
         icon: 'footsteps-outline',
@@ -175,6 +213,7 @@ export class HabitsService {
         points: 15,
         isActive: false,
         isChallengeHabit: false,
+        isBaseHabit: true,
         completionStatus: {},
         streak: { current: 0, best: 0 },
         target: 8000,
@@ -182,7 +221,7 @@ export class HabitsService {
         frequency: 'daily'
       },
       {
-        id: 4,
+        id: '4',
         name: 'Без солодкого',
         description: 'Уникайте солодощів протягом дня',
         icon: 'ice-cream-outline',
@@ -191,6 +230,7 @@ export class HabitsService {
         points: 20,
         isActive: false,
         isChallengeHabit: false,
+        isBaseHabit: true,
         completionStatus: {},
         streak: { current: 0, best: 0 },
         target: 1,
@@ -198,7 +238,7 @@ export class HabitsService {
         frequency: 'daily'
       },
       {
-        id: 5,
+        id: '5',
         name: '5 англійських слів',
         description: 'Вивчіть нові слова',
         icon: 'book-outline',
@@ -214,5 +254,30 @@ export class HabitsService {
         frequency: 'daily'
       }
     ];
+  }
+
+  async createHabit(habit: Habit): Promise<void> {
+    const habits = this.habits.value;
+    habits.push(habit);
+    this.habits.next(habits);
+    await this.saveHabits(habits);
+  }
+
+  async updateHabit(habit: Habit): Promise<void> {
+    const habits = this.habits.value;
+    const habitIndex = habits.findIndex(h => h.id === habit.id);
+
+    if (habitIndex !== -1) {
+      habits[habitIndex] = habit;
+      this.habits.next(habits);
+      await this.saveHabits(habits);
+    }
+  }
+
+  async deleteHabit(habitId: string): Promise<void> {
+    const habits = this.habits.value;
+    const filteredHabits = habits.filter(h => h.id !== habitId);
+    this.habits.next(filteredHabits);
+    await this.saveHabits(filteredHabits);
   }
 }

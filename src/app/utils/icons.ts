@@ -46,7 +46,14 @@ import {
   flowerOutline,
   giftOutline,
   fastFoodOutline,
-  fastFood
+  fastFood,
+  ellipseOutline,
+  pencilOutline,
+  trashOutline,
+  closeOutline,
+  settingsOutline,
+  chevronBackOutline,
+  personCircleOutline
 } from 'ionicons/icons';
 
 // Реєструємо всі іконки один раз
@@ -77,6 +84,13 @@ addIcons({
   'flower-outline': flowerOutline,
   'gift-outline': giftOutline,
   'fast-food-outline': fastFoodOutline,
+  'ellipse-outline': ellipseOutline,
+  'pencil-outline': pencilOutline,
+  'trash-outline': trashOutline,
+  'close-outline': closeOutline,
+  'settings-outline': settingsOutline,
+  'chevron-back-outline': chevronBackOutline,
+  'person-circle-outline': personCircleOutline,
 
   // Filled іконки
   'home': home,
@@ -98,7 +112,7 @@ addIcons({
   'chevron-forward': chevronForward,
   'checkmark-circle': checkmarkCircle,
   'time': time,
-  'heart': heart,
   'cookies': fastFood,
-  'fast-food': fastFood
+  'nutrition': nutritionOutline,
+  'heart': heart
 }); 
