@@ -20,13 +20,21 @@
         <div>{{ 'HABITS.SUN' | translate }}</div>
       </div>
       <div class="calendar-days">
-        <div *ngFor="let date of currentMonth" 
+        <div *ngFor="let date of currentMonth"
              class="calendar-day"
-             [class.today]="isToday(date)">
+             [class.today]="isToday(date)"
+             [class.has-activity]="hasActivity(date)"
+             [class.other-month]="date.getMonth() !== selectedDate.getMonth()"
+             (click)="selectDay(date)">
           {{ date.getDate() }}
         </div>
       </div>
     </div>
+<!--
+    <div *ngFor="let date of currentMonth">
+         {{date}}
+  </div>-->
+
   </div>
 
   <div class="habits-section">
@@ -41,7 +49,7 @@
         </ion-label>
         <div class="habit-progress">
           <div class="progress-bar">
-            <div class="progress" 
+            <div class="progress"
                  [style.width.%]="(habit.streak.current / habit.target) * 100">
             </div>
           </div>
@@ -77,4 +85,4 @@
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-</ion-content> 
+</ion-content>

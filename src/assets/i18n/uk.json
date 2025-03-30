@@ -104,7 +104,12 @@
     "DIFFICULTY_EASY": "Легка",
     "DIFFICULTY_MEDIUM": "Середня",
     "DIFFICULTY_HARD": "Важка",
-    "POINTS": "Бали"
+    "POINTS": "Бали",
+    "DAILY_HABITS": "Щоденні звички",
+    "CHALLENGES": "Челенджі",
+    "COMPLETED": "Виконано",
+    "NOT_COMPLETED": "Не виконано",
+    "PARTIAL": "Частково виконано"
   },
   "LIFE_WHEEL": {
     "TITLE": "Колесо життєвого балансу",

@@ -184,22 +184,22 @@ export class HomePage implements OnInit, OnDestroy {
       this.challengeService.getActiveChallenge().subscribe(async challenge => {
         console.log('Active challenge received:', challenge);
         this.activeChallenge = challenge;
-        
+
         if (this.activeChallenge) {
           const startDate = this.activeChallenge.startDate ? new Date(this.activeChallenge.startDate) : new Date();
           const today = new Date();
           const diffTime = Math.abs(today.getTime() - startDate.getTime());
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          
+
           this.challengeDay = diffDays;
           this.currentDay = Math.min(diffDays + 1, this.activeChallenge.duration);
           this.totalDays = this.activeChallenge.duration;
-          
+
           // Оновлюємо щоденні завдання з активного челенджу
           if (this.activeChallenge && this.activeChallenge.tasks) {
             const todayProgress = await this.challengeService.getTodayProgress(this.activeChallenge.id);
             console.log('Today progress:', todayProgress);
-            
+
             this.dailyTasks = this.activeChallenge.tasks.map(task => ({
               name: task.title,
               icon: task.icon || 'checkmark-circle-outline',
@@ -227,7 +227,7 @@ export class HomePage implements OnInit, OnDestroy {
       // Завантажуємо всі активні челенджі
       const challenges = await this.challengeService.getChallenges();
       this.activeChallenges = challenges.filter(c => c.status === 'active');
-      
+
       // Завантажуємо завдання для всіх активних челенджів
       this.allDailyTasks = [];
       for (const challenge of this.activeChallenges) {
@@ -267,12 +267,13 @@ export class HomePage implements OnInit, OnDestroy {
       return {
         name: format(date, 'EEE', { locale }).slice(0, 2),
         date: format(date, 'd'),
-        marked: Math.random() > 0.5, // Приклад позначення днів
+        marked: false, // Початково всі дні не позначені
         fullDate: date
       };
     });
 
     this.updateWeekLabel();
+    this.loadSelectedDayProgress(); // Завантажуємо прогрес після генерації днів
   }
 
   updateWeekLabel() {
@@ -299,14 +300,20 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async loadSelectedDayProgress() {
-    if (this.activeChallenge) {
-      // Оновлюємо статус виконаних завдань для всіх днів тижня
+    // Перевіряємо всі активні челенджі
+    for (const challenge of this.activeChallenges) {
+      // Перевіряємо, чи день входить в період челенджу
       for (const day of this.weekDays) {
-        const dayProgress = await this.challengeService.getTodayProgress(
-          this.activeChallenge.id,
-          day.fullDate.toISOString().split('T')[0]
-        );
-        day.marked = Object.values(dayProgress).some(Boolean);
+        if (this.isChallengeDay(day.fullDate, challenge)) {
+          const dayProgress = await this.challengeService.getTodayProgress(
+            challenge.id,
+            day.fullDate.toISOString().split('T')[0]
+          );
+          // Позначаємо день, якщо є хоча б одне виконане завдання
+          if (Object.values(dayProgress).some(Boolean)) {
+            day.marked = true;
+          }
+        }
       }
     }
   }
@@ -323,11 +330,9 @@ export class HomePage implements OnInit, OnDestroy {
     return new Date(date).getTime() > new Date().setHours(23, 59, 59, 999);
   }
 
-  isChallengeDay(date: Date): boolean {
-    if (!this.activeChallenge) return false;
-
-    const challengeStart = this.activeChallenge.startDate ? new Date(this.activeChallenge.startDate) : new Date();
-    const challengeEnd = this.activeChallenge.endDate ? new Date(this.activeChallenge.endDate) : new Date();
+  isChallengeDay(date: Date, challenge: Challenge): boolean {
+    const challengeStart = challenge.startDate ? new Date(challenge.startDate) : new Date();
+    const challengeEnd = challenge.endDate ? new Date(challenge.endDate) : new Date();
     const checkDate = new Date(date);
 
     return checkDate >= challengeStart && checkDate <= challengeEnd;
@@ -338,7 +343,7 @@ export class HomePage implements OnInit, OnDestroy {
       const user = await this.authService.getCurrentUser();
       if (user) {
         console.log('Navigating to calendar, user:', user);
-        this.util.navigateToPage('/calendar');
+        this.util.navigateToPage('/tabs/habits');
       } else {
         console.log('No user, redirecting to auth');
         this.util.navigateToPage('/auth');
@@ -521,10 +526,10 @@ export class HomePage implements OnInit, OnDestroy {
       await this.challengeService.updateTodayProgress(task.challengeId, task.name, isCompleted);
 
       // Оновлюємо завдання в обох списках
-      this.dailyTasks = this.dailyTasks.map(t => 
+      this.dailyTasks = this.dailyTasks.map(t =>
         t.name === task.name ? { ...t, completed: isCompleted } : t
       );
-      this.allDailyTasks = this.allDailyTasks.map(t => 
+      this.allDailyTasks = this.allDailyTasks.map(t =>
         t.name === task.name ? { ...t, completed: isCompleted } : t
       );
 
@@ -551,7 +556,7 @@ export class HomePage implements OnInit, OnDestroy {
       console.error('Error updating task progress:', error);
       // Повертаємо попередній стан у випадку помилки
       task.completed = !isCompleted;
-      
+
       // Показуємо повідомлення про помилку
       const toast = await this.toastController.create({
         message: 'Помилка при оновленні завдання',

@@ -23,4 +23,23 @@ export interface Habit {
     time: string;
     days: string[];
   };
+}
+
+export interface DayActivity {
+  date: string;
+  habits: {
+    id: number;
+    name: string;
+    status: 'completed' | 'partial' | 'not_completed';
+    category: string;
+  }[];
+  challenges: {
+    id: number;
+    title: string;
+    tasks: {
+      id: string;
+      title: string;
+      completed: boolean;
+    }[];
+  }[];
 } 

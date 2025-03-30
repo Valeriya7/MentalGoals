@@ -17,6 +17,7 @@ export class HabitsService {
   private async loadHabits() {
     try {
       const { value } = await Preferences.get({ key: this.STORAGE_KEY });
+      console.log('loadHabits ', value);
       if (value) {
         this.habits.next(JSON.parse(value));
       } else {
@@ -31,6 +32,7 @@ export class HabitsService {
   }
 
   private async saveHabits(habits: Habit[]) {
+    console.log('saveHabits: ', habits);
     try {
       await Preferences.set({
         key: this.STORAGE_KEY,
@@ -95,14 +97,21 @@ export class HabitsService {
     }
   }
 
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   private updateStreak(habitId: number) {
     const habits = this.habits.value;
     const habitIndex = habits.findIndex(h => h.id === habitId);
 
     if (habitIndex !== -1) {
       const habit = habits[habitIndex];
-      const today = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const today = this.formatDate(new Date());
+      const yesterday = this.formatDate(new Date(Date.now() - 86400000));
 
       if (habit.completionStatus[today] === 'completed') {
         if (habit.completionStatus[yesterday] === 'completed') {
@@ -206,4 +215,4 @@ export class HabitsService {
       }
     ];
   }
-} 
+}

@@ -45,7 +45,7 @@
     "DAYS": "Days",
     "OF": "of",
     "DAILY_TASKS": "Daily Tasks",
-    "STATS": "Statistics",
+    "STATS": "Stats",
     "HYDRATION_LEVEL": "Hydration Level",
     "NEED_MORE_WATER": "You need to drink more water",
     "DAILY_WISH": "Daily Wish",
@@ -119,7 +119,12 @@
     "DIFFICULTY_EASY": "Easy",
     "DIFFICULTY_MEDIUM": "Medium",
     "DIFFICULTY_HARD": "Hard",
-    "POINTS": "Points"
+    "POINTS": "Points",
+    "DAILY_HABITS": "Daily Habits",
+    "CHALLENGES": "Challenges",
+    "COMPLETED": "Completed",
+    "NOT_COMPLETED": "Not Completed",
+    "PARTIAL": "Partially Completed"
   },
   "PROFILE": {
     "TITLE": "Profile",

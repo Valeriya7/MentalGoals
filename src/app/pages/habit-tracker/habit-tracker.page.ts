@@ -40,11 +40,15 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   }
 
   private loadHabits() {
+    console.log('Loading habits...');
     this.habitsSubscription = this.habitsService.getActiveHabits().subscribe(habits => {
+      console.log('Received active habits:', habits);
       this.activeHabits = habits;
+      this.generateCalendarDays(); // Оновлюємо календар після завантаження звичок
     });
 
     this.habitsService.getAvailableHabits().subscribe(habits => {
+      console.log('Received available habits:', habits);
       this.availableHabits = habits;
     });
   }
@@ -62,13 +66,45 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
     );
   }
 
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  hasActivity(date: Date): boolean {
+    const dateStr = this.formatDate(date);
+    console.log('Checking activity for date:', dateStr);
+    console.log('Active habits:', this.activeHabits);
+    
+    const hasActivity = this.activeHabits.some(habit => {
+      const status = habit.completionStatus[dateStr];
+      console.log(`Habit ${habit.name} status for ${dateStr}:`, status);
+      return status === 'completed' || status === 'partial';
+    });
+    
+    console.log('Has activity:', hasActivity);
+    return hasActivity;
+  }
+
   async toggleHabitCompletion(habit: Habit, date: Date, status: 'completed' | 'partial' | 'not_completed') {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = this.formatDate(date);
+    console.log('Toggling habit completion:', {
+      habit: habit.name,
+      date: dateStr,
+      status: status
+    });
+    
     await this.habitsService.toggleHabit(habit.id, dateStr, status);
+    habit.completionStatus[dateStr] = status;
+    console.log('Updated habit status:', habit.completionStatus);
+    
+    this.generateCalendarDays();
   }
 
   getHabitStatus(habit: Habit, date: Date): 'completed' | 'partial' | 'not_completed' {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = this.formatDate(date);
     return habit.completionStatus[dateStr] || 'not_completed';
   }
 
@@ -114,5 +150,10 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
 
   goToBookmarks() {
     // Навігація до закладок
+  }
+
+  selectDay(date: Date) {
+    this.selectedDate = date;
+    this.generateCalendarDays();
   }
 } 
