@@ -20,7 +20,7 @@
         <div>{{ 'HABITS.SUN' | translate }}</div>
       </div>
       <div class="calendar-days">
-        <div *ngFor="let date of currentMonth" 
+        <div *ngFor="let date of currentMonth"
              class="calendar-day"
              [class.today]="isToday(date)"
              [class.has-activity]="hasActivity(date)"
@@ -52,7 +52,7 @@
           </ion-label>
           <div class="habit-progress">
             <div class="progress-bar">
-              <div class="progress" 
+              <div class="progress"
                    [style.width.%]="(habit.streak.current / habit.target) * 100">
               </div>
             </div>
@@ -61,8 +61,11 @@
           <ion-button slot="end" (click)="toggleHabitCompletion(habit, selectedDate, getHabitStatus(habit, selectedDate) === 'completed' ? 'not_completed' : 'completed')">
             <ion-icon [name]="getHabitStatus(habit, selectedDate) === 'completed' ? 'checkmark-circle-outline' : 'time-outline'"></ion-icon>
           </ion-button>
+          <ion-button slot="end" (click)="deactivateHabit(habit)" color="warning" >
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+          </ion-button>
         </ion-item>
-        <ion-item-options side="end">
+        <ion-item-options side="end" class="button-options">
           <ion-item-option color="primary" (click)="openEditHabitModal(habit)" *ngIf="!habit.isBaseHabit">
             <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
           </ion-item-option>
@@ -195,4 +198,85 @@
       </ion-content>
     </ng-template>
   </ion-modal>
-</ion-content> 
+
+  <!-- Модальне вікно для редагування звички -->
+  <ion-modal [isOpen]="isEditHabitModalOpen" (didDismiss)="closeEditHabitModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ 'HABITS.EDIT_HABIT' | translate }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeEditHabitModal()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <form (ngSubmit)="updateHabit()" #habitForm="ngForm" *ngIf="editingHabit">
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.NAME' | translate }}</ion-label>
+            <ion-input [(ngModel)]="editingHabit.name" name="name" required></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.DESCRIPTION' | translate }}</ion-label>
+            <ion-textarea [(ngModel)]="editingHabit.description" name="description" required></ion-textarea>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.CATEGORY' | translate }}</ion-label>
+            <ion-select [(ngModel)]="editingHabit.category" name="category" required>
+              <ion-select-option value="health">{{ 'HABITS.CATEGORIES.HEALTH' | translate }}</ion-select-option>
+              <ion-select-option value="fitness">{{ 'HABITS.CATEGORIES.FITNESS' | translate }}</ion-select-option>
+              <ion-select-option value="mindfulness">{{ 'HABITS.CATEGORIES.MINDFULNESS' | translate }}</ion-select-option>
+              <ion-select-option value="nutrition">{{ 'HABITS.CATEGORIES.NUTRITION' | translate }}</ion-select-option>
+              <ion-select-option value="learning">{{ 'HABITS.CATEGORIES.LEARNING' | translate }}</ion-select-option>
+              <ion-select-option value="productivity">{{ 'HABITS.CATEGORIES.PRODUCTIVITY' | translate }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.DIFFICULTY' | translate }}</ion-label>
+            <ion-select [(ngModel)]="editingHabit.difficulty" name="difficulty" required>
+              <ion-select-option value="easy">{{ 'HABITS.DIFFICULTY_EASY' | translate }}</ion-select-option>
+              <ion-select-option value="medium">{{ 'HABITS.DIFFICULTY_MEDIUM' | translate }}</ion-select-option>
+              <ion-select-option value="hard">{{ 'HABITS.DIFFICULTY_HARD' | translate }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.POINTS' | translate }}</ion-label>
+            <ion-input type="number" [(ngModel)]="editingHabit.points" name="points" required></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.TARGET' | translate }}</ion-label>
+            <ion-input type="number" [(ngModel)]="editingHabit.target" name="target" required></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.UNIT' | translate }}</ion-label>
+            <ion-input [(ngModel)]="editingHabit.unit" name="unit"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">{{ 'HABITS.FREQUENCY' | translate }}</ion-label>
+            <ion-select [(ngModel)]="editingHabit.frequency" name="frequency" required>
+              <ion-select-option value="daily">{{ 'HABITS.FREQUENCY_DAILY' | translate }}</ion-select-option>
+              <ion-select-option value="weekly">{{ 'HABITS.FREQUENCY_WEEKLY' | translate }}</ion-select-option>
+              <ion-select-option value="monthly">{{ 'HABITS.FREQUENCY_MONTHLY' | translate }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <div class="ion-padding">
+            <ion-button expand="block" type="submit">
+              {{ 'HABITS.UPDATE' | translate }}
+            </ion-button>
+          </div>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

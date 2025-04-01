@@ -9,13 +9,17 @@ import { HabitsService } from '../../services/habits.service';
 import { Habit } from '../../interfaces/habit.interface';
 import { Subscription } from 'rxjs';
 import '../../utils/icons'; // Імпортуємо централізовану реєстрацію іконок
+import { TranslateService } from '@ngx-translate/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AlertController, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-habit-tracker',
   templateUrl: './habit-tracker.page.html',
   styleUrls: ['./habit-tracker.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslateModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, TranslateModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HabitTrackerPage implements OnInit, OnDestroy {
   today = new Date();
@@ -45,7 +49,12 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
     streak: { current: 0, best: 0 }
   };
 
-  constructor(private habitsService: HabitsService) {
+  constructor(
+    private habitsService: HabitsService,
+    private translateService: TranslateService,
+    private alertController: AlertController,
+    private toastController: ToastController
+  ) {
     this.generateCalendarDays();
   }
 
@@ -72,10 +81,10 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   generateCalendarDays() {
     const year = this.selectedDate.getFullYear();
     const month = this.selectedDate.getMonth();
-    
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
+
     this.currentMonth = Array.from(
       { length: lastDay.getDate() },
       (_, i) => new Date(year, month, i + 1)
@@ -84,10 +93,10 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
 
   async toggleHabitCompletion(habit: Habit, date: Date, status: 'completed' | 'partial' | 'not_completed') {
     const dateStr = date.toISOString().split('T')[0];
-    
+
     // Перевіряємо поточний статус звички
     const currentStatus = habit.completionStatus[dateStr];
-    
+
     // Якщо звичка вже відмічена як виконана, і користувач намагається відмітити її знову
     if (currentStatus === 'completed') {
       // Якщо користувач намагається змінити статус на 'not_completed', дозволяємо це
@@ -97,7 +106,7 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
       // В іншому випадку ігноруємо спробу повторної відмітки
       return;
     }
-    
+
     // Якщо звичка ще не відмічена або відмічена як 'partial'/'not_completed',
     // дозволяємо змінити її статус
     await this.habitsService.toggleHabit(habit.id, dateStr, status);
@@ -114,8 +123,41 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   }
 
   async deactivateHabit(habit: Habit) {
-    await this.habitsService.deactivateHabit(habit.id);
-    this.loadHabits();
+    const alert = await this.alertController.create({
+      header: this.translateService.instant('HABITS.DEACTIVATE_CONFIRMATION'),
+      message: this.translateService.instant('HABITS.DEACTIVATE_MESSAGE'),
+      buttons: [
+        {
+          text: this.translateService.instant('COMMON.CANCEL'),
+          role: 'cancel'
+        },
+        {
+          text: this.translateService.instant('HABITS.DEACTIVATE'),
+          role: 'destructive',
+          handler: () => {
+            habit.isActive = false;
+            this.habitsService.updateHabit(habit);
+            this.loadHabits();
+            this.presentToast(this.translateService.instant('HABITS.DEACTIVATED_SUCCESS'));
+          }
+        }
+      ],
+      backdropDismiss: false,
+      cssClass: 'alert-dialog',
+      keyboardClose: false,
+      mode: 'md'
+    });
+
+    await alert.present();
+  }
+
+  async presentToast(message: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 
   isToday(date: Date): boolean {
@@ -234,7 +276,9 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   }
 
   openEditHabitModal(habit: Habit) {
+    console.log('habit ', habit);
     this.editingHabit = JSON.parse(JSON.stringify(habit));
+    console.log('this.editingHabit ', this.editingHabit);
     this.isEditHabitModalOpen = true;
   }
 
@@ -245,13 +289,10 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
 
   async updateHabit() {
     if (this.editingHabit) {
-      try {
-        await this.habitsService.updateHabit(this.editingHabit);
-        this.closeEditHabitModal();
-        this.loadHabits();
-      } catch (error) {
-        console.error('Error updating habit:', error);
-      }
+      await this.habitsService.updateHabit(this.editingHabit);
+      this.loadHabits();
+      this.closeEditHabitModal();
+      this.presentToast(this.translateService.instant('HABITS.UPDATED_SUCCESS'));
     }
   }
 
@@ -291,13 +332,13 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
 
   async onDrop(event: DragEvent, targetList: 'active' | 'available', targetHabit: Habit) {
     event.preventDefault();
-    
+
     if (!this.draggedHabit || this.draggedHabit === targetHabit) {
       return;
     }
 
     const sourceList = this.draggedHabit.isActive ? 'active' : 'available';
-    
+
     if (sourceList === targetList) {
       return;
     }
@@ -310,4 +351,4 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
 
     this.loadHabits();
   }
-} 
+}

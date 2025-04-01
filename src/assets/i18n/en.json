@@ -142,7 +142,12 @@
       "SOCIAL": "Social Life",
       "FINANCE": "Finance",
       "OTHER": "Other"
-    }
+    },
+    "DEACTIVATE_CONFIRMATION": "Deactivate Habit",
+    "DEACTIVATE_MESSAGE": "Are you sure you want to deactivate this habit? You can activate it again later.",
+    "DEACTIVATE": "Deactivate",
+    "DEACTIVATED_SUCCESS": "Habit deactivated",
+    "UPDATED_SUCCESS": "Habit updated successfully"
   },
   "PROFILE": {
     "TITLE": "Profile",
