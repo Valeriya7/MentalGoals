@@ -125,7 +125,28 @@ export class ChallengesPage implements OnInit {
         this.filteredChallenges = this.challenges.filter(c => c.status === 'available');
         break;
       default:
-        this.filteredChallenges = this.challenges;
+        // Сортуємо челенджі так, щоб активні були вгорі, а завершені внизу
+        this.filteredChallenges = [...this.challenges].sort((a, b) => {
+          // Спочатку сортуємо за статусом
+          const statusOrder: Record<string, number> = {
+            'active': 0,
+            'available': 1,
+            'completed': 2,
+            'failed': 3
+          };
+          const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+          
+          if (statusDiff !== 0) {
+            return statusDiff;
+          }
+          
+          // Якщо статус однаковий, сортуємо за датою
+          if (a.startDate && b.startDate) {
+            return new Date(b.startDate).getTime() - new Date(a.startDate).getTime(); // Найновіші вгорі
+          }
+          
+          return 0;
+        });
     }
   }
 
@@ -167,8 +188,8 @@ export class ChallengesPage implements OnInit {
   }
 
   viewChallengeDetails(challenge: Challenge) {
-    console.log("Navigating to challenge details: ", challenge);
-    this.router.navigate(['/challenge-details', challenge.id]);
+    console.log("challenge: ", challenge);
+    this.router.navigate(['/challenges', challenge.id]);
   }
 
   goToNotifications() {

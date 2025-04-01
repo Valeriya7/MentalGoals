@@ -17,21 +17,18 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="challenges-list">
-    <div class="challenge-card" *ngFor="let challenge of challenges" role="article">
+    <div class="challenge-card" *ngFor="let challenge of filteredChallenges" role="article">
       <h2>{{ challenge.title }}</h2>
       <p>{{ challenge.description }}</p>
 
-      <div class="challenge-info">
-        <div class="difficulty" [ngClass]="challenge.difficulty">
-          <ion-icon [name]="getDifficultyIcon(challenge.difficulty)"></ion-icon>
-          <span>{{ challenge.difficulty | titlecase }}</span>
-        </div>
-        <div class="info-item">
-          <span class="status" [ngClass]="challenge.status" role="status">
-            {{ 'CHALLENGES.STATUS_' + challenge.status.toUpperCase() | translate }}
-          </span>
-        </div>
+      <div class="difficulty" [ngClass]="challenge.difficulty">
+        <ion-icon [name]="getDifficultyIcon(challenge.difficulty)"></ion-icon>
+        <span>{{ challenge.difficulty | titlecase }}</span>
       </div>
+
+      <span class="status" [ngClass]="challenge.status" role="status">
+        {{ 'CHALLENGES.STATUS_' + challenge.status.toUpperCase() | translate }}
+      </span>
 
       <div class="challenge-info">
         <div class="info-item" role="complementary">
@@ -47,9 +44,11 @@
           <ion-button fill="clear" size="small" (click)="toggleRewards(challenge)" class="toggle-tasks">
             <ion-icon [name]="isRewardsExpanded(challenge) ? 'chevron-up-outline' : 'chevron-down-outline'" slot="icon-only"></ion-icon>
           </ion-button>
-         <!-- <ion-button fill="clear" size="small" (click)="toggleTasks(challenge)" class="toggle-tasks">
+          <!--
+          <ion-button fill="clear" size="small" (click)="toggleTasks(challenge)" class="toggle-tasks">
             <ion-icon [name]="isExpanded(challenge) ? 'chevron-up-outline' : 'chevron-down-outline'" slot="icon-only"></ion-icon>
-          </ion-button>-->
+          </ion-button>
+          -->
         </div>
       </div>
 
@@ -121,7 +120,7 @@
       <ion-button expand="block"
                   class="btn-challenge"
                   (click)="activateChallenge(challenge)"
-                  *ngIf="!challenge.status || challenge.status === 'available'"
+                  *ngIf="challenge.status === 'available'"
                   [attr.aria-label]="'CHALLENGES.ACTIVATE' | translate">
         {{ 'CHALLENGES.ACTIVATE' | translate }}
       </ion-button>
