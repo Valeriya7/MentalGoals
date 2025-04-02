@@ -6,13 +6,14 @@ import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { saveOutline } from 'ionicons/icons';
 import { Preferences } from '@capacitor/preferences';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-edit-profile',
   templateUrl: './edit-profile.page.html',
   styleUrls: ['./edit-profile.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, TranslateModule]
 })
 export class EditProfilePage implements OnInit {
   userData = {
@@ -55,7 +56,7 @@ export class EditProfilePage implements OnInit {
       await Preferences.set({ key: 'phone', value: this.userData.phone });
       await Preferences.set({ key: 'bio', value: this.userData.bio });
 
-      this.router.navigate(['/profile']);
+      this.router.navigate(['/tabs/profile']);
     } catch (error) {
       console.error('Error saving profile:', error);
     }

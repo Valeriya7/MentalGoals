@@ -24,7 +24,7 @@
       <ion-item-divider>
         <ion-label>{{ 'PROFILE.PERSONAL_DATA' | translate }}</ion-label>
       </ion-item-divider>
-      
+
       <ion-item button (click)="editProfile()">
         <ion-icon slot="start" name="person-outline"></ion-icon>
         <ion-label>
@@ -38,7 +38,7 @@
       <ion-item>
         <ion-icon slot="start" name="language-outline"></ion-icon>
         <ion-label>{{ 'PROFILE.LANGUAGE' | translate }}</ion-label>
-        <ion-select 
+        <ion-select
           [(ngModel)]="currentLanguage"
           (ionChange)="changeLanguage($event)"
           interface="action-sheet"
@@ -54,9 +54,19 @@
     <!-- Інтеграції -->
     <ion-item-group>
       <ion-item-divider>
-        <ion-label>{{ 'PROFILE.INTEGRATIONS' | translate }}</ion-label>
+        <ion-label>{{ 'PROFILE.CONNECTED_DEVICES' | translate }}</ion-label>
       </ion-item-divider>
-      
+
+      <ion-item button (click)="connectStrava()">
+        <ion-icon slot="start" name="bicycle-outline"></ion-icon>
+        <ion-label>
+          <h3>Strava</h3>
+          <p>{{isStravaConnected ? ('STRAVA.CONNECTED' | translate) : ('STRAVA.NOT_CONNECTED' | translate)}}</p>
+          <p *ngIf="isStravaConnected && stravaEmail">{{stravaEmail}}</p>
+        </ion-label>
+        <ion-icon slot="end" [name]="isStravaConnected ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
+      </ion-item>
+
       <ion-item button (click)="connectDevice('garmin')">
         <ion-icon slot="start" name="watch-outline"></ion-icon>
         <ion-label>
@@ -65,7 +75,6 @@
         </ion-label>
         <ion-icon slot="end" [name]="isConnected.garmin ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
       </ion-item>
-
       <ion-item button (click)="connectDevice('samsung')">
         <ion-icon slot="start" name="watch-outline"></ion-icon>
         <ion-label>
@@ -73,6 +82,15 @@
           <p>{{isConnected.samsung ? ('PROFILE.CONNECTED' | translate) : ('PROFILE.NOT_CONNECTED' | translate)}}</p>
         </ion-label>
         <ion-icon slot="end" [name]="isConnected.samsung ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
+      </ion-item>
+
+        <ion-item *ngIf="showStravaCredentials">
+        <ion-label>
+          <ion-input label="Client ID" [(ngModel)]="stravaClientId" placeholder="Введіть Client ID"></ion-input>
+          <ion-input label="Client Secret" [(ngModel)]="stravaClientSecret" type="password" placeholder="Введіть Client Secret"></ion-input>
+          <ion-button expand="block" (click)="connectStrava()">Підключити</ion-button>
+          <ion-button expand="block" fill="clear" (click)="toggleStravaCredentials()">Скасувати</ion-button>
+        </ion-label>
       </ion-item>
 
       <ion-item button (click)="connectDevice('apple')">
@@ -137,7 +155,7 @@
       <ion-item-divider>
         <ion-label>{{ 'PROFILE.NOTIFICATIONS' | translate }}</ion-label>
       </ion-item-divider>
-      
+
       <ion-item>
         <ion-icon name="notifications" slot="start"></ion-icon>
         <ion-label>{{ 'PROFILE.PUSH_NOTIFICATIONS' | translate }}</ion-label>

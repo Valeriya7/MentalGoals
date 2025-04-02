@@ -4,16 +4,19 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';
 import { HealthData } from '../interfaces/health-data.interface';
+import { StravaService } from './strava.service';
 
 @Injectable()
 export class HealthApiService {
   private healthData = new BehaviorSubject<HealthData | null>(null);
   private connectedDevice = new BehaviorSubject<string | null>(null);
   private readonly BASE_URL = 'https://api.garmin.com';
+  private currentDeviceType: 'garmin' | 'samsung' | 'apple' | null = null;
 
   constructor(
     private http: HttpClient,
-    private platform: Platform
+    private platform: Platform,
+    private stravaService: StravaService
   ) {
     this.initializeConnectedDevice();
   }
@@ -98,39 +101,90 @@ export class HealthApiService {
 
   async syncHealthData(type: 'garmin' | 'samsung' | 'apple'): Promise<void> {
     try {
-      // Імітація отримання даних
-      const mockData: HealthData = {
-        sleep: {
-          duration: 8,
-          quality: 85,
-          deepSleep: 2.5,
-          lightSleep: 4.5,
-          remSleep: 1,
-          awakeTime: 0.2,
+      this.currentDeviceType = type;
+
+      // Перевіряємо підключення до Strava
+      const isStravaConnected = await this.stravaService.isConnected();
+      console.log('Strava connection status:', isStravaConnected);
+
+      if (!isStravaConnected) {
+        console.log('Strava is not connected, skipping activity sync');
+        this.healthData.next(null);
+        return;
+      }
+
+      // Отримуємо дані про активності з Strava
+      const activities = await this.stravaService.getActivities();
+      console.log('Activities fetched:', activities);
+      
+      if (!activities || activities.length === 0) {
+        console.log('No activities found');
+        this.healthData.next(null);
+        return;
+      }
+
+      // Отримуємо останню активність
+      const latestActivity = activities[0];
+      console.log('Latest Strava activity:', latestActivity);
+
+      // Отримуємо детальну інформацію про активність
+      const activityDetails = await this.stravaService.getActivityDetails(latestActivity.id);
+      console.log('Activity details:', activityDetails);
+
+      // Отримуємо дані про сон
+      const sleepData = await this.stravaService.getSleepData();
+      console.log('Sleep data:', sleepData);
+
+      // Отримуємо дані про пульс
+      const heartRateData = await this.stravaService.getHeartRateData();
+      console.log('Heart rate data:', heartRateData);
+
+      // Отримуємо дані про стрес
+      const stressData = await this.stravaService.getStressData();
+      console.log('Stress data:', stressData);
+
+      // Формуємо об'єкт з даними про здоров'я
+      const healthData: HealthData = {
+        deviceType: type,
+        lastSync: new Date(),
+        sleep: sleepData ? {
+          startTime: new Date(sleepData.startTime),
+          endTime: new Date(sleepData.endTime),
+          duration: sleepData.duration,
+          quality: sleepData.quality,
+          deepSleep: sleepData.deepSleep,
+          remSleep: sleepData.remSleep,
+          lightSleep: sleepData.lightSleep,
+          awakeTime: sleepData.awakeTime
+        } : {
           startTime: new Date(),
-          endTime: new Date()
+          endTime: new Date(),
+          duration: 0,
+          quality: 0,
+          deepSleep: 0,
+          remSleep: 0,
+          lightSleep: 0,
+          awakeTime: 0
         },
         activity: {
-          steps: 10000,
-          distance: 7.5,
-          calories: 2500,
-          activeMinutes: 60,
+          steps: activityDetails?.steps || 0,
+          distance: activityDetails?.distance || 0,
+          calories: activityDetails?.calories || 0,
+          activeMinutes: activityDetails?.moving_time || 0,
           heartRate: {
-            current: 75,
-            min: 60,
-            max: 150,
-            average: 80
+            current: heartRateData?.current || 0,
+            average: heartRateData?.average || 0,
+            max: heartRateData?.max || 0,
+            min: heartRateData?.min || 0
           }
         },
         stress: {
-          level: 45,
+          level: stressData?.level || 0,
           timestamp: new Date()
-        },
-        lastSync: new Date(),
-        deviceType: type
+        }
       };
 
-      this.healthData.next(mockData);
+      this.healthData.next(healthData);
     } catch (error) {
       console.error('Error syncing health data:', error);
       this.healthData.next(null);

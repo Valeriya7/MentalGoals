@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -12,9 +12,9 @@ import { TranslateModule } from '@ngx-translate/core';
   selector: 'app-root',
   template: '<ion-app><ion-router-outlet></ion-router-outlet></ion-app>',
   standalone: true,
-  imports: [IonicModule, TranslateModule]
+  imports: [IonicModule, TranslateModule, CommonModule, RouterModule]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   platformType: string = '';
 
   constructor(
@@ -24,15 +24,19 @@ export class AppComponent {
   ) {}
 
   async ngOnInit() {
-    this.platformType = this.platformCheckService.getPlatform();
-    this.versionCheckService.checkVersion();
-    
     try {
-      // Ініціалізація мови буде автоматично перевіряти мову пристрою
+      // Спочатку ініціалізуємо базові сервіси
+      this.platformType = this.platformCheckService.getPlatform();
+      this.versionCheckService.checkVersion();
+      
+      // Даємо час на ініціалізацію TranslateModule
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Тепер завантажуємо переклади
       await this.translateService.loadSavedLanguage();
-      console.log('Translations initialized');
+      console.log('Translations initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize translations:', error);
+      console.error('Failed to initialize:', error);
     }
   }
 }

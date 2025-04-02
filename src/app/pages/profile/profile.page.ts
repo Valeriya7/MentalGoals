@@ -11,6 +11,8 @@ import { HealthApiModule } from '../../services/health-api.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '../../services/translate.service';
 import { AuthService } from '../../services/auth.service';
+import { StravaService } from '../../services/strava.service';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-profile',
@@ -50,17 +52,29 @@ export class ProfilePage implements OnInit, OnDestroy {
   healthData: HealthData | null = null;
   private healthDataSubscription?: Subscription;
 
+  selectedActivityType: string = 'all';
+  selectedPeriod: string = 'week';
+  isStravaConnected = false;
+  stravaEmail: string | null = null;
+  stravaActivities: any[] = [];
+  showStravaCredentials = false;
+  stravaClientId: string = '';
+  stravaClientSecret: string = '';
+
   constructor(
     private router: Router,
     private healthApiService: HealthApiService,
     private authService: AuthService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private toastController: ToastController,
+    private stravaService: StravaService
   ) {}
 
   async ngOnInit() {
     await this.loadUserData();
     this.subscribeToHealthData();
     await this.loadLanguageSettings();
+    this.checkStravaConnection();
   }
 
   ngOnDestroy() {
@@ -137,6 +151,48 @@ export class ProfilePage implements OnInit, OnDestroy {
       await this.router.navigate(['/auth'], { replaceUrl: true });
     } catch (error) {
       console.error('Error during logout:', error);
+    }
+  }
+
+  private async checkStravaConnection() {
+    this.isStravaConnected = await this.stravaService.isConnected();
+    if (this.isStravaConnected) {
+      this.stravaEmail = await this.stravaService.getAthleteEmail();
+      this.stravaActivities = await this.stravaService.getActivities();
+    }
+    console.log('Strava connection status:', this.isStravaConnected);
+  }
+
+  async connectStrava() {
+    try {
+      if (!this.stravaClientId || !this.stravaClientSecret) {
+        this.showStravaCredentials = true;
+        return;
+      }
+
+      await this.stravaService.connect();
+      await this.checkStravaConnection();
+      this.presentToast('Strava успішно підключено!');
+    } catch (error) {
+      console.error('Error connecting to Strava:', error);
+      this.presentToast('Помилка підключення до Strava');
+    }
+  }
+
+  async presentToast(message: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      position: 'bottom'
+    });
+    toast.present();
+  }
+
+  toggleStravaCredentials() {
+    this.showStravaCredentials = !this.showStravaCredentials;
+    if (!this.showStravaCredentials) {
+      this.stravaClientId = '';
+      this.stravaClientSecret = '';
     }
   }
 }

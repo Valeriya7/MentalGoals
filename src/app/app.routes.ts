@@ -17,6 +17,10 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'strava-callback',
+    loadComponent: () => import('./pages/strava-callback/strava-callback.page').then(m => m.StravaCallbackPage)
+  },
+  {
     path: 'tabs',
     loadComponent: () => import('./pages/tabs/tabs.page').then(m => m.TabsPage),
     canActivate: [AuthGuard],
@@ -40,10 +44,6 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage)
-      },
-      {
-        path: 'bookmarks',
-        loadComponent: () => import('./pages/bookmarks/bookmarks.page').then(m => m.BookmarksPage)
       },
       {
         path: '',

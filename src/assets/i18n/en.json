@@ -67,6 +67,7 @@
     "DISCOUNT_OF": "{{amount}} discount",
     "DISCOUNT_NOTE": "* Discounts can be used within a month after successful challenge completion. Discounts cannot be combined with other promotions.",
     "UPCOMING_CHALLENGES": "Upcoming Challenges",
+    "DAYS": "days",
     "CONDITION": "Condition",
     "REWARDS_PREVIEW": "Rewards",
     "BONUS_POINTS": "bonus points",
@@ -165,7 +166,7 @@
     "CONNECTED": "Connected",
     "NOT_CONNECTED": "Not Connected",
     "HEALTH_DATA": "Health Data",
-    "LAST_UPDATE": "Last Update",
+    "LAST_UPDATE": "Last update",
     "SLEEP": "Sleep",
     "DURATION": "Duration",
     "HOURS": "hours",
@@ -173,7 +174,7 @@
     "ACTIVITY": "Activity",
     "STEPS": "Steps",
     "KM": "km",
-    "ACTIVE_MINUTES": "Active Minutes",
+    "ACTIVE_MINUTES": "Active minutes",
     "HEART_RATE": "Heart Rate",
     "CURRENT": "Current",
     "AVERAGE": "Average",
@@ -184,6 +185,20 @@
     "REMINDERS": "Reminders",
     "ACHIEVEMENTS": "Achievements",
     "LOGOUT": "Logout",
-    "POINTS": "Points"
+    "POINTS": "Points",
+    "TRAINING_DATA": "Training Data",
+    "TOTAL_ACTIVITIES": "Total Activities",
+    "TOTAL_DISTANCE": "Total Distance",
+    "TOTAL_TIME": "Total Time"
+  },
+  "STRAVA": {
+    "CONNECTING": "Connecting to Strava...",
+    "CONNECTED": "Connected",
+    "NOT_CONNECTED": "Not Connected",
+    "ERRORS": {
+      "CONNECTION_FAILED": "Failed to connect to Strava",
+      "NO_CODE": "Authorization code not provided",
+      "CALLBACK_ERROR": "Error processing Strava response"
+    }
   }
 } 

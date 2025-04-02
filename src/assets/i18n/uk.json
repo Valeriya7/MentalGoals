@@ -168,12 +168,20 @@
     "POINTS": "балів",
     "EDIT_PROFILE": "Редагувати профіль",
     "PERSONAL_DATA": "Особисті дані",
-    "CHANGE_DATA": "Змініть ваші особисті дані",
+    "CHANGE_DATA": "Змінити особисті дані",
+    "NAME": "Ім'я",
+    "EMAIL": "Email",
+    "PHONE": "Телефон",
+    "BIO": "Біографія",
+    "ENTER_NAME": "Введіть ваше ім'я",
+    "ENTER_EMAIL": "Введіть ваш email",
+    "ENTER_PHONE": "Введіть ваш телефон",
+    "ENTER_BIO": "Розкажіть про себе",
     "INTEGRATIONS": "Інтеграції",
     "CONNECTED": "Підключено",
     "NOT_CONNECTED": "Не підключено",
     "HEALTH_DATA": "Дані про здоров'я",
-    "LAST_UPDATE": "Оновлено",
+    "LAST_UPDATE": "Останнє оновлення",
     "SLEEP": "Сон",
     "DURATION": "Тривалість",
     "HOURS": "годин",
@@ -191,7 +199,12 @@
     "PUSH_NOTIFICATIONS": "Push-сповіщення",
     "REMINDERS": "Нагадування",
     "ACHIEVEMENTS": "Досягнення",
-    "LOGOUT": "Вийти"
+    "LOGOUT": "Вийти",
+    "POINTS": "Бали",
+    "TRAINING_DATA": "Дані про тренування",
+    "TOTAL_ACTIVITIES": "Всього активностей",
+    "TOTAL_DISTANCE": "Загальна відстань",
+    "TOTAL_TIME": "Загальний час"
   },
   "TASKS": "Завдання",
   "REWARDS": "Винагороди",
@@ -200,5 +213,15 @@
   "START_CHALLENGE": "Почати челендж",
   "VIEW_DETAILS": "Переглянути деталі",
   "ACTIVE": "Активний",
-  "COMPLETED": "Завершено"
+  "COMPLETED": "Завершено",
+  "STRAVA": {
+    "CONNECTING": "Підключення до Strava...",
+    "CONNECTED": "Підключено",
+    "NOT_CONNECTED": "Не підключено",
+    "ERRORS": {
+      "CONNECTION_FAILED": "Помилка підключення до Strava",
+      "NO_CODE": "Код авторизації не надано",
+      "CALLBACK_ERROR": "Помилка обробки відповіді від Strava"
+    }
+  }
 } 
