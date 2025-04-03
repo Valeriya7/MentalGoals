@@ -162,6 +162,16 @@ ion-modal.bookmark-modal {
   --border-radius:20px 20px 0px 0px;
 }
 
+.wish-modal {
+  --height: auto;
+  --width: 90%;
+  --max-width: 500px;
+  --border-radius: 16px;
+  
+  .modal-wrapper {
+    background: var(--ion-color-light);
+  }
+}
 
 .auth-screen {
   .center-image {

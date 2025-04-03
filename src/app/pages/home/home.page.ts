@@ -32,7 +32,7 @@ import {
   personCircleOutline
 } from 'ionicons/icons';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { ToastController, ModalController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
 import { TaskService } from '../../services/task.service';
@@ -42,6 +42,7 @@ import { Wish } from '../../models/wish.model';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks, addDays } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { ProgressService, UserProgress } from '../../services/progress.service';
+import { DailyWishComponent } from '../../components/daily-wish/daily-wish.component';
 
 interface DiaryEntry {
   date: Date;
@@ -113,7 +114,8 @@ export class HomePage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private authService: AuthService,
     private translate: TranslateService,
-    private progressService: ProgressService
+    private progressService: ProgressService,
+    private modalCtrl: ModalController
   ) {
     addIcons({
       iceCreamOutline,
@@ -267,13 +269,13 @@ export class HomePage implements OnInit, OnDestroy {
       return {
         name: format(date, 'EEE', { locale }).slice(0, 2),
         date: format(date, 'd'),
-        marked: false, // Початково всі дні не позначені
+        marked: false, // Початковий стан
         fullDate: date
       };
     });
 
     this.updateWeekLabel();
-    this.loadSelectedDayProgress(); // Завантажуємо прогрес після генерації днів
+    this.loadSelectedDayProgress(); // Завантажуємо статус завдань після генерації днів
   }
 
   updateWeekLabel() {
@@ -300,20 +302,15 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async loadSelectedDayProgress() {
-    // Перевіряємо всі активні челенджі
-    for (const challenge of this.activeChallenges) {
-      // Перевіряємо, чи день входить в період челенджу
+    if (this.activeChallenge) {
+      // Оновлюємо статус виконаних завдань для всіх днів тижня
       for (const day of this.weekDays) {
-        if (this.isChallengeDay(day.fullDate, challenge)) {
-          const dayProgress = await this.challengeService.getTodayProgress(
-            challenge.id,
-            day.fullDate.toISOString().split('T')[0]
-          );
-          // Позначаємо день, якщо є хоча б одне виконане завдання
-          if (Object.values(dayProgress).some(Boolean)) {
-            day.marked = true;
-          }
-        }
+        const dateStr = format(day.fullDate, 'yyyy-MM-dd');
+        const dayProgress = await this.challengeService.getTodayProgress(
+          this.activeChallenge.id,
+          dateStr
+        );
+        day.marked = Object.values(dayProgress).some(Boolean);
       }
     }
   }
@@ -330,9 +327,11 @@ export class HomePage implements OnInit, OnDestroy {
     return new Date(date).getTime() > new Date().setHours(23, 59, 59, 999);
   }
 
-  isChallengeDay(date: Date, challenge: Challenge): boolean {
-    const challengeStart = challenge.startDate ? new Date(challenge.startDate) : new Date();
-    const challengeEnd = challenge.endDate ? new Date(challenge.endDate) : new Date();
+  isChallengeDay(date: Date): boolean {
+    if (!this.activeChallenge) return false;
+
+    const challengeStart = this.activeChallenge.startDate ? new Date(this.activeChallenge.startDate) : new Date();
+    const challengeEnd = this.activeChallenge.endDate ? new Date(this.activeChallenge.endDate) : new Date();
     const checkDate = new Date(date);
 
     return checkDate >= challengeStart && checkDate <= challengeEnd;
@@ -435,6 +434,15 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
+  async openDailyWish() {
+    const modal = await this.modalCtrl.create({
+      component: DailyWishComponent,
+      cssClass: 'half-modal'
+    });
+    return await modal.present();
+  }
+
+  // Wish modal window
   async showWish(): Promise<void> {
     if (this.hasUnreadWish) {
       await this.wishesService.markWishAsRead();
@@ -602,4 +610,5 @@ export class HomePage implements OnInit, OnDestroy {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.min(diffDays + 1, challenge.duration);
   }
+
 }
