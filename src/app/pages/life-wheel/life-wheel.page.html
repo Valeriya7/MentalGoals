@@ -1,22 +1,47 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/home"></ion-back-button>
-    </ion-buttons>
     <ion-title>{{ 'LIFE_WHEEL.TITLE' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="wheel-container">
-    <div class="wheel-svg-container">
-      <svg viewBox="-20 -50 470 490" class="life-wheel-svg">
+  <!-- Список сфер для оцінки -->
+  <div *ngIf="!isDataSaved" class="areas-list">
+    <ion-list>
+      <ion-item *ngFor="let area of areas">
+        <ion-label>
+          <h2>{{ area.key | translate }}</h2>
+        </ion-label>
+        <ion-range
+          [min]="1"
+          [max]="10"
+          [step]="1"
+          [value]="area.value"
+          (ionChange)="setAreaValue(area, $event)"
+          [disabled]="isDataSaved"
+          [snaps]="true"
+          color="primary">
+          <ion-icon slot="start" [name]="area.icon"></ion-icon>
+          <ion-label slot="end">{{ area.value }}</ion-label>
+        </ion-range>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" (click)="saveResults()" class="save-button" [disabled]="!isAllAreasRated">
+      {{ 'LIFE_WHEEL.SAVE' | translate }}
+    </ion-button>
+  </div>
+
+  <!-- Колесо життя -->
+  <div *ngIf="isDataSaved" class="wheel-container">
+    <div class="wheel-svg-container" (click)="toggleEditMode()">
+      <svg viewBox="-40 0 470 400" class="life-wheel-svg"> <!-- -30 -50 470 490 -->
         <!-- Сегменти колеса -->
         <g *ngFor="let area of areas; let i = index" [attr.transform]="'rotate(' + (i * 45) + ', 200, 200)'">
           <path *ngFor="let level of [1,2,3,4,5,6,7,8,9,10]; let j = index"
                 [attr.d]="createSegmentPath(j, level === area.value)"
                 [attr.class]="'segment ' + (level <= area.value ? 'active' : 'inactive')"
-                (click)="setAreaValue(area, level)"
+                (click)="onSegmentClick(area, level)"
                 [attr.fill]="getSegmentColor(i, level <= area.value)"/>
 
           <!-- Іконки та підписи -->
@@ -31,9 +56,14 @@
         </g>
       </svg>
     </div>
-  </div>
 
-  <ion-button expand="block" (click)="saveResults()" class="save-button">
-    {{ 'LIFE_WHEEL.SAVE' | translate }}
-  </ion-button>
+    <div class="wheel-controls">
+      <ion-button expand="block" (click)="toggleEditMode()" class="edit-button" [color]="isEditing ? 'success' : 'primary'">
+        {{ (isEditing ? 'LIFE_WHEEL.SAVE' : 'LIFE_WHEEL.EDIT') | translate }}
+      </ion-button>
+      <ion-button expand="block" (click)="resetData()" class="reset-button">
+        {{ 'LIFE_WHEEL.RESET' | translate }}
+      </ion-button>
+    </div>
+  </div>
 </ion-content>
