@@ -193,6 +193,18 @@ export class HomePage implements OnInit, OnDestroy {
           const diffTime = Math.abs(today.getTime() - startDate.getTime());
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+          // Перевіряємо, чи челендж не завершився
+          if (diffDays > this.activeChallenge.duration) {
+            // Якщо челендж завершився, оновлюємо його статус
+            await this.challengeService.updateChallengeStatus(this.activeChallenge.id, 'completed');
+            this.activeChallenge = null;
+            this.dailyTasks = [];
+            this.challengeDay = 0;
+            this.currentDay = 0;
+            this.totalDays = 0;
+            return;
+          }
+
           this.challengeDay = diffDays;
           this.currentDay = Math.min(diffDays + 1, this.activeChallenge.duration);
           this.totalDays = this.activeChallenge.duration;
@@ -228,7 +240,15 @@ export class HomePage implements OnInit, OnDestroy {
 
       // Завантажуємо всі активні челенджі
       const challenges = await this.challengeService.getChallenges();
-      this.activeChallenges = challenges.filter(c => c.status === 'active');
+      // Фільтруємо тільки активні челенджі, які не завершилися
+      this.activeChallenges = challenges.filter(c => {
+        if (c.status !== 'active') return false;
+        const startDate = c.startDate ? new Date(c.startDate) : new Date();
+        const today = new Date();
+        const diffTime = Math.abs(today.getTime() - startDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= c.duration;
+      });
 
       // Завантажуємо завдання для всіх активних челенджів
       this.allDailyTasks = [];
@@ -269,13 +289,12 @@ export class HomePage implements OnInit, OnDestroy {
       return {
         name: format(date, 'EEE', { locale }).slice(0, 2),
         date: format(date, 'd'),
-        marked: false, // Початковий стан
+        marked: Math.random() > 0.5, // Приклад позначення днів
         fullDate: date
       };
     });
 
     this.updateWeekLabel();
-    this.loadSelectedDayProgress(); // Завантажуємо статус завдань після генерації днів
   }
 
   updateWeekLabel() {
@@ -305,10 +324,9 @@ export class HomePage implements OnInit, OnDestroy {
     if (this.activeChallenge) {
       // Оновлюємо статус виконаних завдань для всіх днів тижня
       for (const day of this.weekDays) {
-        const dateStr = format(day.fullDate, 'yyyy-MM-dd');
         const dayProgress = await this.challengeService.getTodayProgress(
           this.activeChallenge.id,
-          dateStr
+          day.fullDate.toISOString().split('T')[0]
         );
         day.marked = Object.values(dayProgress).some(Boolean);
       }

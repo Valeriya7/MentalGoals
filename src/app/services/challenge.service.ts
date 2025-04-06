@@ -1194,4 +1194,19 @@ export class ChallengeService {
       console.error('Error initializing active challenge:', error);
     }
   }
+
+  async updateChallengeStatus(challengeId: string, status: 'active' | 'completed' | 'failed' | 'available'): Promise<void> {
+    try {
+      const challenges = await this.getChallenges();
+      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      
+      if (challengeIndex !== -1) {
+        challenges[challengeIndex].status = status;
+        await Preferences.set({ key: 'challenges', value: JSON.stringify(challenges) });
+      }
+    } catch (error) {
+      console.error('Error updating challenge status:', error);
+      throw error;
+    }
+  }
 } 
