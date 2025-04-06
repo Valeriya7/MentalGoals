@@ -200,5 +200,25 @@
       "NO_CODE": "Authorization code not provided",
       "CALLBACK_ERROR": "Error processing Strava response"
     }
+  },
+  "LIFE_WHEEL": {
+    "TITLE": "Life Balance Wheel",
+    "DESCRIPTION": "Rate different areas of your life",
+    "SAVE": "Save Results",
+    "SAVE_SUCCESS": "Results saved successfully",
+    "SAVE_ERROR": "Error saving results",
+    "EDIT": "Edit",
+    "RESET": "Reset",
+    "BACK": "Back",
+    "AREAS": {
+      "HEALTH": "Health",
+      "CAREER": "Career",
+      "FINANCE": "Finance",
+      "FAMILY": "Family",
+      "RELATIONSHIPS": "Relationships",
+      "PERSONAL_GROWTH": "Personal Growth",
+      "FUN": "Fun",
+      "ENVIRONMENT": "Environment"
+    }
   }
-} 
+}

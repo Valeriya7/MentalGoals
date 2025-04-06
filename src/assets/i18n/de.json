@@ -12,15 +12,21 @@
     "SAVE": "Ergebnisse speichern",
     "SAVE_SUCCESS": "Ergebnisse erfolgreich gespeichert",
     "SAVE_ERROR": "Fehler beim Speichern der Ergebnisse",
+    "EDIT": "Bearbeiten",
+    "RESET": "Zurücksetzen",
+    "BACK": "Zurück",
     "AREAS": {
       "HEALTH": "Gesundheit",
       "CAREER": "Karriere",
-      "FINANCES": "Finanzen",
+      "FINANCE": "Finanzen",
       "FAMILY": "Familie",
+      "RELATIONSHIPS": "Beziehungen",
       "PERSONAL_GROWTH": "Persönliche Entwicklung",
       "SOCIAL_LIFE": "Sozialleben",
       "FRIENDS": "Freunde",
-      "SPIRITUALITY": "Spiritualität"
+      "SPIRITUALITY": "Spiritualität",
+      "FUN": "Spaß",
+      "ENVIRONMENT": "Umgebung"
     }
   },
   "WISHES": {
@@ -163,4 +169,4 @@
     "LOGOUT": "Abmelden",
     "POINTS": "Punkte"
   }
-} 
+}

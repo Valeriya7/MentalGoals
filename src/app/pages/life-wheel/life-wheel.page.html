@@ -1,6 +1,11 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ 'LIFE_WHEEL.TITLE' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ translateService.instant('LIFE_WHEEL.TITLE') }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -37,7 +42,7 @@
     <div class="wheel-svg-container" (click)="toggleEditMode()">
       <svg viewBox="-40 0 470 400" class="life-wheel-svg"> <!-- -30 -50 470 490 -->
         <!-- Сегменти колеса -->
-        <g *ngFor="let area of areas; let i = index" [attr.transform]="'rotate(' + (i * 45) + ', 200, 200)'">
+        <g *ngFor="let area of areas; let i = index" [attr.transform]="'rotate(' + (i * 45 - 45 -45) + ', 200, 200)'">
           <path *ngFor="let level of [1,2,3,4,5,6,7,8,9,10]; let j = index"
                 [attr.d]="createSegmentPath(j, level === area.value)"
                 [attr.class]="'segment ' + (level <= area.value ? 'active' : 'inactive')"
@@ -45,10 +50,10 @@
                 [attr.fill]="getSegmentColor(i, level <= area.value)"/>
 
           <!-- Іконки та підписи -->
-          <g [attr.transform]="'rotate(' + (-i * 45) + ', 190, 190)'">
+          <g [attr.transform]="'rotate(' + (-i * 45 + 45 +45) + ', 210, 200)'">
             <image [attr.x]="getIconX(i)" [attr.y]="getIconY(i)" width="30" height="30"
                    [attr.href]="'assets/icons/' + area.icon + '.svg'"/>
-            <text [attr.x]="getLabelX(i)" [attr.y]="getLabelY(i)"
+            <text [attr.x]="getLabelX(i,(area.key=='LIFE_WHEEL.AREAS.SOCIAL_LIFE')? 35:10)" [attr.y]="getLabelY(i, (area.key=='LIFE_WHEEL.AREAS.FINANCES' || 'LIFE_WHEEL.AREAS.FRIENDS')? 27:0)"
                   [attr.text-anchor]="getLabelAnchor(i)" class="area-label">
               {{ area.key | translate }}
             </text>

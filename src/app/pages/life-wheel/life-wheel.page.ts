@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { IonicModule, ToastController, NavController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '../../services/translate.service';
 import { Preferences } from '@capacitor/preferences';
 import { RangeChangeEventDetail } from '@ionic/core';
+import { StorageService } from '../../services/storage.service';
+import {Router} from "@angular/router";
 
 interface LifeWheelArea {
   key: string;
-  value: number;
   icon: string;
+  value: number;
   isRated: boolean;
 }
 
@@ -24,11 +26,11 @@ export class LifeWheelPage implements OnInit {
   public isDataSaved: boolean = false;
   public isAllAreasRated: boolean = false;
   public isEditing: boolean = false;
-  
+
   public areas: LifeWheelArea[] = [
     { key: 'LIFE_WHEEL.AREAS.HEALTH', value: 0, icon: 'health', isRated: false },
     { key: 'LIFE_WHEEL.AREAS.CAREER', value: 0, icon: 'career', isRated: false },
-    { key: 'LIFE_WHEEL.AREAS.FINANCES', value: 0, icon: 'finance', isRated: false },
+    { key: 'LIFE_WHEEL.AREAS.FINANCE', value: 0, icon: 'finance', isRated: false },
     { key: 'LIFE_WHEEL.AREAS.FAMILY', value: 0, icon: 'family', isRated: false },
     { key: 'LIFE_WHEEL.AREAS.PERSONAL_GROWTH', value: 0, icon: 'personal-development', isRated: false },
     { key: 'LIFE_WHEEL.AREAS.SOCIAL_LIFE', value: 0, icon: 'social', isRated: false },
@@ -37,8 +39,11 @@ export class LifeWheelPage implements OnInit {
   ];
 
   constructor(
-    private translateService: TranslateService,
-    private toastController: ToastController
+    private navCtrl: NavController,
+    private router: Router,
+    public translateService: TranslateService,
+    private toastController: ToastController,
+    private storageService: StorageService
   ) {}
 
   async ngOnInit() {
@@ -105,16 +110,18 @@ export class LifeWheelPage implements OnInit {
         ...acc,
         [area.key]: area.value
       }), {});
-      
+
       await Preferences.set({
         key: 'lifeWheelData',
         value: JSON.stringify(dataToSave)
       });
-      
+
       this.isDataSaved = true;
       this.isEditing = false;
       console.log('Data saved successfully, isDataSaved:', this.isDataSaved);
-      
+
+
+      // Показуємо повідомлення про успішне збереження
       const toast = await this.toastController.create({
         message: this.translateService.instant('LIFE_WHEEL.SAVE_SUCCESS'),
         duration: 2000,
@@ -142,7 +149,7 @@ export class LifeWheelPage implements OnInit {
       this.isAllAreasRated = false;
       this.isEditing = false;
       this.checkAllAreasRated();
-      
+
       const toast = await this.toastController.create({
         message: this.translateService.instant('LIFE_WHEEL.RESET_SUCCESS'),
         duration: 2000,
@@ -210,14 +217,13 @@ export class LifeWheelPage implements OnInit {
     const value = typeof event.detail.value === 'number' ? event.detail.value : event.detail.value.upper;
     if (value >= 1 && value <= 10) {
       area.value = value;
-      console.log('!!! area.value : ', area.value);
     }
   }
 
   getIconX(index: number): number {
     const radius = 200;
     const angle = (index * 45 - 90) * Math.PI / 180;
-    return 190 + radius * Math.cos(angle) - 15;
+    return 190 + radius * Math.cos(angle);
   }
 
   getIconY(index: number): number {
@@ -226,16 +232,16 @@ export class LifeWheelPage implements OnInit {
     return 190 + radius * Math.sin(angle) - 15;
   }
 
-  getLabelX(index: number): number {
+  getLabelX(index: number, indexX: number): number {
     const radius = 160;
     const angle = (index * 45 - 90) * Math.PI / 180;
-    return 190 + radius * Math.cos(angle);
+    return 190 + radius * Math.cos(angle) + indexX;
   }
 
-  getLabelY(index: number): number {
-    const radius = 240;
+  getLabelY(index: number, indexY: number): number {
+    const radius = 210;
     const angle = (index * 45 - 90) * Math.PI / 180;
-    return 190 + radius * Math.sin(angle);
+    return 190 + radius * Math.sin(angle) + indexY;
   }
 
   getLabelAnchor(index: number): string {
@@ -247,6 +253,10 @@ export class LifeWheelPage implements OnInit {
     if (this.isEditing) {
       this.setAreaValue(area, { detail: { value: level } } as CustomEvent<RangeChangeEventDetail>);
     }
+  }
+
+  close(){
+    this.router.navigate(['/tabs/home']);
   }
 }
 
