@@ -210,29 +210,30 @@ export class LifeWheelPage implements OnInit {
     const value = typeof event.detail.value === 'number' ? event.detail.value : event.detail.value.upper;
     if (value >= 1 && value <= 10) {
       area.value = value;
+      console.log('!!! area.value : ', area.value);
     }
   }
 
   getIconX(index: number): number {
-    const radius = 180;
+    const radius = 200;
     const angle = (index * 45 - 90) * Math.PI / 180;
     return 190 + radius * Math.cos(angle) - 15;
   }
 
   getIconY(index: number): number {
-    const radius = 180;
+    const radius = 210;
     const angle = (index * 45 - 90) * Math.PI / 180;
     return 190 + radius * Math.sin(angle) - 15;
   }
 
   getLabelX(index: number): number {
-    const radius = 180;
+    const radius = 160;
     const angle = (index * 45 - 90) * Math.PI / 180;
     return 190 + radius * Math.cos(angle);
   }
 
   getLabelY(index: number): number {
-    const radius = 220;
+    const radius = 240;
     const angle = (index * 45 - 90) * Math.PI / 180;
     return 190 + radius * Math.sin(angle);
   }
