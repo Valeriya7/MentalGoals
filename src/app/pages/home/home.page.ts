@@ -229,6 +229,21 @@ export class HomePage implements OnInit, OnDestroy {
               if (a.completed === b.completed) return 0;
               return a.completed ? 1 : -1;
             });
+
+            // Перевіряємо, чи є виконані завдання для сьогоднішнього дня
+            const hasCompletedTasks = Object.values(todayProgress).some(Boolean);
+            const today = new Date();
+            const todayStr = format(today, 'd');
+            const todayDay = this.weekDays.find(day => day.date === todayStr);
+            
+            if (todayDay) {
+              // Якщо всі завдання онульовані, встановлюємо marked = false
+              if (!hasCompletedTasks) {
+                todayDay.marked = false;
+              } else {
+                todayDay.marked = true;
+              }
+            }
           }
         } else {
           this.dailyTasks = [];
@@ -252,6 +267,8 @@ export class HomePage implements OnInit, OnDestroy {
 
       // Завантажуємо завдання для всіх активних челенджів
       this.allDailyTasks = [];
+      let hasAnyCompletedTasks = false;
+      
       for (const challenge of this.activeChallenges) {
         if (challenge.tasks) {
           const todayProgress = await this.challengeService.getTodayProgress(challenge.id);
@@ -265,7 +282,21 @@ export class HomePage implements OnInit, OnDestroy {
             challengeTitle: challenge.title
           }));
           this.allDailyTasks.push(...tasks);
+
+          // Перевіряємо, чи є виконані завдання для сьогоднішнього дня
+          const hasCompletedTasks = Object.values(todayProgress).some(Boolean);
+          if (hasCompletedTasks) {
+            hasAnyCompletedTasks = true;
+          }
         }
+      }
+
+      // Оновлюємо маркер в календарі
+      const today = new Date();
+      const todayStr = format(today, 'd');
+      const todayDay = this.weekDays.find(day => day.date === todayStr);
+      if (todayDay) {
+        todayDay.marked = hasAnyCompletedTasks;
       }
 
       // Сортуємо всі завдання: невиконані зверху, виконані знизу
