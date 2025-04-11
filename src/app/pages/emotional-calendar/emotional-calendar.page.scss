@@ -1,0 +1,106 @@
+.calendar {
+  background: var(--ion-color-light);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.weekday {
+  text-align: center;
+  font-weight: 500;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.day {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  background: var(--ion-color-light-tint);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--ion-color-light-shade);
+  }
+
+  &.current-month {
+    background: white;
+  }
+
+  &.today {
+    background: var(--ion-color-primary-tint);
+    color: var(--ion-color-primary);
+    font-weight: bold;
+  }
+
+  &.selected {
+    background: var(--ion-color-primary);
+    color: white;
+
+    .emotion-indicator ion-icon {
+      color: white !important;
+    }
+  }
+}
+
+.day-number {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.emotion-indicator {
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+.selected-day-details {
+  margin-top: 16px;
+
+  ion-card {
+    margin: 0;
+    border-radius: 16px;
+    box-shadow: none;
+    background: white;
+  }
+
+  ion-card-header {
+    padding: 16px;
+  }
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+
+  ion-card-content {
+    padding: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ion-color-medium);
+  }
+} 

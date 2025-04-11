@@ -12,6 +12,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { TranslateService } from './services/translate.service';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { StorageService } from './services/storage.service';
+import { ToastService } from './services/toast.service';
 
 export function initializeStorage(storageService: StorageService) {
   return () => storageService.init();
@@ -33,6 +34,7 @@ export function initializeStorage(storageService: StorageService) {
     TranslateService,
     GoogleAuth,
     StorageService,
+    ToastService,
     {
       provide: APP_INITIALIZER,
       useFactory: initializeStorage,

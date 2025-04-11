@@ -63,7 +63,7 @@ export class EmotionalStateModalComponent implements OnInit {
         };
         
         try {
-          await this.emotionService.saveEmotion(emotionData);
+          await this.emotionService.addEmotion(emotionData);
           await this.modalCtrl.dismiss(true);
         } catch (error) {
           console.error('Error saving emotion:', error);

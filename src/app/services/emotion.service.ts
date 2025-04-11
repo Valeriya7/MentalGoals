@@ -33,48 +33,48 @@ export class EmotionService {
     }
   }
 
-  async addEmotion(emotion: Emotion) {
-    try {
-      const emotions = await this.storageService.get('emotions') || [];
-      emotions.push(emotion);
-      await this.storageService.set('emotions', emotions);
-      this.emotionsSubject.next(emotions);
-    } catch (error) {
-      console.error('Error adding emotion:', error);
-    }
-  }
-
-  async getEmotions(): Promise<Emotion[]> {
-    if (!this.storage) {
-      await this.init();
-    }
-    return (await this.storage?.get(this.STORAGE_KEY)) || [];
-  }
-
-  async getEmotionsByDate(date: string): Promise<Emotion[]> {
-    const emotions = await this.getEmotions();
-    return emotions.filter(emotion => emotion.date === date);
-  }
-
-  async saveEmotion(emotion: Omit<Emotion, 'id' | 'createdAt'>): Promise<Emotion> {
-    const emotions = await this.getEmotions();
+  async addEmotion(emotion: Omit<Emotion, 'id' | 'createdAt'>): Promise<void> {
+    const emotions = await this.getAllEmotions();
     const newEmotion: Emotion = {
       ...emotion,
       id: uuidv4(),
       createdAt: new Date().toISOString()
     };
-    
     emotions.push(newEmotion);
-    await this.storage?.set(this.STORAGE_KEY, emotions);
-    return newEmotion;
+    await this.storageService.set(this.STORAGE_KEY, emotions);
+  }
+
+  async getAllEmotions(): Promise<Emotion[]> {
+    const emotions = await this.storageService.get(this.STORAGE_KEY);
+    return emotions || [];
+  }
+
+  async getEmotionsForPeriod(startDate: Date, endDate: Date): Promise<Emotion[]> {
+    const emotions = await this.getAllEmotions();
+    return emotions.filter(emotion => {
+      const emotionDate = new Date(emotion.date);
+      return emotionDate >= startDate && emotionDate <= endDate;
+    });
+  }
+
+  async getEmotionForDate(date: Date): Promise<Emotion | null> {
+    const emotions = await this.getAllEmotions();
+    const targetDate = date.toISOString().split('T')[0];
+    return emotions.find(emotion => emotion.date.split('T')[0] === targetDate) || null;
+  }
+
+  async updateEmotion(id: string, emotion: Partial<Emotion>): Promise<void> {
+    const emotions = await this.getAllEmotions();
+    const index = emotions.findIndex(e => e.id === id);
+    if (index !== -1) {
+      emotions[index] = { ...emotions[index], ...emotion };
+      await this.storageService.set(this.STORAGE_KEY, emotions);
+    }
   }
 
   async deleteEmotion(id: string): Promise<void> {
-    if (!this.storage) {
-      await this.init();
-    }
-    const emotions = await this.getEmotions();
-    const updatedEmotions = emotions.filter(emotion => emotion.id !== id);
-    await this.storage?.set(this.STORAGE_KEY, updatedEmotions);
+    const emotions = await this.getAllEmotions();
+    const filteredEmotions = emotions.filter(e => e.id !== id);
+    await this.storageService.set(this.STORAGE_KEY, filteredEmotions);
   }
 } 

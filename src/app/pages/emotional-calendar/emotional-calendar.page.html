@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ getMonthTitle() }}</ion-title>
+    <ion-buttons slot="start">
+      <ion-button (click)="previousMonth()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="nextMonth()">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="calendar">
+    <!-- Дні тижня -->
+    <div class="weekdays">
+      <div class="weekday">Пн</div>
+      <div class="weekday">Вт</div>
+      <div class="weekday">Ср</div>
+      <div class="weekday">Чт</div>
+      <div class="weekday">Пт</div>
+      <div class="weekday">Сб</div>
+      <div class="weekday">Нд</div>
+    </div>
+
+    <!-- Дні місяця -->
+    <div class="days">
+      <div *ngFor="let date of getDaysInMonth()"
+           class="day"
+           [class.current-month]="isCurrentMonth(date)"
+           [class.today]="isToday(date)"
+           [class.selected]="selectedDate && date.getTime() === selectedDate.getTime()"
+           (click)="selectDate(date)">
+        <div class="day-number">{{ date.getDate() }}</div>
+        <div class="emotion-indicator" *ngIf="getEmotionForDay(date) as emotion">
+          <ion-icon [name]="emotion.icon" [style.color]="emotion.color"></ion-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Деталі емоцій за вибраний день -->
+  <div class="selected-day-details" *ngIf="selectedDate && getEmotionForDay(selectedDate) as emotion">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>{{ selectedDate | date:'fullDate':'':'uk' }}</ion-card-subtitle>
+        <ion-card-title>
+          <ion-icon [name]="emotion.icon" [style.color]="emotion.color"></ion-icon>
+          {{ emotion.type }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content *ngIf="emotion.note">
+        {{ emotion.note }}
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content> 

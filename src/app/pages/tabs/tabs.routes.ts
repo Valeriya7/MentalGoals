@@ -19,8 +19,8 @@ export const routes: Routes = [
         loadComponent: () => import('../habit-tracker/habit-tracker.page').then(m => m.HabitTrackerPage)
       },
       {
-        path: 'notifications',
-        loadComponent: () => import('../notifications/notifications.page').then(m => m.NotificationsPage)
+        path: 'emotional-calendar',
+        loadComponent: () => import('../emotional-calendar/emotional-calendar.page').then(m => m.EmotionalCalendarPage)
       },
       {
         path: 'profile',

@@ -46,6 +46,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage)
       },
       {
+        path: 'emotional-calendar',
+        loadComponent: () => import('./pages/emotional-calendar/emotional-calendar.page').then(m => m.EmotionalCalendarPage)
+      },
+      {
         path: '',
         redirectTo: 'home',
         pathMatch: 'full'
@@ -66,4 +70,4 @@ export const routes: Routes = [
     path: '**',
     redirectTo: 'auth'
   }
-]; 
+];

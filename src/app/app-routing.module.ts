@@ -25,6 +25,10 @@ const routes: Routes = [
     loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage)
   },
   {
+    path: 'emotional-calendar',
+    loadComponent: () => import('./pages/emotional-calendar/emotional-calendar.page').then(m => m.EmotionalCalendarPage)
+  },
+  {
     path: 'strava-callback',
     loadComponent: () => import('./pages/strava-callback/strava-callback.page').then(m => m.StravaCallbackPage)
   },
@@ -34,7 +38,7 @@ const routes: Routes = [
   },
   {
     path: 'tabs',
-    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule),
+    loadChildren: () => import('./pages/tabs/tabs.routes').then(m => m.routes),
     canActivate: [AuthGuard]
   }
 ];
@@ -43,4 +47,4 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
-export class AppRoutingModule { } 
+export class AppRoutingModule { }
