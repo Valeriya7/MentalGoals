@@ -1,7 +1,7 @@
 import { addIcons } from 'ionicons';
-import { 
-  timeOutline, 
-  notificationsOutline, 
+import {
+  timeOutline,
+  notificationsOutline,
   trophyOutline,
   personOutline,
   watchOutline,
@@ -52,6 +52,7 @@ import {
   trashOutline,
   closeOutline,
   settingsOutline,
+  happyOutline,
   chevronBackOutline,
   personCircleOutline
 } from 'ionicons/icons';
@@ -91,6 +92,7 @@ addIcons({
   'settings-outline': settingsOutline,
   'chevron-back-outline': chevronBackOutline,
   'person-circle-outline': personCircleOutline,
+  'happy-outline': happyOutline,
 
   // Filled іконки
   'home': home,
@@ -115,4 +117,4 @@ addIcons({
   'cookies': fastFood,
   'nutrition': nutritionOutline,
   'heart': heart
-}); 
+});

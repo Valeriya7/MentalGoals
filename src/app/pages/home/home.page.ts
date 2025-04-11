@@ -43,6 +43,9 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks,
 import { uk, enUS } from 'date-fns/locale';
 import { ProgressService, UserProgress } from '../../services/progress.service';
 import { DailyWishComponent } from '../../components/daily-wish/daily-wish.component';
+import { EmotionalService } from '../../services/emotional.service';
+import { EmotionalStateModalComponent } from '../../components/emotional-state-modal/emotional-state-modal.component';
+import { EmotionalCalendarComponent } from '../../components/emotional-calendar/emotional-calendar.component';
 
 interface DiaryEntry {
   date: Date;
@@ -105,6 +108,8 @@ export class HomePage implements OnInit, OnDestroy {
   // Константа для розрахунку довжини кола
   private readonly CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 54; // 2πr, де r = 54 (радіус кола)
 
+  isToday: boolean = false;
+
   constructor(
     private router: Router,
     private util: UtilService,
@@ -115,7 +120,8 @@ export class HomePage implements OnInit, OnDestroy {
     private authService: AuthService,
     private translate: TranslateService,
     private progressService: ProgressService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private emotionalService: EmotionalService
   ) {
     addIcons({
       iceCreamOutline,
@@ -234,16 +240,16 @@ export class HomePage implements OnInit, OnDestroy {
             const hasCompletedTasks = Object.values(todayProgress).some(Boolean);
             const today = new Date();
             const todayStr = format(today, 'd');
-            const todayDay = this.weekDays.find(day => day.date === todayStr);
             
-            if (todayDay) {
-              // Якщо всі завдання онульовані, встановлюємо marked = false
-              if (!hasCompletedTasks) {
-                todayDay.marked = false;
+            // Оновлюємо marked тільки для сьогоднішнього дня
+            this.weekDays.forEach(day => {
+              if (day.date === todayStr) {
+                day.marked = hasCompletedTasks;
+                console.log('Today day marked status:', day.marked);
               } else {
-                todayDay.marked = true;
+                day.marked = false;
               }
-            }
+            });
           }
         } else {
           this.dailyTasks = [];
@@ -291,13 +297,18 @@ export class HomePage implements OnInit, OnDestroy {
         }
       }
 
-      // Оновлюємо маркер в календарі
+      // Оновлюємо маркер в календарі тільки для сьогоднішнього дня
       const today = new Date();
       const todayStr = format(today, 'd');
-      const todayDay = this.weekDays.find(day => day.date === todayStr);
-      if (todayDay) {
-        todayDay.marked = hasAnyCompletedTasks;
-      }
+      
+      this.weekDays.forEach(day => {
+        if (day.date === todayStr) {
+          day.marked = hasAnyCompletedTasks;
+          console.log('Today day marked status (all challenges):', day.marked);
+        } else {
+          day.marked = false;
+        }
+      });
 
       // Сортуємо всі завдання: невиконані зверху, виконані знизу
       this.allDailyTasks.sort((a, b) => {
@@ -359,7 +370,15 @@ export class HomePage implements OnInit, OnDestroy {
           this.activeChallenge.id,
           day.fullDate.toISOString().split('T')[0]
         );
-        day.marked = Object.values(dayProgress).some(Boolean);
+        
+        // Перевіряємо, чи є виконані завдання для цього дня
+        const hasCompletedTasks = Object.values(dayProgress).some(Boolean);
+        
+        // Оновлюємо marked тільки для минулих днів та сьогоднішнього дня
+        const isPastDay = day.fullDate < new Date(new Date().setHours(0, 0, 0, 0));
+        const isToday = isSameDay(day.fullDate, new Date());
+        
+        day.marked = (isPastDay || isToday) && hasCompletedTasks;
       }
     }
   }
@@ -658,6 +677,38 @@ export class HomePage implements OnInit, OnDestroy {
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.min(diffDays + 1, challenge.duration);
+  }
+
+  async openEmotionalStateModal() {
+    if (!this.activeChallenge) {
+      return;
+    }
+    
+    const modal = await this.modalCtrl.create({
+      component: EmotionalStateModalComponent,
+      componentProps: {
+        day: {
+          dayNumber: this.getCurrentDay(this.activeChallenge),
+          dayName: this.getDayName(this.getCurrentDay(this.activeChallenge))
+        }
+      }
+    });
+    await modal.present();
+  }
+
+  async goToEmotionalCalendar() {
+    const modal = await this.modalCtrl.create({
+      component: EmotionalCalendarComponent,
+      componentProps: {
+        emotions: await this.emotionalService.getEmotions()
+      }
+    });
+    await modal.present();
+  }
+
+  getDayName(dayNumber: number): string {
+    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
+    return days[(dayNumber - 1) % 7];
   }
 
 }

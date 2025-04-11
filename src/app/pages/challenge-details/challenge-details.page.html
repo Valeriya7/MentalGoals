@@ -36,11 +36,13 @@
 
       <ion-item *ngFor="let task of currentPhase?.tasks">
         <ion-checkbox
-          slot="start"
           [checked]="task.completed"
-          [disabled]="isLoading"
           (ionChange)="updateTaskProgress(task, $event)"
-          aria-label="Позначити завдання як виконане">
+          slot="start"
+          labelPlacement="end"
+          justify="start"
+        >
+          {{ task.title }}
         </ion-checkbox>
         <ion-label>
           <h2>{{ task.title }} {{ task.id }} {{ getTaskCompletionTime(task.id) | date:'HH:mm' }}</h2>

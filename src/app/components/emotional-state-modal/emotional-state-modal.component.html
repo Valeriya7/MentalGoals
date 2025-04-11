@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Мій емоційний стан</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="modal-content">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" *ngFor="let emotion of emotions">
+          <ion-item 
+            button 
+            [class.selected]="selectedEmotion === emotion.type"
+            [color]="emotion.color"
+            (click)="selectEmotion(emotion.type)"
+            lines="none"
+            class="emotion-item"
+          >
+            <ion-icon [name]="emotion.icon" slot="start"></ion-icon>
+            <ion-label>{{ emotion.type | titlecase }}</ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-item>
+      <ion-textarea
+        formControlName="note"
+        placeholder="Додайте нотатку (необов'язково)"
+        rows="4"
+      ></ion-textarea>
+    </ion-item>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button 
+      expand="block" 
+      [disabled]="!emotionForm.valid"
+      (click)="saveEmotion()"
+    >
+      Зберегти
+    </ion-button>
+  </ion-toolbar>
+</ion-footer> 

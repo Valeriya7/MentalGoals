@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { 
-  trophyOutline, 
+import {
+  trophyOutline,
   giftOutline,
   informationCircleOutline,
   iceCreamOutline,
@@ -32,6 +32,7 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Challenge } from '../../interfaces/challenge.interface';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-challenges',
@@ -56,7 +57,8 @@ export class ChallengesPage implements OnInit {
 
   constructor(
     private challengeService: ChallengeService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     addIcons({
       'trophy-outline': trophyOutline,
@@ -187,9 +189,18 @@ export class ChallengesPage implements OnInit {
     }
   }
 
-  viewChallengeDetails(challenge: Challenge) {
-    console.log("challenge: ", challenge);
-    this.router.navigate(['/challenges', challenge.id]);
+  async viewChallengeDetails(challenge: Challenge) {
+    try {
+      const user = await this.authService.getCurrentUser();
+      if (user) {
+        this.router.navigate(['/challenge-details', challenge.id]);
+      } else {
+        this.router.navigate(['/auth']);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      this.router.navigate(['/auth']);
+    }
   }
 
   goToNotifications() {
