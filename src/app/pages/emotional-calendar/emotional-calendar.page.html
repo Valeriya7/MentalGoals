@@ -1,11 +1,11 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ getMonthTitle() }}</ion-title>
     <ion-buttons slot="start">
       <ion-button (click)="previousMonth()">
         <ion-icon name="chevron-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
+    <ion-title class="ion-text-center">{{ getMonthTitle() }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="nextMonth()">
         <ion-icon name="chevron-forward-outline"></ion-icon>
@@ -14,34 +14,42 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content>
   <div class="calendar">
     <!-- Дні тижня -->
     <div class="weekdays">
+      <div class="weekday">Нд</div>
       <div class="weekday">Пн</div>
       <div class="weekday">Вт</div>
       <div class="weekday">Ср</div>
       <div class="weekday">Чт</div>
       <div class="weekday">Пт</div>
       <div class="weekday">Сб</div>
-      <div class="weekday">Нд</div>
     </div>
 
     <!-- Дні місяця -->
     <div class="days">
-      <div *ngFor="let date of getDaysInMonth()"
-           class="day"
-           [class.current-month]="isCurrentMonth(date)"
-           [class.today]="isToday(date)"
-           [class.selected]="selectedDate && date.getTime() === selectedDate.getTime()"
-           (click)="selectDate(date)">
-        <div class="day-number">{{ date.getDate() }}</div>
-        <div class="emotion-indicator" *ngIf="getEmotionForDay(date) as emotion">
-          <ion-icon [name]="emotion.icon" [style.color]="emotion.color"></ion-icon>
+      <ng-container *ngFor="let date of getDaysInMonth(); trackBy: trackByDate">
+        <div class="day"
+             [class.current-month]="isCurrentMonth(date)"
+             [class.today]="isToday(date)"
+             [class.selected]="selectedDate && date.getTime() === selectedDate.getTime()"
+             (click)="selectDate(date)">
+          <div class="day-number">{{ date.getDate() }}</div>
+          <ng-container *ngTemplateOutlet="emotionIndicator; context: { $implicit: getEmotionForDay(date) }">
+          </ng-container>
         </div>
-      </div>
+      </ng-container>
     </div>
   </div>
+
+  <!-- Шаблон для індикатора емоцій -->
+  <ng-template #emotionIndicator let-emotion>
+    <div *ngIf="emotion" class="emotion-indicator"
+         [style.background-color]="emotion.color">
+      <ion-icon [name]="emotion.icon"></ion-icon>
+    </div>
+  </ng-template>
 
   <!-- Деталі емоцій за вибраний день -->
   <div class="selected-day-details" *ngIf="selectedDate && getEmotionForDay(selectedDate) as emotion">
@@ -58,4 +66,4 @@
       </ion-card-content>
     </ion-card>
   </div>
-</ion-content> 
+</ion-content>

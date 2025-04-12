@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -45,7 +45,6 @@ import { ProgressService, UserProgress } from '../../services/progress.service';
 import { DailyWishComponent } from '../../components/daily-wish/daily-wish.component';
 import { EmotionalService } from '../../services/emotional.service';
 import { EmotionalStateModalComponent } from '../../components/emotional-state-modal/emotional-state-modal.component';
-//import { EmotionalCalendarComponent } from '../../components/emotional-calendar/emotional-calendar.component';
 
 interface DiaryEntry {
   date: Date;
@@ -121,7 +120,8 @@ export class HomePage implements OnInit, OnDestroy {
     private translate: TranslateService,
     private progressService: ProgressService,
     private modalCtrl: ModalController,
-    private emotionalService: EmotionalService
+    private emotionalService: EmotionalService,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({
       iceCreamOutline,
@@ -256,6 +256,10 @@ export class HomePage implements OnInit, OnDestroy {
           this.challengeDay = 0;
           this.currentDay = 0;
           this.totalDays = 0;
+          //this.currentDay = diffDays;
+
+          // Запускаємо детекцію змін після оновлення значень
+          this.cdr.detectChanges();
         }
       });
 
@@ -671,12 +675,22 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   // Отримуємо поточний день челенджу
-  getCurrentDay(challenge: Challenge): number {
-    const startDate = challenge.startDate ? new Date(challenge.startDate) : new Date();
+  getCurrentDay(challenge: any): number {
+    if (!challenge || !challenge.startDate) return 1;
+    
+    const startDate = new Date(challenge.startDate);
     const today = new Date();
+    
+    // Встановлюємо час на початок дня для коректного порівняння
+    startDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    // Обчислюємо різницю в днях
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.min(diffDays + 1, challenge.duration);
+    
+    // Повертаємо номер поточного дня (мінімум 1)
+    return Math.max(1, diffDays);
   }
 
   async openEmotionalStateModal() {
@@ -696,10 +710,8 @@ export class HomePage implements OnInit, OnDestroy {
     await modal.present();
   }
 
-
-  getDayName(dayNumber: number): string {
-    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
-    return days[(dayNumber - 1) % 7];
+  getDayName(day: number): string {
+    return `День ${day}`;
   }
 
 }

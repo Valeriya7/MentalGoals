@@ -22,34 +22,43 @@
 }
 
 .emotion-item {
-  margin: 8px;
-  border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 12px;
   --background: var(--ion-color-light);
-  --background-hover: var(--ion-color-light-shade);
-  --background-activated: var(--ion-color-light-tint);
-  
+  margin-bottom: 8px;
+
   &.selected {
-    --background: var(--ion-color-primary);
-    --background-hover: var(--ion-color-primary-shade);
-    --background-activated: var(--ion-color-primary-tint);
-    --color: var(--ion-color-primary-contrast);
+    --background: var(--ion-color-light-shade);
   }
 
   ion-icon {
     font-size: 24px;
+    margin-right: 8px;
+  }
+
+  ion-label {
+    font-size: 14px;
+    font-weight: 500;
   }
 }
 
 ion-grid {
-  margin-bottom: 16px;
+  padding: 0;
+}
+
+ion-col {
+  padding: 4px;
 }
 
 ion-textarea {
-  --background: var(--ion-color-light);
-  border-radius: 8px;
-  margin-top: 16px;
   --padding-start: 16px;
   --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --border-radius: 12px;
+  --background: var(--ion-color-light);
+  margin-top: 16px;
 }
 
 ion-footer {

@@ -6,6 +6,16 @@ import { Emotion } from '../../models/emotion.model';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { addIcons } from 'ionicons';
+import {
+  happyOutline,
+  sadOutline,
+  sunnyOutline,
+  bedOutline,
+  alertOutline,
+  thunderstormOutline
+} from 'ionicons/icons';
+import {format} from "date-fns";
 
 @Component({
   selector: 'app-emotional-state-modal',
@@ -21,12 +31,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 })
 export class EmotionalStateModalComponent implements OnInit {
   emotions = [
-    { type: 'happy', icon: 'happy-outline', color: 'success' },
-    { type: 'sad', icon: 'sad-outline', color: 'warning' },
-    { type: 'angry', icon: 'flash-outline', color: 'danger' },
-    { type: 'anxious', icon: 'alert-outline', color: 'warning' },
-    { type: 'calm', icon: 'leaf-outline', color: 'success' },
-    { type: 'tired', icon: 'moon-outline', color: 'medium' }
+    { type: 'happy', icon: 'happy-outline', color: '#FFD93D', label: 'Щасливий' },
+    { type: 'calm', icon: 'sunny-outline', color: '#98D8AA', label: 'Спокійний' },
+    { type: 'tired', icon: 'bed-outline', color: '#B4E4FF', label: 'Втомлений' },
+    { type: 'anxious', icon: 'alert-outline', color: '#CBC3E3', label: 'Тривожний' },
+    { type: 'sad', icon: 'sad-outline', color: '#FF6B6B', label: 'Сумний' },
+    { type: 'angry', icon: 'thunderstorm-outline', color: '#FF6B6B', label: 'Злий' }
   ];
 
   emotionForm: FormGroup;
@@ -41,6 +51,15 @@ export class EmotionalStateModalComponent implements OnInit {
       emotionType: ['', Validators.required],
       note: ['']
     });
+
+    addIcons({
+      'happy-outline': happyOutline,
+      'sad-outline': sadOutline,
+      'sunny-outline': sunnyOutline,
+      'bed-outline': bedOutline,
+      'alert-outline': alertOutline,
+      'thunderstorm-outline': thunderstormOutline
+    });
   }
 
   ngOnInit() {}
@@ -53,26 +72,38 @@ export class EmotionalStateModalComponent implements OnInit {
   async saveEmotion() {
     if (this.emotionForm.valid) {
       const selectedEmotion = this.emotions.find(e => e.type === this.emotionForm.value.emotionType);
+
       if (selectedEmotion) {
+        const currentDate = new Date();
         const emotionData: Omit<Emotion, 'id' | 'createdAt'> = {
           type: this.emotionForm.value.emotionType,
           note: this.emotionForm.value.note,
-          date: new Date().toISOString(),
+          date: format(new Date(), 'yyyy-MM-dd'),
           icon: selectedEmotion.icon,
           color: selectedEmotion.color
         };
-        
+
+        console.log('Зберігаємо емоцію:', emotionData);
+
         try {
-          await this.emotionService.addEmotion(emotionData);
-          await this.modalCtrl.dismiss(true);
+          // Додайте дані для індикації статусу закриття
+          await this.modalCtrl.dismiss(emotionData, 'confirmed');
         } catch (error) {
-          console.error('Error saving emotion:', error);
+          console.error('Error dismissing modal:', error);
+          // Додайте обробку помилки для користувача
+          // наприклад, показати повідомлення про помилку
         }
+      } else {
+        console.error('Обрана емоція не знайдена');
+        // Додайте повідомлення для користувача
       }
+    } else {
+      console.error('Форма невалідна');
+      // Покажіть помилки валідації користувачу
     }
   }
 
   dismiss() {
     this.modalCtrl.dismiss();
   }
-} 
+}
