@@ -831,3 +831,103 @@ ion-icon {
   color: var(--ion-color-primary);
   margin-top: 4px;
 }
+
+.calendar-section {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 16px;
+
+  .calendar-header {
+    text-align: center;
+    margin-bottom: 20px;
+
+    h2 {
+      color: var(--ion-color-primary);
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      margin: 8px 0 0;
+      font-size: 1rem;
+    }
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      
+      &.active {
+        background-color: var(--ion-color-primary);
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 2px 6px rgba(var(--ion-color-primary-rgb), 0.3);
+        
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+      
+      &.completed {
+        background-color: var(--ion-color-success);
+        color: white;
+        
+        &:hover {
+          background-color: var(--ion-color-success-shade);
+        }
+      }
+      
+      &.future {
+        background-color: var(--ion-color-light);
+        color: var(--ion-color-medium);
+        
+        &:hover {
+          background-color: var(--ion-color-light-shade);
+        }
+      }
+    }
+  }
+}
+
+.no-challenge {
+  padding: 20px;
+  
+  ion-card {
+    margin: 0;
+    box-shadow: none;
+    border: 1px solid var(--ion-color-light);
+    
+    ion-card-header {
+      text-align: center;
+      
+      ion-card-title {
+        font-size: 1.3rem;
+        color: var(--ion-color-dark);
+      }
+    }
+    
+    ion-card-content {
+      text-align: center;
+      
+      p {
+        color: var(--ion-color-medium);
+        margin-bottom: 20px;
+      }
+    }
+  }
+}

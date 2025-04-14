@@ -50,9 +50,10 @@ export class EmotionalCalendarPage implements OnInit {
 
   ngOnInit() {
     console.log('emotional-calendar: ');
-    this.loadMonthEmotions2();
+    this.loadMonthEmotions();
   }
-  async loadMonthEmotions2() {
+
+  async loadMonthEmotions() {
     try {
       const startOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
       const endOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
@@ -79,45 +80,11 @@ export class EmotionalCalendarPage implements OnInit {
         });
       }
 
-      console.log('Мапа емоцій за місяць:', this.monthEmotions);
-    } catch (error) {
-      console.error('Помилка при завантаженні емоцій:', error);
-      this.toastService.presentToast('Помилка при завантаженні емоцій', 'danger');
-      this.emotions = [];
-      this.monthEmotions = {};
-      this.emotionCache = {};
-    }
-  }
-  async loadMonthEmotions() {
-    try {
-      const startOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
-      const endOfMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
-
-      // Отримуємо емоції за період
-      this.emotions = await this.emotionService.getEmotionsForPeriod(startOfMonth, endOfMonth);
-      console.log('Отримані емоції за період:', this.emotions);
-
-      // Очищуємо попередні емоції та кеш
-      this.monthEmotions = {};
-      this.emotionCache = {};
-
-      // Зберігаємо емоції в мапу за датами
-      if (this.emotions && this.emotions.length > 0) {
-        this.emotions.forEach(emotion => {
-          if (emotion && emotion.date) {
-            const date = new Date(emotion.date);
-            const dateKey = format(date, 'yyyy-MM-dd');
-            this.monthEmotions[dateKey] = emotion;
-          }
-        });
-      }
-
       // Оновлюємо емоцію для вибраного дня
       if (this.selectedDate) {
         const selectedDateKey = format(this.selectedDate, 'yyyy-MM-dd');
         const updatedEmotion = this.monthEmotions[selectedDateKey];
         if (updatedEmotion) {
-          // Оновлюємо кеш для вибраного дня
           this.emotionCache[selectedDateKey] = updatedEmotion;
         }
       }

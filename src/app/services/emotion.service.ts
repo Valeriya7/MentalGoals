@@ -76,14 +76,26 @@ export class EmotionService {
   }
 
   async getEmotionsForPeriod(startDate: Date, endDate: Date): Promise<Emotion[]> {
-    const emotions = await this.getAllEmotions();
-    console.log('emotions: ', emotions);
-    return emotions.filter(emotion => {
-      const emotionDate = new Date(emotion.date);
-
-      console.log('getEmotionsForPeriod: ', emotionDate >= startDate && emotionDate <= endDate);
-      return emotionDate >= startDate && emotionDate <= endDate;
-    });
+    try {
+      const emotions = await this.getAllEmotions();
+      console.log('Завантажені емоції:', emotions);
+      
+      const filteredEmotions = emotions.filter(emotion => {
+        if (!emotion || !emotion.date) return false;
+        
+        const emotionDate = new Date(emotion.date);
+        const isInRange = emotionDate >= startDate && emotionDate <= endDate;
+        
+        console.log(`Перевірка дати ${emotionDate.toISOString()}: ${isInRange}`);
+        return isInRange;
+      });
+      
+      console.log('Відфільтровані емоції за період:', filteredEmotions);
+      return filteredEmotions;
+    } catch (error) {
+      console.error('Помилка при отриманні емоцій за період:', error);
+      return [];
+    }
   }
 
   async getEmotionForDate(date: Date): Promise<Emotion | null> {

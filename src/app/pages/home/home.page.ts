@@ -256,7 +256,6 @@ export class HomePage implements OnInit, OnDestroy {
           this.challengeDay = 0;
           this.currentDay = 0;
           this.totalDays = 0;
-          //this.currentDay = diffDays;
 
           // Запускаємо детекцію змін після оновлення значень
           this.cdr.detectChanges();
@@ -367,23 +366,21 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async loadSelectedDayProgress() {
-    if (this.activeChallenge) {
-      // Оновлюємо статус виконаних завдань для всіх днів тижня
-      for (const day of this.weekDays) {
-        const dayProgress = await this.challengeService.getTodayProgress(
-          this.activeChallenge.id,
-          day.fullDate.toISOString().split('T')[0]
-        );
-
-        // Перевіряємо, чи є виконані завдання для цього дня
-        const hasCompletedTasks = Object.values(dayProgress).some(Boolean);
-
-        // Оновлюємо marked тільки для минулих днів та сьогоднішнього дня
-        const isPastDay = day.fullDate < new Date(new Date().setHours(0, 0, 0, 0));
-        const isToday = isSameDay(day.fullDate, new Date());
-
-        day.marked = (isPastDay || isToday) && hasCompletedTasks;
+    try {
+      const today = new Date();
+      const allProgress = await this.progressService.getAllUserProgress();
+      const todayProgress = allProgress.find(progress => {
+        const progressDate = new Date(progress.date);
+        return progressDate.toDateString() === today.toDateString();
+      });
+      
+      if (todayProgress) {
+        this.stepsCount = todayProgress.steps.toString();
+        this.sleepHours = `${todayProgress.sleepHours} Hr`;
+        this.waterAmount = `${todayProgress.waterAmount} L`;
       }
+    } catch (error) {
+      console.error('Error loading selected day progress:', error);
     }
   }
 
@@ -545,6 +542,7 @@ export class HomePage implements OnInit, OnDestroy {
       });
       await toast.present();
     }
+
   }
 
   handleAvatarError(event: any) {
@@ -675,10 +673,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   // Отримуємо поточний день челенджу
-  getCurrentDay(challenge: any): number {
-    if (!challenge || !challenge.startDate) return 1;
-    
-    const startDate = new Date(challenge.startDate);
+  getCurrentDay(challenge: Challenge): number {
+    const startDate = challenge.startDate ? new Date(challenge.startDate) : new Date();
     const today = new Date();
     
     // Встановлюємо час на початок дня для коректного порівняння
@@ -688,9 +684,7 @@ export class HomePage implements OnInit, OnDestroy {
     // Обчислюємо різницю в днях
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Повертаємо номер поточного дня (мінімум 1)
-    return Math.max(1, diffDays);
+    return Math.min(diffDays + 1, challenge.duration);
   }
 
   async openEmotionalStateModal() {
@@ -710,8 +704,11 @@ export class HomePage implements OnInit, OnDestroy {
     await modal.present();
   }
 
-  getDayName(day: number): string {
-    return `День ${day}`;
+
+  getDayName(dayNumber: number): string {
+    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
+    return days[(dayNumber - 1) % 7];
   }
 
 }
+
