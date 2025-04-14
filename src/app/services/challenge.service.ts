@@ -1218,4 +1218,24 @@ export class ChallengeService {
       throw error;
     }
   }
+
+  async getChallengesProgress(startDate: Date, endDate: Date): Promise<any[]> {
+    try {
+      const challenges = await this.getChallenges();
+      return challenges
+        .filter((challenge: Challenge) => {
+          if (!challenge.startDate) return false;
+          const challengeDate = new Date(challenge.startDate);
+          return challengeDate >= startDate && challengeDate <= endDate;
+        })
+        .map((challenge: Challenge) => ({
+          ...challenge,
+          completedTasks: challenge.tasks?.filter((task: ChallengeTask) => task.completed).length || 0,
+          totalTasks: challenge.tasks?.length || 0
+        }));
+    } catch (error) {
+      console.error('Error getting challenges progress:', error);
+      return [];
+    }
+  }
 } 

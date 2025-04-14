@@ -15,7 +15,16 @@ import {
   alertOutline,
   thunderstormOutline
 } from 'ionicons/icons';
-import {format} from "date-fns";
+import { format } from "date-fns";
+
+interface EmotionType {
+  type: string;
+  icon: string;
+  color: string;
+  label: string;
+  value: number;
+  energy: number;
+}
 
 @Component({
   selector: 'app-emotional-state-modal',
@@ -30,17 +39,17 @@ import {format} from "date-fns";
   ]
 })
 export class EmotionalStateModalComponent implements OnInit {
-  emotions = [
-    { type: 'happy', icon: 'happy-outline', color: '#FFD93D', label: 'Щасливий' },
-    { type: 'calm', icon: 'sunny-outline', color: '#98D8AA', label: 'Спокійний' },
-    { type: 'tired', icon: 'bed-outline', color: '#B4E4FF', label: 'Втомлений' },
-    { type: 'anxious', icon: 'alert-outline', color: '#CBC3E3', label: 'Тривожний' },
-    { type: 'sad', icon: 'sad-outline', color: '#FF6B6B', label: 'Сумний' },
-    { type: 'angry', icon: 'thunderstorm-outline', color: '#FF6B6B', label: 'Злий' }
+  emotions: EmotionType[] = [
+    { type: 'happy', icon: 'happy-outline', color: '#FFD93D', label: 'Щасливий', value: 8, energy: 8 },
+    { type: 'calm', icon: 'sunny-outline', color: '#98D8AA', label: 'Спокійний', value: 7, energy: 6 },
+    { type: 'tired', icon: 'bed-outline', color: '#B4E4FF', label: 'Втомлений', value: 4, energy: 3 },
+    { type: 'anxious', icon: 'alert-outline', color: '#CBC3E3', label: 'Тривожний', value: 3, energy: 7 },
+    { type: 'sad', icon: 'sad-outline', color: '#FF6B6B', label: 'Сумний', value: 2, energy: 4 },
+    { type: 'angry', icon: 'thunderstorm-outline', color: '#FF6B6B', label: 'Злий', value: 2, energy: 8 }
   ];
 
   emotionForm: FormGroup;
-  selectedEmotion: string | null = null;
+  selectedEmotion: EmotionType | null = null;
 
   constructor(
     private modalCtrl: ModalController,
@@ -65,22 +74,21 @@ export class EmotionalStateModalComponent implements OnInit {
   ngOnInit() {}
 
   selectEmotion(emotionType: string) {
-    this.selectedEmotion = emotionType;
+    this.selectedEmotion = this.emotions.find(e => e.type === emotionType) || null;
     this.emotionForm.patchValue({ emotionType });
   }
 
   async saveEmotion() {
-    if (this.emotionForm.valid) {
-      const selectedEmotion = this.emotions.find(e => e.type === this.emotionForm.value.emotionType);
-
-      if (selectedEmotion) {
-        const currentDate = new Date();
+    try {
+      if (this.selectedEmotion && this.emotionForm.valid) {
         const emotionData: Omit<Emotion, 'id' | 'createdAt'> = {
-          type: this.emotionForm.value.emotionType,
+          type: this.selectedEmotion.type,
           note: this.emotionForm.value.note,
-          date: format(new Date(), 'yyyy-MM-dd'),
-          icon: selectedEmotion.icon,
-          color: selectedEmotion.color
+          date: new Date().toISOString(),
+          icon: this.selectedEmotion.icon,
+          color: this.selectedEmotion.color,
+          value: this.selectedEmotion.value,
+          energy: this.selectedEmotion.energy
         };
 
         console.log('Зберігаємо емоцію:', emotionData);
@@ -93,13 +101,11 @@ export class EmotionalStateModalComponent implements OnInit {
           // Додайте обробку помилки для користувача
           // наприклад, показати повідомлення про помилку
         }
-      } else {
-        console.error('Обрана емоція не знайдена');
-        // Додайте повідомлення для користувача
+        await this.emotionService.saveEmotion(emotionData);
+        this.modalCtrl.dismiss({ saved: true });
       }
-    } else {
-      console.error('Форма невалідна');
-      // Покажіть помилки валідації користувачу
+    } catch (error) {
+      console.error('Error saving emotion:', error);
     }
   }
 

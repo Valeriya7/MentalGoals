@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -39,12 +39,14 @@ import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task.model';
 import { WishService } from '../../services/wish.service';
 import { Wish } from '../../models/wish.model';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks, addDays } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks, addDays, addHours, addMonths } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { ProgressService, UserProgress } from '../../services/progress.service';
 import { DailyWishComponent } from '../../components/daily-wish/daily-wish.component';
 import { EmotionalService } from '../../services/emotional.service';
 import { EmotionalStateModalComponent } from '../../components/emotional-state-modal/emotional-state-modal.component';
+import { Chart, ChartConfiguration } from 'chart.js/auto';
+import { Emotion } from '../../models/emotion.model';
 
 interface DiaryEntry {
   date: Date;
@@ -69,6 +71,21 @@ interface DailyTask {
   challengeTitle?: string;
 }
 
+interface EmotionalState {
+  id: string;
+  date: Date;
+  mood: number;
+  energy: number;
+}
+
+interface ChallengeProgress {
+  id: string;
+  date: Date;
+  completedTasks: number;
+  totalTasks: number;
+  startDate?: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -78,6 +95,8 @@ interface DailyTask {
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit, OnDestroy {
+  @ViewChild('achievementChart') achievementChart!: ElementRef;
+  
   userName: string = '';
   userPhotoUrl: string | null = null;
   weekDays: DayInfo[] = [];
@@ -108,6 +127,9 @@ export class HomePage implements OnInit, OnDestroy {
   private readonly CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 54; // 2πr, де r = 54 (радіус кола)
 
   isToday: boolean = false;
+
+  selectedPeriod: 'week' | 'month' | 'year' = 'week';
+  chart: Chart | null = null;
 
   constructor(
     private router: Router,
@@ -366,21 +388,23 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async loadSelectedDayProgress() {
-    try {
-      const today = new Date();
-      const allProgress = await this.progressService.getAllUserProgress();
-      const todayProgress = allProgress.find(progress => {
-        const progressDate = new Date(progress.date);
-        return progressDate.toDateString() === today.toDateString();
-      });
-      
-      if (todayProgress) {
-        this.stepsCount = todayProgress.steps.toString();
-        this.sleepHours = `${todayProgress.sleepHours} Hr`;
-        this.waterAmount = `${todayProgress.waterAmount} L`;
+    if (this.activeChallenge) {
+      // Оновлюємо статус виконаних завдань для всіх днів тижня
+      for (const day of this.weekDays) {
+        const dayProgress = await this.challengeService.getTodayProgress(
+          this.activeChallenge.id,
+          day.fullDate.toISOString().split('T')[0]
+        );
+
+        // Перевіряємо, чи є виконані завдання для цього дня
+        const hasCompletedTasks = Object.values(dayProgress).some(Boolean);
+
+        // Оновлюємо marked тільки для минулих днів та сьогоднішнього дня
+        const isPastDay = day.fullDate < new Date(new Date().setHours(0, 0, 0, 0));
+        const isToday = isSameDay(day.fullDate, new Date());
+
+        day.marked = (isPastDay || isToday) && hasCompletedTasks;
       }
-    } catch (error) {
-      console.error('Error loading selected day progress:', error);
     }
   }
 
@@ -708,6 +732,203 @@ export class HomePage implements OnInit, OnDestroy {
   getDayName(dayNumber: number): string {
     const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
     return days[(dayNumber - 1) % 7];
+  }
+
+  async ionViewWillEnter() {
+    try {
+      await this.loadActiveChallenge();
+      await this.loadSelectedDayProgress();
+      await this.loadAverageMetrics();
+      await this.updateAchievementChart();
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  }
+
+  // Метод для зміни періоду
+  async changePeriod(period: 'week' | 'month' | 'year') {
+    this.selectedPeriod = period;
+    await this.updateAchievementChart();
+  }
+
+  // Метод для оновлення графіка
+  async updateAchievementChart() {
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    const data = await this.getAchievementData();
+    
+    const config: ChartConfiguration = {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Кроки',
+            data: data.steps,
+            borderColor: '#36A2EB',
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'stepsAxis'
+          },
+          {
+            label: 'Емоції',
+            data: data.emotions,
+            borderColor: '#FF6384',
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'mainAxis'
+          },
+          {
+            label: 'Звички',
+            data: data.habits,
+            borderColor: '#4BC0C0',
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'mainAxis'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          mainAxis: {
+            type: 'linear',
+            position: 'left',
+            beginAtZero: true,
+            max: 10,
+            title: {
+              display: true,
+              text: 'Рівень (1-10)'
+            }
+          },
+          stepsAxis: {
+            type: 'linear',
+            position: 'right',
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Кількість кроків'
+            },
+            grid: {
+              drawOnChartArea: false
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Статистика активності'
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          }
+        }
+      }
+    };
+
+    this.chart = new Chart(this.achievementChart.nativeElement, config);
+  }
+
+  // Метод для отримання даних для графіка
+  async getAchievementData() {
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    switch (this.selectedPeriod) {
+      case 'week':
+        startDate.setDate(endDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(endDate.getMonth() - 1);
+        break;
+      case 'year':
+        startDate.setFullYear(endDate.getFullYear() - 1);
+        break;
+    }
+
+    // Отримуємо дані про емоції
+    const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
+    
+    // Отримуємо дані про прогрес
+    const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
+    
+    // Отримуємо дані про звички
+    const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
+
+    // Форматуємо дані для графіка
+    const labels: string[] = [];
+    const steps: number[] = [];
+    const emotionsData: number[] = [];
+    const habitsData: number[] = [];
+
+    // Генеруємо мітки та дані в залежності від періоду
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = format(currentDate, 
+        this.selectedPeriod === 'week' ? 'HH:mm' : 
+        this.selectedPeriod === 'month' ? 'dd.MM' : 'MM.yyyy'
+      );
+      
+      labels.push(dateStr);
+
+      // Знаходимо відповідні дані для цієї дати
+      const dayEmotions = emotions.filter(e => isSameDay(new Date(e.date), currentDate));
+      const dayProgress = progress.find(p => isSameDay(new Date(p.date), currentDate));
+      const dayHabits = habits.filter(h => isSameDay(new Date(h.date), currentDate));
+
+      // Розраховуємо показники
+      const stepsValue = dayProgress?.steps || 0;
+      const emotionValue = this.calculateEmotionValue(dayEmotions);
+      const habitsValue = this.calculateHabitsValue(dayHabits);
+
+      steps.push(stepsValue);
+      emotionsData.push(emotionValue);
+      habitsData.push(habitsValue);
+
+      // Збільшуємо дату в залежності від періоду
+      if (this.selectedPeriod === 'week') {
+        currentDate = addHours(currentDate, 3);
+      } else if (this.selectedPeriod === 'month') {
+        currentDate = addDays(currentDate, 1);
+      } else {
+        currentDate = addMonths(currentDate, 1);
+      }
+    }
+
+    return { 
+      labels, 
+      steps, 
+      emotions: emotionsData, 
+      habits: habitsData 
+    };
+  }
+
+  private calculateEmotionValue(emotions: Emotion[]): number {
+    if (!emotions.length) return 5;
+    
+    return emotions.reduce((sum, emotion) => sum + emotion.value, 0) / emotions.length;
+  }
+
+  private calculateHabitsValue(habits: any[]): number {
+    if (!habits.length) return 0;
+    
+    const completedRatio = habits.map(habit => {
+      const completed = habit.completedTasks || 0;
+      const total = habit.totalTasks || 1;
+      return (completed / total) * 10;
+    });
+
+    return completedRatio.reduce((sum, ratio) => sum + ratio, 0) / habits.length;
+  }
+
+  async onPeriodChange(event: any) {
+    const value = event.detail.value;
+    if (value === 'week' || value === 'month' || value === 'year') {
+      await this.changePeriod(value);
+    }
   }
 
 }

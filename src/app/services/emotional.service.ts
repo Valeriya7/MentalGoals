@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Emotion } from '../models/emotion.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -7,7 +8,7 @@ import { Emotion } from '../models/emotion.model';
 export class EmotionalService {
   private readonly STORAGE_KEY = 'emotional_states';
 
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   async saveEmotion(emotion: Emotion): Promise<void> {
     const emotions = await this.getEmotions();
@@ -32,5 +33,18 @@ export class EmotionalService {
     const emotions = await this.getEmotions();
     const updatedEmotions = emotions.filter(emotion => emotion.id !== id);
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedEmotions));
+  }
+
+  async getEmotionalStates(startDate: Date, endDate: Date): Promise<Emotion[]> {
+    try {
+      const emotions = await this.getEmotions();
+      return emotions.filter(emotion => {
+        const emotionDate = new Date(emotion.date);
+        return emotionDate >= startDate && emotionDate <= endDate;
+      });
+    } catch (error) {
+      console.error('Error getting emotional states:', error);
+      return [];
+    }
   }
 }

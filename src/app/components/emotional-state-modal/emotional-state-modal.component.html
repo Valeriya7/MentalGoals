@@ -17,7 +17,7 @@
           <ion-col size="6" *ngFor="let emotion of emotions">
             <ion-item 
               button 
-              [class.selected]="selectedEmotion === emotion.type"
+              [class.selected]="selectedEmotion?.type === emotion.type"
               (click)="selectEmotion(emotion.type)"
               lines="none"
               class="emotion-item"

@@ -121,4 +121,42 @@ export class EmotionService {
     await this.storageService.set(this.STORAGE_KEY, filteredEmotions);
     this.emotionsSubject.next(filteredEmotions);
   }
+
+  async saveEmotion(emotionData: Omit<Emotion, 'id' | 'createdAt'>): Promise<void> {
+    try {
+      const emotions = await this.getAllEmotions();
+      const newEmotion: Emotion = {
+        ...emotionData,
+        id: uuidv4(),
+        createdAt: new Date().toISOString()
+      };
+      emotions.push(newEmotion);
+      await this.storageService.set(this.STORAGE_KEY, emotions);
+      this.emotionsSubject.next(emotions);
+    } catch (error) {
+      console.error('Error saving emotion:', error);
+      throw error;
+    }
+  }
+
+  async getEmotionsByDate(date: Date): Promise<Emotion[]> {
+    const emotions = await this.getAllEmotions();
+    return emotions.filter(emotion => {
+      const emotionDate = new Date(emotion.date);
+      return emotionDate.toDateString() === date.toDateString();
+    });
+  }
+
+  async getEmotionalStates(startDate: Date, endDate: Date): Promise<Emotion[]> {
+    try {
+      const emotions = await this.getAllEmotions();
+      return emotions.filter(emotion => {
+        const emotionDate = new Date(emotion.date);
+        return emotionDate >= startDate && emotionDate <= endDate;
+      });
+    } catch (error) {
+      console.error('Error getting emotional states:', error);
+      return [];
+    }
+  }
 }

@@ -38,6 +38,7 @@
     "@ionic/storage-angular": "^4.0.0",
     "@ngx-translate/core": "^16.0.4",
     "@ngx-translate/http-loader": "^16.0.1",
+    "chart.js": "^4.4.8",
     "cordova-plugin-health": "^3.2.4",
     "date-fns": "^2.30.0",
     "ionicons": "^7.0.0",

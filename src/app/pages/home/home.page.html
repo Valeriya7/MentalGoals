@@ -30,7 +30,7 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Календар -->
+  <!-- Календар
   <div class="calendar-strip" (click)="goToCalendar()">
     <div class="week-days">
       <div *ngFor="let day of weekDays"
@@ -41,7 +41,29 @@
         <span class="day-number">{{ day.date }}</span>
       </div>
     </div>
-  </div>
+  </div> -->
+
+  <!-- Графік досягнень -->
+  <ion-card class="achievement-chart-card">
+    <ion-card-header>
+      <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange($event)">
+        <ion-segment-button value="week">
+          <ion-label>Тиждень</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="month">
+          <ion-label>Місяць</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="year">
+          <ion-label>Рік</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="chart-container">
+        <canvas #achievementChart></canvas>
+      </div>
+    </ion-card-content>
+  </ion-card>
 
   <!-- Active Challenges Progress -->
   <div *ngIf="activeChallenges.length > 0" class="active-challenges">
@@ -109,9 +131,9 @@
         <ion-card-title>Немає активного челенджу</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>Оберіть челендж, щоб розпочати свій шлях до покращення</p>
+        <p>Оберіть челендж, щоб почати працювати над своїми цілями</p>
         <ion-button expand="block" routerLink="/challenges">
-          Обрати челендж
+          Перейти до челенджів
         </ion-button>
       </ion-card-content>
     </ion-card>
@@ -181,4 +203,5 @@
       -->
     </ion-row>
   </ion-grid>
+
 </ion-content>
