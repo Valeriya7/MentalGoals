@@ -33,6 +33,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Challenge } from '../../interfaces/challenge.interface';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-challenges',
@@ -54,11 +55,13 @@ export class ChallengesPage implements OnInit {
     'advanced': 'tertiary',
     'expert': 'danger'
   };
+  objectKeys =  Object.keys;
 
   constructor(
     private challengeService: ChallengeService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastController: ToastController
   ) {
     addIcons({
       'trophy-outline': trophyOutline,
@@ -186,6 +189,9 @@ export class ChallengesPage implements OnInit {
       }
     } catch (error) {
       console.error('Error activating challenge:', error);
+      if (error instanceof Error && error.message === 'MAX_ACTIVE_CHALLENGES') {
+        this.presentToast('Максимальна кількість активних челенджів (3) досягнута. Деактивуйте один з активних челенджів, щоб розпочати новий.');
+      }
     }
   }
 
@@ -288,5 +294,28 @@ export class ChallengesPage implements OnInit {
 
   isRewardsExpanded(challenge: Challenge): boolean {
     return this.expandedRewards.has(challenge.id);
+  }
+
+  async presentToast(message: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 3000,
+      position: 'bottom',
+      color: 'warning'
+    });
+    await toast.present();
+  }
+  async quitChallenge(challenge: Challenge) {
+    try {
+      const success = await this.challengeService.quitChallenge(challenge.id);
+      if (success) {
+        await this.loadChallenges(); // Оновлюємо список челенджів
+        console.log('Challenge quit successfully:', challenge.id);
+      } else {
+        console.warn('Failed to quit challenge:', challenge.id);
+      }
+    } catch (error) {
+      console.error('Error quitting challenge:', error);
+    }
   }
 }

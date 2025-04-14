@@ -37,7 +37,7 @@
         </div>
         <div class="info-item" *ngIf="challenge.status === 'active'" role="complementary">
           <ion-icon name="time-outline" class="icon-only" [attr.aria-label]="'CHALLENGES.DAY' | translate"></ion-icon>
-          <span>{{ 'CHALLENGES.DAY' | translate }} {{ challenge.currentDay }} {{ 'CHALLENGES.OF' | translate }} {{ challenge.duration }}</span>
+          <span>{{ 'CHALLENGES.DAY' | translate }} {{ objectKeys(challenge.progress || {}).length }} {{ 'CHALLENGES.OF' | translate }} {{ challenge.duration }}</span>
         </div>
 
         <div class="toggle-buttons">

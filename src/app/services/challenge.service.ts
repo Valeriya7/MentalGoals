@@ -634,6 +634,12 @@ export class ChallengeService {
       const challengeIndex = challenges.findIndex(c => c.id === challengeId);
       
       if (challengeIndex === -1) return false;
+
+      // Перевіряємо кількість активних челенджів
+      const activeChallengesCount = challenges.filter(c => c.status === 'active').length;
+      if (activeChallengesCount >= 3) {
+        throw new Error('MAX_ACTIVE_CHALLENGES');
+      }
       
       const startDate = new Date();
       const endDate = new Date();
@@ -648,6 +654,9 @@ export class ChallengeService {
       return true;
     } catch (error) {
       console.error('Error activating challenge:', error);
+      if (error instanceof Error && error.message === 'MAX_ACTIVE_CHALLENGES') {
+        throw error;
+      }
       return false;
     }
   }
