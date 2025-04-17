@@ -46,7 +46,8 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
     isActive: false,
     isChallengeHabit: false,
     completionStatus: {},
-    streak: { current: 0, best: 0 }
+    streak: { current: 0, best: 0 },
+    progress: {}
   };
 
   constructor(
@@ -245,7 +246,8 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
       isActive: false,
       isChallengeHabit: false,
       completionStatus: {},
-      streak: { current: 0, best: 0 }
+      streak: { current: 0, best: 0 },
+      progress: {}
     };
   }
 
@@ -266,7 +268,8 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
         isActive: false,
         isChallengeHabit: false,
         completionStatus: {},
-        streak: { current: 0, best: 0 }
+        streak: { current: 0, best: 0 },
+        progress: {}
       };
 
       await this.habitsService.createHabit(habit);
@@ -276,9 +279,14 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   }
 
   openEditHabitModal(habit: Habit) {
-    console.log('habit ', habit);
-    this.editingHabit = JSON.parse(JSON.stringify(habit));
-    console.log('this.editingHabit ', this.editingHabit);
+    this.editingHabit = {
+      ...habit,
+      streak: {
+        current: habit.streak.current || 0,
+        best: habit.streak.best || 0
+      },
+      progress: habit.progress || {}
+    };
     this.isEditHabitModalOpen = true;
   }
 

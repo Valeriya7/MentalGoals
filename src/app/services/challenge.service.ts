@@ -1224,15 +1224,33 @@ export class ChallengeService {
       const challenges = await this.getChallenges();
       return challenges
         .filter((challenge: Challenge) => {
-          if (!challenge.startDate) return false;
-          const challengeDate = new Date(challenge.startDate);
-          return challengeDate >= startDate && challengeDate <= endDate;
+          if (!challenge.progress) return false;
+          
+          // Перевіряємо чи є прогрес в заданому періоді
+          return Object.keys(challenge.progress).some(date => {
+            const progressDate = new Date(date);
+            return progressDate >= startDate && progressDate <= endDate;
+          });
         })
-        .map((challenge: Challenge) => ({
-          ...challenge,
-          completedTasks: challenge.tasks?.filter((task: ChallengeTask) => task.completed).length || 0,
-          totalTasks: challenge.tasks?.length || 0
-        }));
+        .map((challenge: Challenge) => {
+          // Фільтруємо прогрес тільки за заданий період
+          const periodProgress = Object.entries(challenge.progress || {})
+            .filter(([date]) => {
+              const progressDate = new Date(date);
+              return progressDate >= startDate && progressDate <= endDate;
+            })
+            .map(([progressDate, progress]) => ({
+              progressDate,
+              ...progress
+            }));
+
+          return {
+            ...challenge,
+            periodProgress,
+            completedTasks: periodProgress.reduce((sum, day) => sum + (day.completedTasks || 0), 0),
+            totalTasks: challenge.tasks?.length || 0
+          };
+        });
     } catch (error) {
       console.error('Error getting challenges progress:', error);
       return [];

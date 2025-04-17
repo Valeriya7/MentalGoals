@@ -126,7 +126,7 @@
           <ion-title>{{ 'HABITS.CREATE_HABIT' | translate }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeCreateHabitModal()">
-              <ion-icon name="close"></ion-icon>
+              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
@@ -134,60 +134,42 @@
 
       <ion-content class="ion-padding">
         <form (ngSubmit)="createHabit()" #habitForm="ngForm">
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.NAME' | translate }}</ion-label>
-            <ion-input [(ngModel)]="newHabit.name" name="name" required></ion-input>
-          </ion-item>
+          <ion-input placeholder="name" label="{{ 'HABITS.NAME' | translate }}" [(ngModel)]="newHabit.name" type="name" name="name"></ion-input>
+          <ion-input placeholder="description" label="{{ 'HABITS.DESCRIPTION' | translate }}" [(ngModel)]="newHabit.description" type="name" name="description" required></ion-input>
 
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.DESCRIPTION' | translate }}</ion-label>
-            <ion-textarea [(ngModel)]="newHabit.description" name="description" required></ion-textarea>
-          </ion-item>
+          <ion-select
+            label="{{ 'HABITS.CATEGORY' | translate }}"
+            [(ngModel)]="newHabit.category"
+            name="category">
+            <ion-select-option value="health">{{ 'HABITS.CATEGORIES.HEALTH' | translate }}</ion-select-option>
+            <ion-select-option value="fitness">{{ 'HABITS.CATEGORIES.FITNESS' | translate }}</ion-select-option>
+            <ion-select-option value="mindfulness">{{ 'HABITS.CATEGORIES.MINDFULNESS' | translate }}</ion-select-option>
+            <ion-select-option value="nutrition">{{ 'HABITS.CATEGORIES.NUTRITION' | translate }}</ion-select-option>
+            <ion-select-option value="learning">{{ 'HABITS.CATEGORIES.LEARNING' | translate }}</ion-select-option>
+            <ion-select-option value="productivity">{{ 'HABITS.CATEGORIES.PRODUCTIVITY' | translate }}</ion-select-option>
+          </ion-select>
 
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.CATEGORY' | translate }}</ion-label>
-            <ion-select [(ngModel)]="newHabit.category" name="category" required>
-              <ion-select-option value="health">{{ 'HABITS.CATEGORIES.HEALTH' | translate }}</ion-select-option>
-              <ion-select-option value="fitness">{{ 'HABITS.CATEGORIES.FITNESS' | translate }}</ion-select-option>
-              <ion-select-option value="mindfulness">{{ 'HABITS.CATEGORIES.MINDFULNESS' | translate }}</ion-select-option>
-              <ion-select-option value="nutrition">{{ 'HABITS.CATEGORIES.NUTRITION' | translate }}</ion-select-option>
-              <ion-select-option value="learning">{{ 'HABITS.CATEGORIES.LEARNING' | translate }}</ion-select-option>
-              <ion-select-option value="productivity">{{ 'HABITS.CATEGORIES.PRODUCTIVITY' | translate }}</ion-select-option>
-            </ion-select>
-          </ion-item>
+          <ion-select
+            label="{{ 'HABITS.DIFFICULTY' | translate }}"
+            [(ngModel)]="newHabit.difficulty"
+            name="difficulty">
+            <ion-select-option value="easy">{{ 'HABITS.DIFFICULTY_EASY' | translate }}</ion-select-option>
+            <ion-select-option value="medium">{{ 'HABITS.DIFFICULTY_MEDIUM' | translate }}</ion-select-option>
+            <ion-select-option value="hard">{{ 'HABITS.DIFFICULTY_HARD' | translate }}</ion-select-option>
+          </ion-select>
 
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.DIFFICULTY' | translate }}</ion-label>
-            <ion-select [(ngModel)]="newHabit.difficulty" name="difficulty" required>
-              <ion-select-option value="easy">{{ 'HABITS.DIFFICULTY_EASY' | translate }}</ion-select-option>
-              <ion-select-option value="medium">{{ 'HABITS.DIFFICULTY_MEDIUM' | translate }}</ion-select-option>
-              <ion-select-option value="hard">{{ 'HABITS.DIFFICULTY_HARD' | translate }}</ion-select-option>
-            </ion-select>
-          </ion-item>
+          <ion-input placeholder="points" label="{{ 'HABITS.POINTS' | translate }}" [(ngModel)]="newHabit.points" type="number" name="points"></ion-input>
+          <ion-input placeholder="target" label="{{ 'HABITS.TARGET' | translate }}" [(ngModel)]="newHabit.target" type="number" name="target"></ion-input>
+          <ion-input placeholder="unit" label="{{ 'HABITS.UNIT' | translate }}" [(ngModel)]="newHabit.unit" type="name" name="unit"></ion-input>
 
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.POINTS' | translate }}</ion-label>
-            <ion-input type="number" [(ngModel)]="newHabit.points" name="points" required></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.TARGET' | translate }}</ion-label>
-            <ion-input type="number" [(ngModel)]="newHabit.target" name="target" required></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.UNIT' | translate }}</ion-label>
-            <ion-input [(ngModel)]="newHabit.unit" name="unit"></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">{{ 'HABITS.FREQUENCY' | translate }}</ion-label>
-            <ion-select [(ngModel)]="newHabit.frequency" name="frequency" required>
-              <ion-select-option value="daily">{{ 'HABITS.FREQUENCY_DAILY' | translate }}</ion-select-option>
-              <ion-select-option value="weekly">{{ 'HABITS.FREQUENCY_WEEKLY' | translate }}</ion-select-option>
-              <ion-select-option value="monthly">{{ 'HABITS.FREQUENCY_MONTHLY' | translate }}</ion-select-option>
-            </ion-select>
-          </ion-item>
+          <ion-select
+            label="{{ 'HABITS.FREQUENCY' | translate }}"
+            [(ngModel)]="newHabit.frequency"
+            name="frequency">
+            <ion-select-option value="daily">{{ 'HABITS.FREQUENCY_DAILY' | translate }}</ion-select-option>
+            <ion-select-option value="weekly">{{ 'HABITS.FREQUENCY_WEEKLY' | translate }}</ion-select-option>
+            <ion-select-option value="monthly">{{ 'HABITS.FREQUENCY_MONTHLY' | translate }}</ion-select-option>
+          </ion-select>
 
           <div class="ion-padding">
             <ion-button expand="block" type="submit">
@@ -201,120 +183,118 @@
 
   <!-- Модальне вікно для редагування звички -->
   <ion-modal [isOpen]="isEditHabitModalOpen" (didDismiss)="closeEditHabitModal()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title>{{ 'HABITS.EDIT_HABIT' | translate }}</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closeEditHabitModal()">
-              <ion-icon name="close"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ 'HABITS.EDIT_HABIT' | translate }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="closeEditHabitModal()">
+            <ion-icon slot="icon-only" name="close" style="font-size: 24px;"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
 
-      <ion-content class="ion-padding">
-        <form (ngSubmit)="updateHabit()" #habitForm="ngForm" *ngIf="editingHabit">
-          <ion-item>
-            <ion-input 
-              [(ngModel)]="editingHabit.name" 
-              name="name" 
-              required
-              label="{{ 'HABITS.NAME' | translate }}"
-              aria-label="{{ 'HABITS.NAME' | translate }}">
-            </ion-input>
-          </ion-item>
+    <ion-content class="ion-padding">
+      <form (ngSubmit)="updateHabit()" #habitForm="ngForm" *ngIf="editingHabit">
+        <ion-item>
+          <ion-input
+            [(ngModel)]="editingHabit.name"
+            name="name"
+            required
+            label="{{ 'HABITS.NAME' | translate }}"
+            aria-label="{{ 'HABITS.NAME' | translate }}">
+          </ion-input>
+        </ion-item>
 
-          <ion-item>
-            <ion-textarea 
-              [(ngModel)]="editingHabit.description" 
-              name="description" 
-              required
-              label="{{ 'HABITS.DESCRIPTION' | translate }}"
-              aria-label="{{ 'HABITS.DESCRIPTION' | translate }}">
-            </ion-textarea>
-          </ion-item>
+        <ion-item>
+          <ion-textarea
+            [(ngModel)]="editingHabit.description"
+            name="description"
+            required
+            label="{{ 'HABITS.DESCRIPTION' | translate }}"
+            aria-label="{{ 'HABITS.DESCRIPTION' | translate }}">
+          </ion-textarea>
+        </ion-item>
 
-          <ion-item>
-            <ion-select 
-              [(ngModel)]="editingHabit.category" 
-              name="category" 
-              required
-              label="{{ 'HABITS.CATEGORY' | translate }}"
-              aria-label="{{ 'HABITS.CATEGORY' | translate }}">
-              <ion-select-option value="health">{{ 'HABITS.CATEGORIES.HEALTH' | translate }}</ion-select-option>
-              <ion-select-option value="fitness">{{ 'HABITS.CATEGORIES.FITNESS' | translate }}</ion-select-option>
-              <ion-select-option value="mindfulness">{{ 'HABITS.CATEGORIES.MINDFULNESS' | translate }}</ion-select-option>
-              <ion-select-option value="nutrition">{{ 'HABITS.CATEGORIES.NUTRITION' | translate }}</ion-select-option>
-              <ion-select-option value="learning">{{ 'HABITS.CATEGORIES.LEARNING' | translate }}</ion-select-option>
-              <ion-select-option value="productivity">{{ 'HABITS.CATEGORIES.PRODUCTIVITY' | translate }}</ion-select-option>
-            </ion-select>
-          </ion-item>
+        <ion-item>
+          <ion-select
+            [(ngModel)]="editingHabit.category"
+            name="category"
+            required
+            label="{{ 'HABITS.CATEGORY' | translate }}"
+            aria-label="{{ 'HABITS.CATEGORY' | translate }}">
+            <ion-select-option value="health">{{ 'HABITS.CATEGORIES.HEALTH' | translate }}</ion-select-option>
+            <ion-select-option value="fitness">{{ 'HABITS.CATEGORIES.FITNESS' | translate }}</ion-select-option>
+            <ion-select-option value="mindfulness">{{ 'HABITS.CATEGORIES.MINDFULNESS' | translate }}</ion-select-option>
+            <ion-select-option value="nutrition">{{ 'HABITS.CATEGORIES.NUTRITION' | translate }}</ion-select-option>
+            <ion-select-option value="learning">{{ 'HABITS.CATEGORIES.LEARNING' | translate }}</ion-select-option>
+            <ion-select-option value="productivity">{{ 'HABITS.CATEGORIES.PRODUCTIVITY' | translate }}</ion-select-option>
+          </ion-select>
+        </ion-item>
 
-          <ion-item>
-            <ion-select 
-              [(ngModel)]="editingHabit.difficulty" 
-              name="difficulty" 
-              required
-              label="{{ 'HABITS.DIFFICULTY' | translate }}"
-              aria-label="{{ 'HABITS.DIFFICULTY' | translate }}">
-              <ion-select-option value="easy">{{ 'HABITS.DIFFICULTY_EASY' | translate }}</ion-select-option>
-              <ion-select-option value="medium">{{ 'HABITS.DIFFICULTY_MEDIUM' | translate }}</ion-select-option>
-              <ion-select-option value="hard">{{ 'HABITS.DIFFICULTY_HARD' | translate }}</ion-select-option>
-            </ion-select>
-          </ion-item>
+        <ion-item>
+          <ion-select
+            [(ngModel)]="editingHabit.difficulty"
+            name="difficulty"
+            required
+            label="{{ 'HABITS.DIFFICULTY' | translate }}"
+            aria-label="{{ 'HABITS.DIFFICULTY' | translate }}">
+            <ion-select-option value="easy">{{ 'HABITS.DIFFICULTY_EASY' | translate }}</ion-select-option>
+            <ion-select-option value="medium">{{ 'HABITS.DIFFICULTY_MEDIUM' | translate }}</ion-select-option>
+            <ion-select-option value="hard">{{ 'HABITS.DIFFICULTY_HARD' | translate }}</ion-select-option>
+          </ion-select>
+        </ion-item>
 
-          <ion-item>
-            <ion-input 
-              type="number" 
-              [(ngModel)]="editingHabit.points" 
-              name="points" 
-              required
-              label="{{ 'HABITS.POINTS' | translate }}"
-              aria-label="{{ 'HABITS.POINTS' | translate }}">
-            </ion-input>
-          </ion-item>
+        <ion-item>
+          <ion-input
+            type="number"
+            [(ngModel)]="editingHabit.points"
+            name="points"
+            required
+            label="{{ 'HABITS.POINTS' | translate }}"
+            aria-label="{{ 'HABITS.POINTS' | translate }}">
+          </ion-input>
+        </ion-item>
 
-          <ion-item>
-            <ion-input 
-              type="number" 
-              [(ngModel)]="editingHabit.target" 
-              name="target" 
-              required
-              label="{{ 'HABITS.TARGET' | translate }}"
-              aria-label="{{ 'HABITS.TARGET' | translate }}">
-            </ion-input>
-          </ion-item>
+        <ion-item>
+          <ion-input
+            type="number"
+            [(ngModel)]="editingHabit.target"
+            name="target"
+            required
+            label="{{ 'HABITS.TARGET' | translate }}"
+            aria-label="{{ 'HABITS.TARGET' | translate }}">
+          </ion-input>
+        </ion-item>
 
-          <ion-item>
-            <ion-input 
-              [(ngModel)]="editingHabit.unit" 
-              name="unit"
-              label="{{ 'HABITS.UNIT' | translate }}"
-              aria-label="{{ 'HABITS.UNIT' | translate }}">
-            </ion-input>
-          </ion-item>
+        <ion-item>
+          <ion-input
+            [(ngModel)]="editingHabit.unit"
+            name="unit"
+            label="{{ 'HABITS.UNIT' | translate }}"
+            aria-label="{{ 'HABITS.UNIT' | translate }}">
+          </ion-input>
+        </ion-item>
 
-          <ion-item>
-            <ion-select 
-              [(ngModel)]="editingHabit.frequency" 
-              name="frequency" 
-              required
-              label="{{ 'HABITS.FREQUENCY' | translate }}"
-              aria-label="{{ 'HABITS.FREQUENCY' | translate }}">
-              <ion-select-option value="daily">{{ 'HABITS.FREQUENCY_DAILY' | translate }}</ion-select-option>
-              <ion-select-option value="weekly">{{ 'HABITS.FREQUENCY_WEEKLY' | translate }}</ion-select-option>
-              <ion-select-option value="monthly">{{ 'HABITS.FREQUENCY_MONTHLY' | translate }}</ion-select-option>
-            </ion-select>
-          </ion-item>
+        <ion-item>
+          <ion-select
+            [(ngModel)]="editingHabit.frequency"
+            name="frequency"
+            required
+            label="{{ 'HABITS.FREQUENCY' | translate }}"
+            aria-label="{{ 'HABITS.FREQUENCY' | translate }}">
+            <ion-select-option value="daily">{{ 'HABITS.FREQUENCY_DAILY' | translate }}</ion-select-option>
+            <ion-select-option value="weekly">{{ 'HABITS.FREQUENCY_WEEKLY' | translate }}</ion-select-option>
+            <ion-select-option value="monthly">{{ 'HABITS.FREQUENCY_MONTHLY' | translate }}</ion-select-option>
+          </ion-select>
+        </ion-item>
 
-          <div class="ion-padding">
-            <ion-button expand="block" type="submit">
-              {{ 'UPDATE' | translate }}
-            </ion-button>
-          </div>
-        </form>
-      </ion-content>
-    </ng-template>
+        <div class="ion-padding">
+          <ion-button expand="block" type="submit">
+            {{ 'UPDATE' | translate }}
+          </ion-button>
+        </div>
+      </form>
+    </ion-content>
   </ion-modal>
 </ion-content>

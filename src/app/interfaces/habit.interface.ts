@@ -22,4 +22,9 @@ export interface Habit {
     time: string;
     days: string[];
   };
+  progress: {
+    [date: string]: boolean;
+  };
+  createdAt?: Date;
+  activationDate?: Date;
 } 

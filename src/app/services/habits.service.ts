@@ -184,7 +184,8 @@ export class HabitsService {
         streak: { current: 0, best: 0 },
         target: 10,
         unit: 'minutes',
-        frequency: 'daily'
+        frequency: 'daily',
+        progress: {}
       },
       {
         id: '2',
@@ -201,7 +202,8 @@ export class HabitsService {
         streak: { current: 0, best: 0 },
         target: 5,
         unit: 'minutes',
-        frequency: 'daily'
+        frequency: 'daily',
+        progress: {}
       },
       {
         id: '3',
@@ -218,7 +220,8 @@ export class HabitsService {
         streak: { current: 0, best: 0 },
         target: 8000,
         unit: 'steps',
-        frequency: 'daily'
+        frequency: 'daily',
+        progress: {}
       },
       {
         id: '4',
@@ -235,7 +238,8 @@ export class HabitsService {
         streak: { current: 0, best: 0 },
         target: 1,
         unit: 'day',
-        frequency: 'daily'
+        frequency: 'daily',
+        progress: {}
       },
       {
         id: '5',
@@ -251,7 +255,8 @@ export class HabitsService {
         streak: { current: 0, best: 0 },
         target: 5,
         unit: 'words',
-        frequency: 'daily'
+        frequency: 'daily',
+        progress: {}
       }
     ];
   }
