@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { EmotionService } from '../../services/emotion.service';
@@ -17,6 +17,7 @@ import {
   thunderstormOutline,
   closeOutline
 } from 'ionicons/icons';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-emotional-calendar',
@@ -25,12 +26,13 @@ import {
   standalone: true,
   imports: [IonicModule, CommonModule]
 })
-export class EmotionalCalendarPage implements OnInit {
+export class EmotionalCalendarPage implements OnInit, OnDestroy {
   currentDate: Date = new Date();
   selectedDate: Date = new Date();
   emotions: Emotion[] = [];
   monthEmotions: { [key: string]: Emotion } = {};
   private emotionCache: { [key: string]: Emotion | null } = {};
+  private emotionsSubscription: Subscription;
 
   constructor(
     private emotionService: EmotionService,
@@ -46,11 +48,23 @@ export class EmotionalCalendarPage implements OnInit {
       'thunderstorm-outline': thunderstormOutline,
       'close-outline': closeOutline
     });
+
+    // Підписуємось на зміни емоцій
+    this.emotionsSubscription = this.emotionService.emotions$.subscribe(emotions => {
+      console.log('Отримано оновлені емоції:', emotions);
+      this.loadMonthEmotions();
+    });
   }
 
   ngOnInit() {
     console.log('emotional-calendar: ');
     this.loadMonthEmotions();
+  }
+
+  ngOnDestroy() {
+    if (this.emotionsSubscription) {
+      this.emotionsSubscription.unsubscribe();
+    }
   }
 
   async loadMonthEmotions() {

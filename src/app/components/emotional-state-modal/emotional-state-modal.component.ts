@@ -103,9 +103,12 @@ export class EmotionalStateModalComponent implements OnInit {
         }
         await this.emotionService.saveEmotion(emotionData);
         this.modalCtrl.dismiss({ saved: true });
+        // Повертаємо дані для збереження в батьківському компоненті
+        await this.modalCtrl.dismiss(emotionData);
       }
     } catch (error) {
       console.error('Error saving emotion:', error);
+      await this.modalCtrl.dismiss(null, 'error');
     }
   }
 

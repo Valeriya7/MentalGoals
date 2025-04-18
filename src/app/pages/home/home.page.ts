@@ -30,7 +30,8 @@ import {
   addOutline,
   chevronBackOutline,
   checkmarkCircleOutline,
-  personCircleOutline
+  personCircleOutline,
+  happyOutline
 } from 'ionicons/icons';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ToastController, ModalController } from '@ionic/angular';
@@ -48,6 +49,9 @@ import { EmotionalService } from '../../services/emotional.service';
 import { EmotionalStateModalComponent } from '../../components/emotional-state-modal/emotional-state-modal.component';
 import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { Emotion } from '../../models/emotion.model';
+import { PlatformCheckService } from '../../services/platform-check.service';
+import { VersionCheckService } from '../../services/version-check.service';
+import { EmotionService } from '../../services/emotion.service';
 
 @Component({
   selector: 'app-home',
@@ -112,7 +116,10 @@ export class HomePage implements OnInit, OnDestroy {
     private progressService: ProgressService,
     private modalCtrl: ModalController,
     private emotionalService: EmotionalService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private platformCheckService: PlatformCheckService,
+    private versionCheckService: VersionCheckService,
+    private emotionService: EmotionService
   ) {
     addIcons({
       iceCreamOutline,
@@ -129,7 +136,8 @@ export class HomePage implements OnInit, OnDestroy {
       addOutline,
       chevronBackOutline,
       checkmarkCircleOutline,
-      personCircleOutline
+      personCircleOutline,
+      happyOutline
     });
   }
 
@@ -420,8 +428,6 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.getCurrentUser();
       if (user) {
-        this.notificationState.notifications = false;
-        await this.saveNotificationState();
         this.util.navigateToPage('/tabs/notifications');
       } else {
         this.util.navigateToPage('/auth');
@@ -430,25 +436,6 @@ export class HomePage implements OnInit, OnDestroy {
       console.error('Navigation error:', error);
       this.util.navigateToPage('/auth');
     }
-  }
-
-  async openEmotionalStateModal() {
-    this.notificationState.emotionalState = false;
-    await this.saveNotificationState();
-    if (!this.activeChallenge) {
-      return;
-    }
-
-    const modal = await this.modalCtrl.create({
-      component: EmotionalStateModalComponent,
-      componentProps: {
-        day: {
-          dayNumber: this.getCurrentDay(this.activeChallenge),
-          dayName: this.getDayName(this.getCurrentDay(this.activeChallenge))
-        }
-      }
-    });
-    await modal.present();
   }
 
   async goToHabit(type: string) {
@@ -519,8 +506,6 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async openDailyWish() {
-    this.notificationState.dailyWish = false;
-    await this.saveNotificationState();
     const modal = await this.modalCtrl.create({
       component: DailyWishComponent,
       cssClass: 'half-modal'
@@ -702,6 +687,65 @@ export class HomePage implements OnInit, OnDestroy {
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.min(diffDays + 1, challenge.duration);
+  }
+
+  async openEmotionalStateModal() {
+    try {
+      // Зберігаємо стан натискання
+      this.notificationState.emotionalState = false;
+      await this.saveNotificationState();
+
+      // Навігуємо на сторінку календаря емоцій
+      await this.router.navigate(['/tabs/emotional-calendar']);
+
+      // Відкриваємо модальне вікно
+      const modal = await this.modalCtrl.create({
+        component: EmotionalStateModalComponent
+      });
+
+      await modal.present();
+
+      const { data } = await modal.onDidDismiss();
+      
+      if (data) {
+        try {
+          // Зберігаємо емоцію
+          await this.emotionService.saveEmotion(data);
+          
+          // Оновлюємо дані в сервісі
+          await this.emotionService.loadEmotions();
+          
+          // Оновлюємо календар через сервіс
+          await this.emotionService.refreshCalendar();
+
+          const toast = await this.toastController.create({
+            message: 'Емоцію збережено',
+            duration: 2000,
+            position: 'bottom',
+            color: 'success'
+          });
+          await toast.present();
+        } catch (error) {
+          console.error('Error saving emotion:', error);
+          const toast = await this.toastController.create({
+            message: 'Помилка при збереженні емоції',
+            duration: 2000,
+            position: 'bottom',
+            color: 'danger'
+          });
+          await toast.present();
+        }
+      }
+    } catch (error) {
+      console.error('Error opening emotional state modal:', error);
+      const toast = await this.toastController.create({
+        message: 'Помилка при відкритті календаря емоцій',
+        duration: 2000,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
+    }
   }
 
   getDayName(dayNumber: number): string {
@@ -918,7 +962,7 @@ export class HomePage implements OnInit, OnDestroy {
         // Set initial state for new day
         const today = new Date().toDateString();
         const { value: lastCheck } = await Preferences.get({ key: 'lastNotificationCheck' });
-
+        
         if (lastCheck !== today) {
           this.notificationState = {
             notifications: true,
@@ -936,9 +980,9 @@ export class HomePage implements OnInit, OnDestroy {
 
   private async saveNotificationState() {
     try {
-      await Preferences.set({
-        key: 'notificationState',
-        value: JSON.stringify(this.notificationState)
+      await Preferences.set({ 
+        key: 'notificationState', 
+        value: JSON.stringify(this.notificationState) 
       });
     } catch (error) {
       console.error('Error saving notification state:', error);
@@ -948,6 +992,5 @@ export class HomePage implements OnInit, OnDestroy {
   hasNotification(key: keyof typeof this.notificationState): boolean {
     return this.notificationState[key];
   }
-
 }
 
