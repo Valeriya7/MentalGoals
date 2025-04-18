@@ -94,6 +94,12 @@ export class HomePage implements OnInit, OnDestroy {
   selectedPeriod: 'week' | 'month' | 'year' = 'week';
   chart: Chart | null = null;
 
+  private notificationState = {
+    notifications: false,
+    emotionalState: false,
+    dailyWish: false
+  };
+
   constructor(
     private router: Router,
     private util: UtilService,
@@ -165,6 +171,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.generateWeekDays();
     await this.loadSelectedDayProgress();
     await this.loadAverageMetrics();
+    await this.loadNotificationState();
   }
 
   ngOnDestroy() {
@@ -413,6 +420,8 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.getCurrentUser();
       if (user) {
+        this.notificationState.notifications = false;
+        await this.saveNotificationState();
         this.util.navigateToPage('/tabs/notifications');
       } else {
         this.util.navigateToPage('/auth');
@@ -421,6 +430,25 @@ export class HomePage implements OnInit, OnDestroy {
       console.error('Navigation error:', error);
       this.util.navigateToPage('/auth');
     }
+  }
+
+  async openEmotionalStateModal() {
+    this.notificationState.emotionalState = false;
+    await this.saveNotificationState();
+    if (!this.activeChallenge) {
+      return;
+    }
+
+    const modal = await this.modalCtrl.create({
+      component: EmotionalStateModalComponent,
+      componentProps: {
+        day: {
+          dayNumber: this.getCurrentDay(this.activeChallenge),
+          dayName: this.getDayName(this.getCurrentDay(this.activeChallenge))
+        }
+      }
+    });
+    await modal.present();
   }
 
   async goToHabit(type: string) {
@@ -491,6 +519,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   async openDailyWish() {
+    this.notificationState.dailyWish = false;
+    await this.saveNotificationState();
     const modal = await this.modalCtrl.create({
       component: DailyWishComponent,
       cssClass: 'half-modal'
@@ -673,24 +703,6 @@ export class HomePage implements OnInit, OnDestroy {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.min(diffDays + 1, challenge.duration);
   }
-
-  async openEmotionalStateModal() {
-    if (!this.activeChallenge) {
-      return;
-    }
-
-    const modal = await this.modalCtrl.create({
-      component: EmotionalStateModalComponent,
-      componentProps: {
-        day: {
-          dayNumber: this.getCurrentDay(this.activeChallenge),
-          dayName: this.getDayName(this.getCurrentDay(this.activeChallenge))
-        }
-      }
-    });
-    await modal.present();
-  }
-
 
   getDayName(dayNumber: number): string {
     const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
@@ -895,6 +907,46 @@ export class HomePage implements OnInit, OnDestroy {
   }
   async goToChallenges(){
     await this.router.navigate(['/tabs/challenges']);
+  }
+
+  private async loadNotificationState() {
+    try {
+      const { value } = await Preferences.get({ key: 'notificationState' });
+      if (value) {
+        this.notificationState = JSON.parse(value);
+      } else {
+        // Set initial state for new day
+        const today = new Date().toDateString();
+        const { value: lastCheck } = await Preferences.get({ key: 'lastNotificationCheck' });
+
+        if (lastCheck !== today) {
+          this.notificationState = {
+            notifications: true,
+            emotionalState: true,
+            dailyWish: true
+          };
+          await this.saveNotificationState();
+          await Preferences.set({ key: 'lastNotificationCheck', value: today });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading notification state:', error);
+    }
+  }
+
+  private async saveNotificationState() {
+    try {
+      await Preferences.set({
+        key: 'notificationState',
+        value: JSON.stringify(this.notificationState)
+      });
+    } catch (error) {
+      console.error('Error saving notification state:', error);
+    }
+  }
+
+  hasNotification(key: keyof typeof this.notificationState): boolean {
+    return this.notificationState[key];
   }
 
 }

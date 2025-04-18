@@ -16,14 +16,17 @@
       </div>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button (click)="goToNotifications()">
+      <ion-button (click)="goToNotifications()" class="notification-button">
         <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
+        <ion-badge *ngIf="hasNotification('notifications')" color="danger" class="notification-badge">!</ion-badge>
       </ion-button>
-      <ion-button (click)="openEmotionalStateModal()">
+      <ion-button (click)="openEmotionalStateModal()" class="notification-button">
         <ion-icon name="happy-outline" slot="icon-only"></ion-icon>
+        <ion-badge *ngIf="hasNotification('emotionalState')" color="danger" class="notification-badge">!</ion-badge>
       </ion-button>
-      <ion-button (click)="openDailyWish()">
-        <ion-icon name="cafe-outline"></ion-icon>
+      <ion-button (click)="openDailyWish()" class="notification-button">
+        <ion-icon name="cafe-outline" slot="icon-only"></ion-icon>
+        <ion-badge *ngIf="hasNotification('dailyWish')" color="danger" class="notification-badge">!</ion-badge>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
