@@ -7,7 +7,7 @@ import { Preferences } from '@capacitor/preferences';
 import { RangeChangeEventDetail } from '@ionic/core';
 import { StorageService } from '../../services/storage.service';
 import {Router} from "@angular/router";
-
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 interface LifeWheelArea {
   key: string;
   icon: string;
@@ -20,7 +20,8 @@ interface LifeWheelArea {
   templateUrl: './life-wheel.page.html',
   styleUrls: ['./life-wheel.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, TranslateModule]
+  imports: [IonicModule, CommonModule, TranslateModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class LifeWheelPage implements OnInit {
   public isDataSaved: boolean = false;

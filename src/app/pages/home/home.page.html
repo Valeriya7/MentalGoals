@@ -48,13 +48,13 @@
     <ion-card-header>
       <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange($event)">
         <ion-segment-button value="week">
-          <ion-label>Тиждень</ion-label>
+          <ion-label>{{ 'HOME.PERIOD.WEEK' | translate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button value="month">
-          <ion-label>Місяць</ion-label>
+          <ion-label>{{ 'HOME.PERIOD.MONTH' | translate }}</ion-label>
         </ion-segment-button>
         <ion-segment-button value="year">
-          <ion-label>Рік</ion-label>
+          <ion-label>{{ 'HOME.PERIOD.YEAR' | translate }}</ion-label>
         </ion-segment-button>
       </ion-segment>
     </ion-card-header>
@@ -113,12 +113,12 @@
           slot="start"
           [checked]="task.completed"
           (ionChange)="updateTaskProgress(task, $event)"
-        ></ion-checkbox>
-        <ion-label>
+          aria-label="{{ task.title }}"></ion-checkbox>
+        <div class="task-content">
           <h2>{{ task.title }}</h2>
           <p>{{ task.description }}</p>
           <span class="challenge-title">{{ task.challengeTitle }}</span>
-        </ion-label>
+        </div>
         <ion-icon [name]="task.icon" slot="end"></ion-icon>
       </ion-item>
     </ion-list>
@@ -128,12 +128,12 @@
   <div *ngIf="!activeChallenges.length && allDailyTasks.length === 0" class="no-challenge">
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Немає активного челенджу</ion-card-title>
+        <ion-card-title>{{ 'HOME.NO_ACTIVE_CHALLENGE' | translate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>Оберіть челендж, щоб почати працювати над своїми цілями</p>
-        <ion-button expand="block" routerLink="/challenges">
-          Перейти до челенджів
+        <p>{{ 'HOME.CHOOSE_CHALLENGE' | translate }}</p>
+        <ion-button expand="block" (click)="goToChallenges()">
+          {{ 'HOME.GO_TO_CHALLENGES' | translate }}
         </ion-button>
       </ion-card-content>
     </ion-card>

@@ -34,6 +34,7 @@ import { Challenge } from '../../interfaces/challenge.interface';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { ToastController } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-challenges',
@@ -61,7 +62,8 @@ export class ChallengesPage implements OnInit {
     private challengeService: ChallengeService,
     private router: Router,
     private authService: AuthService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private translate: TranslateService
   ) {
     addIcons({
       'trophy-outline': trophyOutline,
@@ -173,24 +175,33 @@ export class ChallengesPage implements OnInit {
     const success = await this.challengeService.startNewChallenge(type);
     if (success) {
       await this.loadChallenges();
+      await this.showSuccessToast(type);
     }
   }
 
   async activateChallenge(challenge: Challenge) {
     try {
-      console.log("challenge: ", challenge);
+      const activeChallenges = this.challenges.filter(c => c.status === 'active');
+      if (activeChallenges.length >= 3) {
+        const message = this.translate.instant('CHALLENGES.SERVICE.ERRORS.MAX_ACTIVE');
+        await this.presentToast(message);
+        return;
+      }
+
       const success = await this.challengeService.activateChallenge(challenge.id);
-      console.log("challenge: ", challenge);
       if (success) {
         await this.loadChallenges();
-        console.log('Challenge activated successfully:', challenge.id);
+        const successMessage = this.translate.instant('CHALLENGES.SERVICE.SUCCESS.ACTIVATED');
+        await this.presentToast(successMessage);
       } else {
-        console.warn('Failed to activate challenge:', challenge.id);
+        const errorMessage = this.translate.instant('CHALLENGES.SERVICE.ERRORS.NOT_FOUND');
+        await this.presentToast(errorMessage);
       }
     } catch (error) {
       console.error('Error activating challenge:', error);
-      if (error instanceof Error && error.message === 'MAX_ACTIVE_CHALLENGES') {
-        this.presentToast('Максимальна кількість активних челенджів (3) досягнута. Деактивуйте один з активних челенджів, щоб розпочати новий.');
+      if (error instanceof Error) {
+        const errorMessage = this.translate.instant('CHALLENGES.SERVICE.ERRORS.ACTIVATING');
+        await this.presentToast(errorMessage);
       }
     }
   }
@@ -317,5 +328,16 @@ export class ChallengesPage implements OnInit {
     } catch (error) {
       console.error('Error quitting challenge:', error);
     }
+  }
+
+  private async showSuccessToast(type: string): Promise<void> {
+    const toast = await this.toastController.create({
+      message: this.translate.instant('CHALLENGES.SERVICE.SUCCESS.CHALLENGE_CREATED', { type }),
+      duration: 2000,
+      position: 'bottom',
+      color: 'success',
+      buttons: [{ text: this.translate.instant('CHALLENGES.SERVICE.SUCCESS.OK'), role: 'cancel' }]
+    });
+    await toast.present();
   }
 }

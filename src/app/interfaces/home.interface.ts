@@ -1,0 +1,37 @@
+export interface DiaryEntry {
+  date: Date;
+  mood: number;
+  sleep: number;
+}
+
+export interface DayInfo {
+  name: string;
+  date: string;
+  marked: boolean;
+  fullDate: Date;
+}
+
+export interface DailyTask {
+  name: string;
+  icon: string;
+  completed: boolean;
+  title: string;
+  description?: string;
+  challengeId?: string;
+  challengeTitle?: string;
+}
+
+export interface EmotionalState {
+  id: string;
+  date: Date;
+  mood: number;
+  energy: number;
+}
+
+export interface ChallengeProgress {
+  id: string;
+  date: Date;
+  completedTasks: number;
+  totalTasks: number;
+  startDate?: string;
+} 

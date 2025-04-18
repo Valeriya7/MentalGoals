@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef 
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UtilService } from 'src/app/services/util.service';
 import { Preferences } from '@capacitor/preferences';
 import { NavigationExtras } from '@angular/router';
@@ -12,6 +12,7 @@ import { Subscription, firstValueFrom } from 'rxjs';
 import { WishModalComponent } from '../../components/wish-modal/wish-modal.component';
 import { ChallengeService } from '../../services/challenge.service';
 import { Challenge, ChallengePhase, ChallengeTask } from '../../interfaces/challenge.interface';
+import { DiaryEntry, DayInfo, DailyTask, EmotionalState, ChallengeProgress } from '../../interfaces/home.interface';
 import { ModalService } from '../../services/modal.service';
 import { addIcons } from 'ionicons';
 import {
@@ -48,55 +49,17 @@ import { EmotionalStateModalComponent } from '../../components/emotional-state-m
 import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { Emotion } from '../../models/emotion.model';
 
-interface DiaryEntry {
-  date: Date;
-  mood: number;
-  sleep: number;
-}
-
-interface DayInfo {
-  name: string;
-  date: string;
-  marked: boolean;
-  fullDate: Date;
-}
-
-interface DailyTask {
-  name: string;
-  icon: string;
-  completed: boolean;
-  title: string;
-  description?: string;
-  challengeId?: string;
-  challengeTitle?: string;
-}
-
-interface EmotionalState {
-  id: string;
-  date: Date;
-  mood: number;
-  energy: number;
-}
-
-interface ChallengeProgress {
-  id: string;
-  date: Date;
-  completedTasks: number;
-  totalTasks: number;
-  startDate?: string;
-}
-
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, TranslateModule],
+  imports: [IonicModule, CommonModule, FormsModule, TranslateModule, RouterModule],
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HomePage implements OnInit, OnDestroy {
   @ViewChild('achievementChart') achievementChart!: ElementRef;
-  
+
   userName: string = '';
   userPhotoUrl: string | null = null;
   weekDays: DayInfo[] = [];
@@ -647,7 +610,7 @@ export class HomePage implements OnInit, OnDestroy {
 
       // Показуємо повідомлення про успіх
       const toast = await this.toastController.create({
-        message: isCompleted ? 'Завдання виконано!' : 'Завдання скасовано',
+        message: this.translate.instant(isCompleted ? 'TASKS.TASK_COMPLETED' : 'TASKS.TASK_CANCELLED'), //isCompleted ? 'Завдання виконано!' : 'Завдання скасовано',
         duration: 2000,
         position: 'bottom',
         color: isCompleted ? 'success' : 'medium'
@@ -661,7 +624,7 @@ export class HomePage implements OnInit, OnDestroy {
 
       // Показуємо повідомлення про помилку
       const toast = await this.toastController.create({
-        message: 'Помилка при оновленні завдання',
+        message: this.translate.instant('TASKS.UPDATE_ERROR'),
         duration: 2000,
         position: 'bottom',
         color: 'danger'
@@ -700,11 +663,11 @@ export class HomePage implements OnInit, OnDestroy {
   getCurrentDay(challenge: Challenge): number {
     const startDate = challenge.startDate ? new Date(challenge.startDate) : new Date();
     const today = new Date();
-    
+
     // Встановлюємо час на початок дня для коректного порівняння
     startDate.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
-    
+
     // Обчислюємо різницю в днях
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -758,14 +721,14 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     const data = await this.getAchievementData();
-    
+
     const config: ChartConfiguration = {
       type: 'line',
       data: {
         labels: data.labels,
         datasets: [
           {
-            label: 'Кроки',
+            label: this.translate.instant('HOME.CHART.STEPS'),
             data: data.steps,
             borderColor: '#36A2EB',
             tension: 0.4,
@@ -773,7 +736,7 @@ export class HomePage implements OnInit, OnDestroy {
             yAxisID: 'stepsAxis'
           },
           {
-            label: 'Емоції',
+            label: this.translate.instant('HOME.CHART.EMOTIONS'),
             data: data.emotions,
             borderColor: '#FF6384',
             tension: 0.4,
@@ -781,7 +744,7 @@ export class HomePage implements OnInit, OnDestroy {
             yAxisID: 'mainAxis'
           },
           {
-            label: 'Звички',
+            label: this.translate.instant('HOME.CHART.HABITS'),
             data: data.habits,
             borderColor: '#4BC0C0',
             tension: 0.4,
@@ -800,7 +763,7 @@ export class HomePage implements OnInit, OnDestroy {
             max: 10,
             title: {
               display: true,
-              text: 'Рівень (1-10)'
+              text: this.translate.instant('HOME.CHART.LEVEL')
             }
           },
           stepsAxis: {
@@ -809,7 +772,7 @@ export class HomePage implements OnInit, OnDestroy {
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Кількість кроків'
+              text: this.translate.instant('HOME.CHART.STEPS_COUNT')
             },
             grid: {
               drawOnChartArea: false
@@ -819,7 +782,7 @@ export class HomePage implements OnInit, OnDestroy {
         plugins: {
           title: {
             display: true,
-            text: 'Статистика активності'
+            text: this.translate.instant('HOME.CHART.ACTIVITY_STATS')
           },
           tooltip: {
             mode: 'index',
@@ -836,7 +799,7 @@ export class HomePage implements OnInit, OnDestroy {
   async getAchievementData() {
     const endDate = new Date();
     let startDate = new Date();
-    
+
     switch (this.selectedPeriod) {
       case 'week':
         startDate.setDate(endDate.getDate() - 7);
@@ -851,10 +814,10 @@ export class HomePage implements OnInit, OnDestroy {
 
     // Отримуємо дані про емоції
     const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
-    
+
     // Отримуємо дані про прогрес
     const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
-    
+
     // Отримуємо дані про звички
     const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
 
@@ -867,11 +830,11 @@ export class HomePage implements OnInit, OnDestroy {
     // Генеруємо мітки та дані в залежності від періоду
     let currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateStr = format(currentDate, 
-        this.selectedPeriod === 'week' ? 'HH:mm' : 
+      const dateStr = format(currentDate,
+        this.selectedPeriod === 'week' ? 'HH:mm' :
         this.selectedPeriod === 'month' ? 'dd.MM' : 'MM.yyyy'
       );
-      
+
       labels.push(dateStr);
 
       // Знаходимо відповідні дані для цієї дати
@@ -898,23 +861,23 @@ export class HomePage implements OnInit, OnDestroy {
       }
     }
 
-    return { 
-      labels, 
-      steps, 
-      emotions: emotionsData, 
-      habits: habitsData 
+    return {
+      labels,
+      steps,
+      emotions: emotionsData,
+      habits: habitsData
     };
   }
 
   private calculateEmotionValue(emotions: Emotion[]): number {
     if (!emotions.length) return 5;
-    
+
     return emotions.reduce((sum, emotion) => sum + emotion.value, 0) / emotions.length;
   }
 
   private calculateHabitsValue(habits: any[]): number {
     if (!habits.length) return 0;
-    
+
     const completedRatio = habits.map(habit => {
       const completed = habit.completedTasks || 0;
       const total = habit.totalTasks || 1;
@@ -929,6 +892,9 @@ export class HomePage implements OnInit, OnDestroy {
     if (value === 'week' || value === 'month' || value === 'year') {
       await this.changePeriod(value);
     }
+  }
+  async goToChallenges(){
+    await this.router.navigate(['/tabs/challenges']);
   }
 
 }

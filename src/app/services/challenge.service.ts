@@ -6,6 +6,7 @@ import { ModalService } from './modal.service';
 import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';
 import { StorageService } from './storage.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,8 @@ export class ChallengeService {
     private toastController: ToastController,
     private modalService: ModalService,
     private storageService: StorageService,
-    private platform: Platform
+    private platform: Platform,
+    private translate: TranslateService
   ) {
     this.init();
     this.initializeActiveChallenge();
@@ -229,11 +231,11 @@ export class ChallengeService {
 
   private async showSuccessToast(type: string): Promise<void> {
     const toast = await this.toastController.create({
-      message: `Челендж "${type}" створено! Тепер ви можете його активувати.`,
+      message: this.translate.instant('CHALLENGES.SERVICE.SUCCESS.CHALLENGE_CREATED', { type }),
       duration: 2000,
       position: 'bottom',
       color: 'success',
-      buttons: [{ text: 'OK', role: 'cancel' }]
+      buttons: [{ text: this.translate.instant('CHALLENGES.SERVICE.SUCCESS.OK'), role: 'cancel' }]
     });
     await toast.present();
   }
@@ -246,7 +248,7 @@ export class ChallengeService {
     this.isLoading.next(true);
 
     try {
-      await this.modalService.showLoading('Створення челенджу...');
+      await this.modalService.showLoading(this.translate.instant('CHALLENGES.LOADING'));
 
       const startDate = new Date();
       const endDate = new Date();
@@ -255,40 +257,40 @@ export class ChallengeService {
       const tasks: ChallengeTask[] = [
         {
           id: 'no-sweets',
-          title: 'Без солодкого',
-          description: 'Уникайте солодощів протягом дня',
+          title: this.translate.instant('CHALLENGES.TASKS.NO_SWEETS.TITLE'),
+          description: this.translate.instant('CHALLENGES.TASKS.NO_SWEETS.DESCRIPTION'),
           icon: 'ice-cream-outline',
           completed: false,
           progress: 0
         },
         {
           id: 'no-coffee',
-          title: 'Без кави',
-          description: 'Замініть каву на здорові альтернативи',
+          title: this.translate.instant('CHALLENGES.TASKS.NO_COFFEE.TITLE'),
+          description: this.translate.instant('CHALLENGES.TASKS.NO_COFFEE.DESCRIPTION'),
           icon: 'cafe-outline',
           completed: false,
           progress: 0
         },
         {
           id: 'exercise',
-          title: '10 хвилин вправ',
-          description: 'Виконайте комплекс вправ',
+          title: this.translate.instant('CHALLENGES.TASKS.EXERCISE.TITLE'),
+          description: this.translate.instant('CHALLENGES.TASKS.EXERCISE.DESCRIPTION'),
           icon: 'fitness-outline',
           completed: false,
           progress: 0
         },
         {
           id: 'steps',
-          title: '8000 кроків',
-          description: 'Пройдіть мінімум 8000 кроків',
+          title: this.translate.instant('CHALLENGES.TASKS.STEPS.TITLE'),
+          description: this.translate.instant('CHALLENGES.TASKS.STEPS.DESCRIPTION'),
           icon: 'footsteps-outline',
           completed: false,
           progress: 0
         },
         {
           id: 'english',
-          title: '5 англійських слів',
-          description: 'Вивчіть нові слова',
+          title: this.translate.instant('CHALLENGES.TASKS.ENGLISH.TITLE'),
+          description: this.translate.instant('CHALLENGES.TASKS.ENGLISH.DESCRIPTION'),
           icon: 'book-outline',
           completed: false,
           progress: 0
@@ -298,8 +300,8 @@ export class ChallengeService {
       // Create a new challenge object
       const challenge: Challenge = {
         id: `challenge-${Date.now()}`,
-        title: '40 Днів Здорових Звичок',
-        description: 'Покращіть своє здоров\'я за 40 днів, формуючи корисні звички',
+        title: this.translate.instant('CHALLENGES.CHALLENGE_TITLE'),
+        description: this.translate.instant('CHALLENGES.CHALLENGE_DESCRIPTION'),
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         duration: 40,
@@ -326,7 +328,7 @@ export class ChallengeService {
         },
         phases: [{
           id: 'phase-1',
-          title: 'Основна фаза',
+          title: this.translate.instant('CHALLENGES.PHASE_TITLE'),
           tasks: tasks,
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString()
@@ -346,7 +348,7 @@ export class ChallengeService {
       return true;
 
     } catch (error) {
-      console.error('Помилка при створенні челенджу:', error);
+      console.error(this.translate.instant('CHALLENGES.ERROR'), error);
       await this.modalService.hideLoading();
       await this.showErrorToast();
       this.isLoading.next(false);

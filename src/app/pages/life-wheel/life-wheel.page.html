@@ -14,9 +14,6 @@
   <div *ngIf="!isDataSaved" class="areas-list">
     <ion-list>
       <ion-item *ngFor="let area of areas">
-        <ion-label>
-          <h2>{{ area.key | translate }}</h2>
-        </ion-label>
         <ion-range
           [min]="1"
           [max]="10"
@@ -25,9 +22,17 @@
           (ionChange)="setAreaValue(area, $event)"
           [disabled]="isDataSaved"
           [snaps]="true"
-          color="primary">
+          color="primary"
+          [aria-label]="area.key | translate">
+
+          <!-- Назва області (label) -->
+          <div slot="label">
+            <h2>{{ area.key | translate }}</h2>
+          </div>
+          <!-- Іконка зліва -->
           <ion-icon slot="start" [name]="area.icon"></ion-icon>
-          <ion-label slot="end">{{ area.value }}</ion-label>
+          <!-- Поточне значення справа -->
+          <div slot="end">{{ area.value }}</div>
         </ion-range>
       </ion-item>
     </ion-list>
@@ -40,7 +45,7 @@
   <!-- Колесо життя -->
   <div *ngIf="isDataSaved" class="wheel-container">
     <div class="wheel-svg-container" (click)="toggleEditMode()">
-      <svg viewBox="-40 0 470 400" class="life-wheel-svg"> <!-- -30 -50 470 490 -->
+      <svg viewBox="-42 0 470 400" class="life-wheel-svg"> <!-- -30 -50 470 490 -->
         <!-- Сегменти колеса -->
         <g *ngFor="let area of areas; let i = index" [attr.transform]="'rotate(' + (i * 45 - 45 -45) + ', 200, 200)'">
           <path *ngFor="let level of [1,2,3,4,5,6,7,8,9,10]; let j = index"

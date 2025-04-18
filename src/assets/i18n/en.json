@@ -12,13 +12,19 @@
     "SAVE": "Save Results",
     "SAVE_SUCCESS": "Results saved successfully",
     "SAVE_ERROR": "Error saving results",
+    "EDIT": "Edit",
+    "RESET": "Reset",
+    "BACK": "Back",
     "AREAS": {
       "HEALTH": "Health",
       "CAREER": "Career",
-      "FINANCES": "Finances",
+      "FINANCE": "Finance",
       "FAMILY": "Family",
-      "PERSONAL_GROWTH": "Personal Growth",
-      "SOCIAL_LIFE": "Social Life",
+      "RELATIONSHIPS": "Relationships",
+      "PERSONAL_GROWTH": "Personal growth",
+      "FUN": "Fun",
+      "ENVIRONMENT": "Environment",
+      "SOCIAL_LIFE": "Social life",
       "FRIENDS": "Friends",
       "SPIRITUALITY": "Spirituality"
     }
@@ -38,7 +44,8 @@
     "HABITS": "Habits",
     "NOTIFICATIONS": "Notifications",
     "PROFILE": "Profile",
-    "CHALLENGES": "Challenges"
+    "CHALLENGES": "Challenges",
+    "EMOTIONS": "Emotions"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Current Challenge",
@@ -49,7 +56,31 @@
     "HYDRATION_LEVEL": "Hydration Level",
     "NEED_MORE_WATER": "You need to drink more water",
     "DAILY_WISH": "Daily Wish",
-    "TITLE": "Home"
+    "TITLE": "Home",
+    "LIFE_WHEEL": "Life Wheel",
+    "CHALLENGE": "Challenge",
+    "START_CHALLENGE": "Start New Challenge",
+    "DAY_OF": "Day {{current}} of {{total}}",
+    "PHASES": "phases",
+    "STEPS": "Steps",
+    "SLEEP": "Sleep",
+    "WATER": "Water",
+    "NO_ACTIVE_CHALLENGE": "No active challenge",
+    "CHOOSE_CHALLENGE": "Choose a challenge to start working on your goals",
+    "GO_TO_CHALLENGES": "Go to challenges",
+    "PERIOD": {
+      "WEEK": "Week",
+      "MONTH": "Month",
+      "YEAR": "Year"
+    },
+    "CHART": {
+      "STEPS": "Steps",
+      "EMOTIONS": "Emotions",
+      "HABITS": "Habits",
+      "LEVEL": "Level (1-10)",
+      "STEPS_COUNT": "Steps Count",
+      "ACTIVITY_STATS": "Activity Statistics"
+    }
   },
   "CHALLENGES": {
     "TITLE": "Challenges 🎯",
@@ -88,7 +119,65 @@
       "INTERMEDIATE": "Intermediate",
       "ADVANCED": "Advanced",
       "EXPERT": "Expert"
-    }
+    },
+    "MAX_ACTIVE_REACHED": "Maximum number of active challenges (3) reached. Deactivate one of the active challenges to start a new one.",
+    "ERRORS": {
+      "MAX_ACTIVE_CHALLENGES": "Maximum number of active challenges (3) reached. Deactivate one of the active challenges to start a new one."
+    },
+    "TASKS": {
+      "NO_SWEETS": {
+        "TITLE": "No Sweets",
+        "DESCRIPTION": "Avoid sweets throughout the day"
+      },
+      "NO_COFFEE": {
+        "TITLE": "No Coffee",
+        "DESCRIPTION": "Replace coffee with healthy alternatives"
+      },
+      "EXERCISE": {
+        "TITLE": "10 Minutes Exercise",
+        "DESCRIPTION": "Complete a set of exercises"
+      },
+      "STEPS": {
+        "TITLE": "8000 Steps",
+        "DESCRIPTION": "Walk at least 8000 steps",
+        "ENGLISH": {
+          "TITLE": "5 English Words",
+          "DESCRIPTION": "Learn new words"
+        }
+      },
+    "SERVICE": {
+      "LOADING": "Loading...",
+      "ERRORS": {
+        "LOADING": "Error loading challenges",
+        "SAVING": "Error saving challenge",
+        "ACTIVATING": "Error activating challenge",
+        "COMPLETING": "Error completing challenge",
+        "QUITTING": "Error quitting challenge",
+        "NOT_FOUND": "Challenge not found",
+        "ALREADY_ACTIVE": "Challenge is already active",
+        "MAX_ACTIVE": "Maximum number of active challenges (3) reached",
+        "INVALID_STATUS": "Invalid challenge status",
+        "INVALID_TASK": "Invalid task",
+        "TASK_COMPLETED": "Task already completed",
+        "TASK_NOT_COMPLETED": "Task not completed",
+        "INVALID_PROGRESS": "Invalid progress"
+      },
+      "SUCCESS": {
+        "ACTIVATED": "Challenge activated",
+        "COMPLETED": "Challenge completed",
+        "QUIT": "You have quit the challenge",
+        "TASK_COMPLETED": "Task completed",
+        "TASK_UPDATED": "Task updated",
+        "SAVED": "Challenge saved",
+        "CHALLENGE_CREATED": "Challenge \"{{type}}\" created! You can now activate it.",
+        "OK": "OK"
+      }
+    },
+    "CHALLENGE_TITLE": "40 Days of Healthy Habits",
+    "CHALLENGE_DESCRIPTION": "Improve your health in 40 days by forming healthy habits",
+    "PHASE_TITLE": "Main Phase",
+    "LOADING": "Creating challenge...",
+    "ERROR": "Error creating challenge"
   },
   "HABITS": {
     "TITLE": "Habits",
@@ -103,7 +192,6 @@
     "AVAILABLE_HABITS": "Available Habits",
     "CURRENT_STREAK": "Current Streak",
     "BEST_STREAK": "Best Streak",
-    "MAX_STREAK": "Maximum Streak",
     "DAYS": "days",
     "DIFFICULTY": "Difficulty",
     "DIFFICULTY_EASY": "Easy",
@@ -222,5 +310,14 @@
       "FUN": "Fun",
       "ENVIRONMENT": "Environment"
     }
+  },
+  "TASKS": {
+    "TITLE": "Tasks",
+    "ADD_TASK": "Add Task",
+    "EDIT_TASK": "Edit Task",
+    "DELETE_TASK": "Delete Task",
+    "TASK_COMPLETED": "Task completed!",
+    "TASK_CANCELLED": "Task cancelled",
+    "UPDATE_ERROR": "Error updating task"
   }
 }

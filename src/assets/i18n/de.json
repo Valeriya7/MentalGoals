@@ -44,7 +44,8 @@
     "HABITS": "Gewohnheiten",
     "NOTIFICATIONS": "Benachrichtigungen",
     "PROFILE": "Profil",
-    "CHALLENGES": "Aufgaben"
+    "CHALLENGES": "Herausforderungen",
+    "EMOTIONS": "Emotionen"
   },
   "HOME": {
     "CURRENT_CHALLENGE": "Aktuelle Herausforderung",
@@ -55,7 +56,31 @@
     "HYDRATION_LEVEL": "Hydrationslevel",
     "NEED_MORE_WATER": "Sie müssen mehr Wasser trinken",
     "DAILY_WISH": "Täglicher Wunsch",
-    "TITLE": "Startseite"
+    "TITLE": "Startseite",
+    "LIFE_WHEEL": "Lebensrad",
+    "CHALLENGE": "Herausforderung",
+    "START_CHALLENGE": "Neue Herausforderung starten",
+    "DAY_OF": "Tag {{current}} von {{total}}",
+    "PHASES": "Phasen",
+    "STEPS": "Schritte",
+    "SLEEP": "Schlaf",
+    "WATER": "Wasser",
+    "NO_ACTIVE_CHALLENGE": "Keine aktive Herausforderung",
+    "CHOOSE_CHALLENGE": "Wählen Sie eine Herausforderung, um an Ihren Zielen zu arbeiten",
+    "GO_TO_CHALLENGES": "Zu den Herausforderungen",
+    "PERIOD": {
+      "WEEK": "Woche",
+      "MONTH": "Monat",
+      "YEAR": "Jahr"
+    },
+    "CHART": {
+      "STEPS": "Schritte",
+      "EMOTIONS": "Emotionen",
+      "HABITS": "Gewohnheiten",
+      "LEVEL": "Niveau (1-10)",
+      "STEPS_COUNT": "Schrittzahl",
+      "ACTIVITY_STATS": "Aktivitätsstatistik"
+    }
   },
   "CHALLENGES": {
     "TITLE": "Herausforderungen 🎯",
@@ -75,7 +100,64 @@
     "BONUS_POINTS": "Bonus-Punkte",
     "START_CHALLENGE": "Herausforderung starten",
     "SYNC_NOTE": "Daten werden mit Garmin, Samsung Health oder Apple Health synchronisiert",
-    "OF": "von"
+    "OF": "von",
+    "MAX_ACTIVE_REACHED": "Maximale Anzahl aktiver Herausforderungen (3) erreicht. Deaktiviere eine der aktiven Herausforderungen, um eine neue zu starten.",
+    "ERRORS": {
+      "MAX_ACTIVE_CHALLENGES": "Maximale Anzahl aktiver Herausforderungen (3) erreicht. Deaktiviere eine der aktiven Herausforderungen, um eine neue zu starten."
+    },
+    "TASKS": {
+      "NO_SWEETS": {
+        "TITLE": "Keine Süßigkeiten",
+        "DESCRIPTION": "Vermeiden Sie Süßigkeiten den ganzen Tag"
+      },
+      "NO_COFFEE": {
+        "TITLE": "Kein Kaffee",
+        "DESCRIPTION": "Ersetzen Sie Kaffee durch gesunde Alternativen"
+      },
+      "EXERCISE": {
+        "TITLE": "10 Minuten Übungen",
+        "DESCRIPTION": "Führen Sie eine Reihe von Übungen durch",
+        "STEPS": {
+          "TITLE": "8000 Schritte",
+          "DESCRIPTION": "Gehen Sie mindestens 8000 Schritte"
+        },
+        "ENGLISH": {
+          "TITLE": "5 Englische Wörter",
+          "DESCRIPTION": "Lernen Sie neue Wörter"
+        },
+      "SERVICE": {
+      "LOADING": "Wird geladen...",
+      "ERRORS": {
+        "LOADING": "Fehler beim Laden der Herausforderungen",
+        "SAVING": "Fehler beim Speichern der Herausforderung",
+        "ACTIVATING": "Fehler beim Aktivieren der Herausforderung",
+        "COMPLETING": "Fehler beim Abschließen der Herausforderung",
+        "QUITTING": "Fehler beim Beenden der Herausforderung",
+        "NOT_FOUND": "Herausforderung nicht gefunden",
+        "ALREADY_ACTIVE": "Herausforderung ist bereits aktiv",
+        "MAX_ACTIVE": "Maximale Anzahl aktiver Herausforderungen (3) erreicht",
+        "INVALID_STATUS": "Ungültiger Status der Herausforderung",
+        "INVALID_TASK": "Ungültige Aufgabe",
+        "TASK_COMPLETED": "Aufgabe bereits abgeschlossen",
+        "TASK_NOT_COMPLETED": "Aufgabe nicht abgeschlossen",
+        "INVALID_PROGRESS": "Ungültiger Fortschritt"
+      },
+      "SUCCESS": {
+        "ACTIVATED": "Herausforderung aktiviert",
+        "COMPLETED": "Herausforderung abgeschlossen",
+        "QUIT": "Sie haben die Herausforderung beendet",
+        "TASK_COMPLETED": "Aufgabe abgeschlossen",
+        "TASK_UPDATED": "Aufgabe aktualisiert",
+        "SAVED": "Herausforderung gespeichert",
+        "CHALLENGE_CREATED": "Herausforderung \"{{type}}\" erstellt! Sie können sie jetzt aktivieren.",
+        "OK": "OK"
+      }
+    },
+    "CHALLENGE_TITLE": "40 Tage gesunde Gewohnheiten",
+    "CHALLENGE_DESCRIPTION": "Verbessern Sie Ihre Gesundheit in 40 Tagen durch gesunde Gewohnheiten",
+    "PHASE_TITLE": "Hauptphase",
+    "LOADING": "Herausforderung wird erstellt...",
+    "ERROR": "Fehler beim Erstellen der Herausforderung"
   },
   "HABITS": {
     "TITLE": "Gewohnheiten",
@@ -90,7 +172,6 @@
     "AVAILABLE_HABITS": "Verfügbare Gewohnheiten",
     "CURRENT_STREAK": "Aktuelle Serie",
     "BEST_STREAK": "Beste Serie",
-    "MAX_STREAK": "Maximale Serie",
     "DAYS": "Tage",
     "DIFFICULTY": "Schwierigkeit",
     "DIFFICULTY_EASY": "Einfach",
@@ -170,5 +251,14 @@
     "ACHIEVEMENTS": "Erfolge",
     "LOGOUT": "Abmelden",
     "POINTS": "Punkte"
+  },
+  "TASKS": {
+    "TITLE": "Aufgaben",
+    "ADD_TASK": "Aufgabe hinzufügen",
+    "EDIT_TASK": "Aufgabe bearbeiten",
+    "DELETE_TASK": "Aufgabe löschen",
+    "TASK_COMPLETED": "Aufgabe abgeschlossen!",
+    "TASK_CANCELLED": "Aufgabe abgebrochen",
+    "UPDATE_ERROR": "Fehler beim Aktualisieren der Aufgabe"
   }
 }
