@@ -790,10 +790,6 @@ export class HomePage implements OnInit, OnDestroy {
         this.chart.destroy();
       }
 
-      // Знаходимо максимальне значення для кроків
-      const maxSteps = Math.max(...data.steps, 10000); // Мінімум 10000 кроків
-      const maxPercentage = 100; // Максимальне значення для відсотків
-
       const config: ChartConfiguration = {
         type: 'line',
         data: {
@@ -840,20 +836,16 @@ export class HomePage implements OnInit, OnDestroy {
               type: 'linear',
               position: 'left',
               beginAtZero: true,
-              max: maxPercentage,
+              max: 10,
               title: {
                 display: true,
                 text: this.translate.instant('HOME.CHART.LEVEL')
-              },
-              ticks: {
-                callback: (value) => `${value}%`
               }
             },
             stepsAxis: {
               type: 'linear',
               position: 'right',
               beginAtZero: true,
-              max: maxSteps,
               title: {
                 display: true,
                 text: this.translate.instant('HOME.CHART.STEPS_COUNT')
@@ -866,19 +858,7 @@ export class HomePage implements OnInit, OnDestroy {
           plugins: {
             tooltip: {
               mode: 'index',
-              intersect: false,
-              callbacks: {
-                label: (context) => {
-                  const label = context.dataset.label || '';
-                  const value = context.parsed.y;
-
-                  if (context.datasetIndex === 0) {
-                    return `${label}: ${value.toLocaleString()} кроків`;
-                  } else {
-                    return `${label}: ${value.toFixed(1)}%`;
-                  }
-                }
-              }
+              intersect: false
             },
             legend: {
               position: 'top',
@@ -903,60 +883,70 @@ export class HomePage implements OnInit, OnDestroy {
     const endDate = new Date();
     const startDate = this.getStartDate();
 
-    // Отримуємо дані про емоції
-    const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
-    console.log('Emotions:', emotions);
+    try {
+      // Отримуємо дані про емоції
+      const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
+      console.log('Emotions:', emotions);
 
-    // Отримуємо дані про прогрес
-    const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
-    console.log('Progress:', progress);
+      // Отримуємо дані про прогрес
+      const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
+      console.log('Progress:', progress);
 
-    // Отримуємо дані про звички
-    const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
-    console.log('Habits:', habits);
+      // Отримуємо дані про звички
+      const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
+      console.log('Habits:', habits);
 
-    // Форматуємо дані для графіка
-    const labels: string[] = [];
-    const steps: number[] = [];
-    const emotionsData: number[] = [];
-    const habitsData: number[] = [];
+      // Форматуємо дані для графіка
+      const labels: string[] = [];
+      const steps: number[] = [];
+      const emotionsData: number[] = [];
+      const habitsData: number[] = [];
 
-    // Генеруємо мітки та дані в залежності від періоду
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      const dateStr = this.formatDate(currentDate);
-      labels.push(dateStr);
+      // Генеруємо мітки та дані в залежності від періоду
+      let currentDate = new Date(startDate);
+      while (currentDate <= endDate) {
+        const dateStr = this.formatDate(currentDate);
+        labels.push(dateStr);
 
-      // Знаходимо відповідні дані для цієї дати
-      const dayEmotions = emotions.filter(e => isSameDay(new Date(e.date), currentDate));
-      const dayProgress = progress.find(p => isSameDay(new Date(p.date), currentDate));
-      const dayHabits = habits.filter(habit => isSameDay(new Date(habit.date), currentDate));
+        // Знаходимо відповідні дані для цієї дати
+        const dayEmotions = emotions?.filter(e => e?.date && isSameDay(new Date(e.date), currentDate)) || [];
+        const dayProgress = progress?.find(p => p?.date && isSameDay(new Date(p.date), currentDate));
+        const dayHabits = habits?.filter(habit => habit?.date && isSameDay(new Date(habit.date), currentDate)) || [];
 
-      // Розраховуємо показники
-      const stepsValue = dayProgress?.steps || 0;
-      const emotionValue = this.calculateEmotionValue(dayEmotions);
-      const habitsValue = this.calculateHabitsValue(dayHabits);
+        // Розраховуємо показники
+        const stepsValue = dayProgress?.steps || 0;
+        const emotionValue = this.calculateEmotionValue(dayEmotions);
+        const habitsValue = this.calculateHabitsValue(dayHabits);
 
-      steps.push(stepsValue);
-      emotionsData.push(emotionValue);
-      habitsData.push(habitsValue);
+        steps.push(stepsValue);
+        emotionsData.push(emotionValue);
+        habitsData.push(habitsValue);
 
-      // Збільшуємо дату в залежності від періоду
-      if (this.selectedPeriod === 'week') {
-        currentDate = addHours(currentDate, 3);
-      } else if (this.selectedPeriod === 'month') {
-        currentDate = addDays(currentDate, 1);
-      } else {
-        currentDate = addMonths(currentDate, 1);
+        // Збільшуємо дату в залежності від періоду
+        if (this.selectedPeriod === 'week') {
+          currentDate = addHours(currentDate, 3);
+        } else if (this.selectedPeriod === 'month') {
+          currentDate = addDays(currentDate, 1);
+        } else {
+          currentDate = addMonths(currentDate, 1);
+        }
       }
-    }
 
-    return {
-      labels,
-      steps,
-      emotions: emotionsData,
-      habits: habitsData
-    };
+      return {
+        labels,
+        steps,
+        emotions: emotionsData,
+        habits: habitsData
+      };
+    } catch (error) {
+      console.error('Error in getAchievementData:', error);
+      return {
+        labels: [],
+        steps: [],
+        emotions: [],
+        habits: []
+      };
+    }
   }
 
   private calculateEmotionValue(emotions: Emotion[]): number {
@@ -973,7 +963,7 @@ export class HomePage implements OnInit, OnDestroy {
       return sum + (isNaN(completionRate) ? 0 : completionRate);
     }, 0);
 
-    return (totalProgress / habits.length) * 100;
+    return (totalProgress / habits.length) * 10;
   }
 
   async onPeriodChange(event: any) {
@@ -1034,10 +1024,6 @@ export class HomePage implements OnInit, OnDestroy {
       this.chart.destroy();
     }
 
-    // Знаходимо максимальне значення для кроків
-    const maxSteps = Math.max(...data.steps, 10000); // Мінімум 10000 кроків
-    const maxPercentage = 100; // Максимальне значення для відсотків
-
     const config: ChartConfiguration = {
       type: 'line',
       data: {
@@ -1047,16 +1033,13 @@ export class HomePage implements OnInit, OnDestroy {
             label: this.translate.instant('HOME.CHART.STEPS'),
             data: data.steps,
             borderColor: '#36A2EB',
-            backgroundColor: '#36A2EB20',
             tension: 0.4,
-            fill: true,
-            yAxisID: 'stepsAxis'
+            fill: false
           },
           {
             label: this.translate.instant('HOME.CHART.EMOTIONS_VALUE'),
             data: data.emotionsValue,
             borderColor: '#FF6384',
-            backgroundColor: '#FF638420',
             tension: 0.4,
             fill: false
           },
@@ -1071,71 +1054,18 @@ export class HomePage implements OnInit, OnDestroy {
             label: this.translate.instant('HOME.CHART.HABITS'),
             data: data.habits,
             borderColor: '#4BC0C0',
-            backgroundColor: '#4BC0C020',
             tension: 0.4,
-            fill: true,
-            yAxisID: 'mainAxis'
+            fill: false
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
         scales: {
-          mainAxis: {
-            type: 'linear',
-            position: 'left',
+          y: {
             beginAtZero: true,
-            max: maxPercentage,
-            title: {
-              display: true,
-              text: this.translate.instant('HOME.CHART.LEVEL')
-            },
-            ticks: {
-              callback: (value) => `${value}%`
-            }
-          },
-          stepsAxis: {
-            type: 'linear',
-            position: 'right',
-            beginAtZero: true,
-            max: maxSteps,
-            title: {
-              display: true,
-              text: this.translate.instant('HOME.CHART.STEPS_COUNT')
-            },
-            grid: {
-              drawOnChartArea: false
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-            callbacks: {
-              label: (context) => {
-                const label = context.dataset.label || '';
-                const value = context.parsed.y;
-
-                if (context.datasetIndex === 0) {
-                  return `${label}: ${value.toLocaleString()} кроків`;
-                } else {
-                  return `${label}: ${value.toFixed(1)}%`;
-                }
-              }
-            }
-          },
-          legend: {
-            position: 'top',
-            labels: {
-              usePointStyle: true,
-              pointStyle: 'circle'
-            }
+            max: 10
           }
         }
       }
@@ -1147,7 +1077,6 @@ export class HomePage implements OnInit, OnDestroy {
   private getStartDate(): Date {
     const endDate = new Date();
     const startDate = new Date();
-
     switch (this.selectedPeriod) {
       case 'week':
         startDate.setDate(endDate.getDate() - 7);
@@ -1159,7 +1088,6 @@ export class HomePage implements OnInit, OnDestroy {
         startDate.setFullYear(endDate.getFullYear() - 1);
         break;
     }
-
     return startDate;
   }
 
