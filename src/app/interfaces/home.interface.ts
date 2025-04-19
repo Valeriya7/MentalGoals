@@ -1,3 +1,5 @@
+import { TaskProgress } from './challenge.interface';
+
 export interface DiaryEntry {
   date: Date;
   mood: number;
@@ -29,9 +31,9 @@ export interface EmotionalState {
 }
 
 export interface ChallengeProgress {
-  id: string;
-  date: Date;
+  date: string;
+  tasks: Record<string, TaskProgress>;
   completedTasks: number;
   totalTasks: number;
-  startDate?: string;
+  lastUpdated: string;
 } 

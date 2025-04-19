@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import {
-  trophyOutline,
+import { 
+  trophyOutline, 
   giftOutline,
   informationCircleOutline,
   iceCreamOutline,

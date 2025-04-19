@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Challenge, ChallengePhase, ChallengeTask, ChallengeProgress } from '../interfaces/challenge.interface';
+import { Challenge, ChallengePhase, ChallengeTask, ChallengeProgress, DayProgress } from '../interfaces/challenge.interface';
 import { ModalService } from './modal.service';
 import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';
@@ -45,8 +45,8 @@ export class ChallengeService {
 
   private isSecureContext(): boolean {
     try {
-      return window.isSecureContext &&
-             window.location.protocol === 'https:' ||
+      return window.isSecureContext && 
+             window.location.protocol === 'https:' || 
              window.location.hostname === 'localhost';
     } catch {
       return false;
@@ -386,51 +386,84 @@ export class ChallengeService {
   }
 
   async getCurrentPhase(challengeId: string): Promise<ChallengePhase | null> {
-    const challenge = await this.getChallenge(challengeId);
-    if (!challenge || !challenge.tasks || challenge.tasks.length === 0) {
+    try {
+      const challenge = await this.getChallenge(challengeId);
+      if (!challenge || !challenge.phases || challenge.phases.length === 0) {
+        return null;
+      }
+
+      // Якщо челендж не активний, повертаємо першу фазу
+      if (challenge.status !== 'active') {
+        return challenge.phases[0];
+      }
+
+      // Якщо челендж активний, знаходимо поточну фазу
+      const currentDay = challenge.currentDay || 1;
+      let totalDays = 0;
+
+      for (const phase of challenge.phases) {
+        const phaseStartDate = new Date(phase.startDate);
+        const phaseEndDate = new Date(phase.endDate);
+        const phaseDays = Math.ceil((phaseEndDate.getTime() - phaseStartDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (totalDays + phaseDays >= currentDay) {
+          return phase;
+        }
+        
+        totalDays += phaseDays;
+      }
+
+      // Якщо не знайшли поточну фазу, повертаємо останню
+      return challenge.phases[challenge.phases.length - 1];
+    } catch (error) {
+      console.error('Error getting current phase:', error);
       return null;
     }
-
-    return {
-      id: challenge.id,
-      title: challenge.title,
-      tasks: challenge.tasks,
-      startDate: challenge.startDate || new Date().toISOString(),
-      endDate: challenge.endDate || new Date().toISOString()
-    };
   }
 
-  private async getProgress(challengeId: string, date: string): Promise<{ [key: string]: boolean }> {
+  private async getProgress(challengeId: string, date: string): Promise<Record<string, boolean>> {
     try {
-      const storage = await this.ensureStorageReady();
-      const key = `progress_${challengeId}_${date}`;
-      const value = await this.storageService.get(key);
-      return value || {};
+      const challenge = await this.getChallenge(challengeId);
+      if (!challenge?.progress?.[date]?.tasks) {
+        return {};
+      }
+
+      const progress: Record<string, boolean> = {};
+      for (const [taskId, taskProgress] of Object.entries(challenge.progress[date].tasks)) {
+        progress[taskId] = taskProgress.completed;
+      }
+
+      return progress;
     } catch (error) {
       console.error('Error getting progress:', error);
       return {};
     }
   }
 
-  private validateProgress(progress: any): boolean {
-    if (!progress || typeof progress !== 'object') return false;
+  private validateProgress(progress: Record<string, DayProgress> | undefined): boolean {
+    if (!progress || typeof progress !== 'object') {
+      return false;
+    }
 
-    // Перевіряємо структуру прогресу
     for (const dateKey in progress) {
       const dayProgress = progress[dateKey];
-
-      if (!dayProgress.date || !dayProgress.tasks || typeof dayProgress.tasks !== 'object') {
-        return false;
-      }
-
-      if (typeof dayProgress.completedTasks !== 'number' || typeof dayProgress.totalTasks !== 'number') {
+      
+      // Перевіряємо основні поля
+      if (typeof dayProgress.completedTasks !== 'number' ||
+          typeof dayProgress.totalTasks !== 'number' ||
+          typeof dayProgress.date !== 'string' ||
+          typeof dayProgress.lastUpdated !== 'string' ||
+          !dayProgress.tasks ||
+          typeof dayProgress.tasks !== 'object') {
         return false;
       }
 
       // Перевіряємо кожне завдання
       for (const taskId in dayProgress.tasks) {
         const task = dayProgress.tasks[taskId];
-        if (typeof task.completed !== 'boolean' || typeof task.progress !== 'number') {
+        if (typeof task.completed !== 'boolean' ||
+            typeof task.progress !== 'number' ||
+            (task.completedAt !== null && typeof task.completedAt !== 'string')) {
           return false;
         }
       }
@@ -468,22 +501,9 @@ export class ChallengeService {
     }
   }
 
-  async getTodayProgress(challengeId: string, date?: string): Promise<{ [key: string]: boolean }> {
-    try {
-      const challenge = await this.getChallenge(challengeId);
-      if (!challenge?.progress) return {};
-
-      const targetDate = date || new Date().toISOString().split('T')[0];
-      const dayProgress = challenge.progress[targetDate]?.tasks || {};
-
-      return Object.entries(dayProgress).reduce((acc, [taskId, task]) => {
-        acc[taskId] = task.completed;
-        return acc;
-      }, {} as { [key: string]: boolean });
-    } catch (error) {
-      console.error('Error getting today progress:', error);
-      return {};
-    }
+  async getTodayProgress(challengeId: string, date?: string): Promise<Record<string, boolean>> {
+    const today = date || new Date().toISOString().split('T')[0];
+    return this.getProgress(challengeId, today);
   }
 
   async updateTodayProgress(challengeId: string, taskId: string, completed: boolean): Promise<void> {
@@ -517,8 +537,7 @@ export class ChallengeService {
       challenge.progress[today].tasks[taskId] = {
         completed,
         completedAt: completed ? new Date().toISOString() : null,
-        progress: completed ? 100 : 0,
-        date: today
+        progress: completed ? 100 : 0
       };
 
       // Оновлюємо кількість виконаних завдань
@@ -547,7 +566,7 @@ export class ChallengeService {
       const challenge = await this.getChallenge(challengeId);
       if (!challenge?.progress) return [];
 
-      return Object.values(challenge.progress).sort((a, b) =>
+      return Object.values(challenge.progress).sort((a, b) => 
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     } catch (error) {
@@ -633,61 +652,52 @@ export class ChallengeService {
   async activateChallenge(challengeId: string): Promise<boolean> {
     try {
       const challenges = await this.getChallenges();
-      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
-
-      if (challengeIndex === -1) return false;
-
-      // Перевіряємо кількість активних челенджів
-      const activeChallengesCount = challenges.filter(c => c.status === 'active').length;
-      if (activeChallengesCount >= 3) {
-        throw new Error('MAX_ACTIVE_CHALLENGES');
+      const challenge = challenges.find(c => c.id === challengeId);
+      
+      if (!challenge) {
+        console.error('Challenge not found');
+        return false;
       }
 
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + challenges[challengeIndex].duration);
+      // Деактивуємо всі інші челенджі
+      await this.deactivateAllChallenges();
 
-      challenges[challengeIndex].status = 'active';
-      challenges[challengeIndex].startDate = startDate.toISOString();
-      challenges[challengeIndex].endDate = endDate.toISOString();
-      challenges[challengeIndex].currentDay = 1;
-
+      // Активуємо вибраний челендж
+      challenge.status = 'active';
+      challenge.startDate = new Date().toISOString();
+      challenge.endDate = new Date(Date.now() + challenge.duration * 24 * 60 * 60 * 1000).toISOString();
+      challenge.progress = {};
+      
       await this.saveToAllStorages(challenges);
+      this.activeChallenge.next(challenge);
+
       return true;
     } catch (error) {
       console.error('Error activating challenge:', error);
-      if (error instanceof Error && error.message === 'MAX_ACTIVE_CHALLENGES') {
-        throw error;
-      }
       return false;
-    }
-  }
-
-  private updateCurrentDay(challenge: Challenge): void {
-    if (challenge.status === 'active' && challenge.startDate) {
-      const startDate = new Date(challenge.startDate);
-      const today = new Date();
-      const diffTime = Math.abs(today.getTime() - startDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      challenge.currentDay = Math.min(diffDays, challenge.duration);
     }
   }
 
   async deactivateAllChallenges(): Promise<boolean> {
     try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
+      const challenges = await this.getChallenges();
+      let hasChanges = false;
 
-      challenges.forEach((challenge: Challenge) => {
+      for (const challenge of challenges) {
         if (challenge.status === 'active') {
           challenge.status = 'available';
-          delete challenge.startDate;
-          delete challenge.endDate;
-          delete challenge.currentDay;
+          challenge.startDate = undefined;
+          challenge.endDate = undefined;
+          challenge.progress = {};
+          hasChanges = true;
         }
-      });
+      }
 
-      await this.saveToAllStorages(challenges);
+      if (hasChanges) {
+        await this.saveToAllStorages(challenges);
+        this.activeChallenge.next(null);
+      }
+
       return true;
     } catch (error) {
       console.error('Error deactivating challenges:', error);
@@ -698,15 +708,20 @@ export class ChallengeService {
   async quitChallenge(challengeId: string): Promise<boolean> {
     try {
       const challenges = await this.getChallenges();
-      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      const challenge = challenges.find(c => c.id === challengeId);
+      
+      if (!challenge) {
+        console.error('Challenge not found');
+        return false;
+      }
 
-      if (challengeIndex === -1) return false;
-
-      challenges[challengeIndex].status = 'available';
-      delete challenges[challengeIndex].startDate;
-      delete challenges[challengeIndex].endDate;
-
+      challenge.status = 'failed';
       await this.saveToAllStorages(challenges);
+      
+      if (this.activeChallenge.value?.id === challengeId) {
+        this.activeChallenge.next(null);
+      }
+
       return true;
     } catch (error) {
       console.error('Error quitting challenge:', error);
@@ -717,14 +732,21 @@ export class ChallengeService {
   async completeChallenge(challengeId: string): Promise<boolean> {
     try {
       const challenges = await this.getChallenges();
-      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      const challenge = challenges.find(c => c.id === challengeId);
+      
+      if (!challenge) {
+        console.error('Challenge not found');
+        return false;
+      }
 
-      if (challengeIndex === -1) return false;
-
-      challenges[challengeIndex].status = 'completed';
-      challenges[challengeIndex].completedDate = new Date().toISOString();
-
+      challenge.status = 'completed';
+      challenge.completedDate = new Date().toISOString();
       await this.saveToAllStorages(challenges);
+      
+      if (this.activeChallenge.value?.id === challengeId) {
+        this.activeChallenge.next(null);
+      }
+
       return true;
     } catch (error) {
       console.error('Error completing challenge:', error);
@@ -735,16 +757,50 @@ export class ChallengeService {
   async updateTaskStatus(challengeId: string, taskId: string, completed: boolean): Promise<boolean> {
     try {
       const challenges = await this.getChallenges();
-      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      const challenge = challenges.find(c => c.id === challengeId);
+      
+      if (!challenge) {
+        console.error('Challenge not found');
+        return false;
+      }
 
-      if (challengeIndex === -1) return false;
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Ініціалізуємо прогрес для сьогоднішнього дня, якщо його ще немає
+      if (!challenge.progress) {
+        challenge.progress = {};
+      }
+      
+      if (!challenge.progress[today]) {
+        challenge.progress[today] = {
+          completedTasks: 0,
+          totalTasks: challenge.tasks.length,
+          tasks: {},
+          date: today,
+          lastUpdated: new Date().toISOString()
+        };
+      }
 
-      const taskIndex = challenges[challengeIndex].tasks.findIndex(t => t.id === taskId);
-      if (taskIndex === -1) return false;
+      // Оновлюємо стан завдання
+      challenge.progress[today].tasks[taskId] = {
+        completed,
+        completedAt: completed ? new Date().toISOString() : null,
+        progress: completed ? 100 : 0
+      };
 
-      challenges[challengeIndex].tasks[taskIndex].completed = completed;
+      // Оновлюємо кількість виконаних завдань
+      challenge.progress[today].completedTasks = Object.values(challenge.progress[today].tasks)
+        .filter(task => task.completed).length;
+
+      // Оновлюємо час останнього оновлення
+      challenge.progress[today].lastUpdated = new Date().toISOString();
 
       await this.saveToAllStorages(challenges);
+      
+      if (challenge.status === 'active') {
+        this.activeChallenge.next(challenge);
+      }
+
       return true;
     } catch (error) {
       console.error('Error updating task status:', error);
@@ -754,24 +810,44 @@ export class ChallengeService {
 
   private async cleanupStorage(): Promise<void> {
     try {
-      const storage = await this.ensureStorageReady();
-      const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
+      const challenges = await this.getChallenges();
+      const now = new Date();
+      let hasChanges = false;
 
-      // Створюємо Map для зберігання унікальних челенджів
-      const uniqueChallenges = new Map<string, Challenge>();
+      for (const challenge of challenges) {
+        // Перевіряємо завершені челенджі
+        if (challenge.status === 'active' && challenge.endDate) {
+          const endDate = new Date(challenge.endDate);
+          if (endDate < now) {
+            challenge.status = 'failed';
+            hasChanges = true;
+          }
+        }
 
-      // Проходимо по всіх челенджах у зворотньому порядку
-      for (let i = challenges.length - 1; i >= 0; i--) {
-        const challenge = challenges[i];
-        const type = challenge.id.includes('challenge-') ? 'default' : challenge.id;
+        // Очищаємо старий прогрес (старіший за 30 днів)
+        if (challenge.progress) {
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        if (!uniqueChallenges.has(type)) {
-          uniqueChallenges.set(type, challenge);
+          const oldDates = Object.keys(challenge.progress).filter(dateKey => {
+            const progressDate = new Date(dateKey);
+            return progressDate < thirtyDaysAgo;
+          });
+
+          if (oldDates.length > 0) {
+            oldDates.forEach(dateKey => {
+              if (challenge.progress) {
+                delete challenge.progress[dateKey];
+              }
+            });
+            hasChanges = true;
+          }
         }
       }
 
-      // Зберігаємо тільки унікальні челенджі
-      await this.saveToAllStorages(Array.from(uniqueChallenges.values()));
+      if (hasChanges) {
+        await this.saveToAllStorages(challenges);
+      }
     } catch (error) {
       console.error('Error cleaning up storage:', error);
     }
@@ -802,33 +878,12 @@ export class ChallengeService {
             icon: 'cafe-outline',
             completed: false,
             progress: 0
-          },
-          {
-            id: 'exercise',
-            title: '10 хвилин вправ',
-            description: 'Виконайте комплекс вправ',
-            icon: 'fitness-outline',
-            completed: false,
-            progress: 0
-          },
-          {
-            id: 'steps',
-            title: '8000 кроків',
-            description: 'Пройдіть мінімум 8000 кроків',
-            icon: 'footsteps-outline',
-            completed: false,
-            progress: 0
-          },
-          {
-            id: 'english',
-            title: '5 англійських слів',
-            description: 'Вивчіть нові слова',
-            icon: 'book-outline',
-            completed: false,
-            progress: 0
           }
         ],
         status: 'active',
+        startDate: new Date().toISOString(),
+        endDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000).toISOString(),
+        progress: {},
         rewards: {
           points: 40,
           discounts: [
@@ -863,30 +918,6 @@ export class ChallengeService {
               title: 'Без кави',
               description: 'Замініть каву на здорові альтернативи',
               icon: 'cafe-outline',
-              completed: false,
-              progress: 0
-            },
-            {
-              id: 'exercise',
-              title: '10 хвилин вправ',
-              description: 'Виконайте комплекс вправ',
-              icon: 'fitness-outline',
-              completed: false,
-              progress: 0
-            },
-            {
-              id: 'steps',
-              title: '8000 кроків',
-              description: 'Пройдіть мінімум 8000 кроків',
-              icon: 'footsteps-outline',
-              completed: false,
-              progress: 0
-            },
-            {
-              id: 'english',
-              title: '5 англійських слів',
-              description: 'Вивчіть нові слова',
-              icon: 'book-outline',
               completed: false,
               progress: 0
             }
@@ -1194,26 +1225,53 @@ export class ChallengeService {
     ];
   }
 
-  private async initializeActiveChallenge() {
+  private async initializeActiveChallenge(): Promise<void> {
     try {
       const challenges = await this.getChallenges();
       const activeChallenge = challenges.find(c => c.status === 'active');
+      
       if (activeChallenge) {
-        this.activeChallenge.next(activeChallenge);
+        // Оновлюємо поточний день
+        this.updateCurrentDay(activeChallenge);
+        
+        // Перевіряємо, чи не завершився челендж
+        if (activeChallenge.endDate && new Date(activeChallenge.endDate) < new Date()) {
+          activeChallenge.status = 'failed';
+          await this.saveToAllStorages(challenges);
+          this.activeChallenge.next(null);
+        } else {
+          this.activeChallenge.next(activeChallenge);
+        }
+      } else {
+        this.activeChallenge.next(null);
       }
     } catch (error) {
       console.error('Error initializing active challenge:', error);
+      this.activeChallenge.next(null);
     }
   }
 
   async updateChallengeStatus(challengeId: string, status: 'active' | 'completed' | 'failed' | 'available'): Promise<void> {
     try {
       const challenges = await this.getChallenges();
-      const challengeIndex = challenges.findIndex(c => c.id === challengeId);
+      const challenge = challenges.find(c => c.id === challengeId);
+      
+      if (!challenge) {
+        throw new Error('Challenge not found');
+      }
 
-      if (challengeIndex !== -1) {
-        challenges[challengeIndex].status = status;
-        await Preferences.set({ key: 'challenges', value: JSON.stringify(challenges) });
+      challenge.status = status;
+      
+      if (status === 'completed') {
+        challenge.completedDate = new Date().toISOString();
+      }
+
+      await this.saveToAllStorages(challenges);
+      
+      if (status === 'active') {
+        this.activeChallenge.next(challenge);
+      } else if (this.activeChallenge.value?.id === challengeId) {
+        this.activeChallenge.next(null);
       }
     } catch (error) {
       console.error('Error updating challenge status:', error);
@@ -1221,41 +1279,47 @@ export class ChallengeService {
     }
   }
 
-  async getChallengesProgress(startDate: Date, endDate: Date): Promise<any[]> {
+  async getChallengesProgress(startDate: Date, endDate: Date): Promise<ChallengeProgress[]> {
     try {
       const challenges = await this.getChallenges();
-      return challenges
-        .filter((challenge: Challenge) => {
-          if (!challenge.progress) return false;
+      const result: ChallengeProgress[] = [];
 
-          // Перевіряємо чи є прогрес в заданому періоді
-          return Object.keys(challenge.progress).some(date => {
-            const progressDate = new Date(date);
-            return progressDate >= startDate && progressDate <= endDate;
-          });
-        })
-        .map((challenge: Challenge) => {
-          // Фільтруємо прогрес тільки за заданий період
-          const periodProgress = Object.entries(challenge.progress || {})
-            .filter(([date]) => {
-              const progressDate = new Date(date);
-              return progressDate >= startDate && progressDate <= endDate;
-            })
-            .map(([progressDate, progress]) => ({
-              progressDate,
-              ...progress
-            }));
+      for (const challenge of challenges) {
+        if (!challenge.progress) continue;
 
-          return {
-            ...challenge,
-            periodProgress,
-            completedTasks: periodProgress.reduce((sum, day) => sum + (day.completedTasks || 0), 0),
-            totalTasks: challenge.tasks?.length || 0
-          };
-        });
+        for (const [date, progress] of Object.entries(challenge.progress)) {
+          const progressDate = new Date(date);
+          if (progressDate >= startDate && progressDate <= endDate) {
+            result.push({
+              date,
+              tasks: progress.tasks,
+              completedTasks: progress.completedTasks,
+              totalTasks: progress.totalTasks,
+              lastUpdated: progress.lastUpdated
+            });
+          }
+        }
+      }
+
+      return result.sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
     } catch (error) {
       console.error('Error getting challenges progress:', error);
       return [];
     }
   }
-}
+
+  private updateCurrentDay(challenge: Challenge): void {
+    if (!challenge.startDate) return;
+
+    const startDate = new Date(challenge.startDate);
+    const currentDate = new Date();
+    const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= challenge.duration) {
+      challenge.currentDay = diffDays;
+    }
+  }
+} 

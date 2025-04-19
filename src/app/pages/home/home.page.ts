@@ -53,6 +53,7 @@ import { PlatformCheckService } from '../../services/platform-check.service';
 import { VersionCheckService } from '../../services/version-check.service';
 import { EmotionService } from '../../services/emotion.service';
 import { HabitService } from '../../services/habit.service';
+import { Habit } from '../../models/habit.model';
 
 @Component({
   selector: 'app-home',
@@ -877,29 +878,20 @@ export class HomePage implements OnInit, OnDestroy {
 
   // Метод для отримання даних для графіка
   async getAchievementData() {
+    const startDate = this.getStartDate();
     const endDate = new Date();
-    let startDate = new Date();
-
-    switch (this.selectedPeriod) {
-      case 'week':
-        startDate.setDate(endDate.getDate() - 7);
-        break;
-      case 'month':
-        startDate.setMonth(endDate.getMonth() - 1);
-        break;
-      case 'year':
-        startDate.setFullYear(endDate.getFullYear() - 1);
-        break;
-    }
 
     // Отримуємо дані про емоції
     const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
+    console.log('Fetched emotions:', emotions);
 
     // Отримуємо дані про прогрес
     const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
+    console.log('Fetched progress:', progress);
 
     // Отримуємо дані про звички
-    const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
+    const habits = await this.habitService.getHabits();
+    console.log('Fetched habits:', habits);
 
     // Форматуємо дані для графіка
     const labels: string[] = [];
@@ -907,15 +899,11 @@ export class HomePage implements OnInit, OnDestroy {
     const emotionsData: number[] = [];
     const habitsData: number[] = [];
 
-    // Генеруємо мітки та дані в залежності від періоду
-    let currentDate = new Date(startDate);
+    // Генеруємо дати для вибраного періоду
+    const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateStr = format(currentDate,
-        this.selectedPeriod === 'week' ? 'HH:mm' :
-        this.selectedPeriod === 'month' ? 'dd.MM' : 'MM.yyyy'
-      );
-
-      labels.push(dateStr);
+      const dateKey = currentDate.toISOString().split('T')[0];
+      labels.push(this.formatDate(currentDate));
 
       // Знаходимо відповідні дані для цієї дати
       const dayEmotions = emotions.filter(e => isSameDay(new Date(e.date), currentDate));
@@ -923,29 +911,34 @@ export class HomePage implements OnInit, OnDestroy {
       
       // Знаходимо звички для поточної дати
       const dayHabits = habits.filter(habit => {
-        return habit.periodProgress.some((progress: { progressDate: string }) => 
-          isSameDay(new Date(progress.progressDate), currentDate)
-        );
+        if (!habit.progress || !habit.isActive) return false;
+        const progressValue = habit.progress[dateKey];
+        return progressValue !== undefined && progressValue !== null;
       });
 
+      console.log(`Habits for ${dateKey}:`, dayHabits);
+
       // Розраховуємо показники
-      const stepsValue = dayProgress?.steps || 0;
-      const emotionValue = this.calculateEmotionValue(dayEmotions);
-      const habitsValue = this.calculateHabitsValue(dayHabits);
-
-      steps.push(stepsValue);
-      emotionsData.push(emotionValue);
-      habitsData.push(habitsValue);
-
-      // Збільшуємо дату в залежності від періоду
-      if (this.selectedPeriod === 'week') {
-        currentDate = addHours(currentDate, 3);
-      } else if (this.selectedPeriod === 'month') {
-        currentDate = addDays(currentDate, 1);
+      steps.push(dayProgress?.steps || 0);
+      
+      if (dayEmotions.length > 0) {
+        const avgEmotion = dayEmotions.reduce((sum, e) => sum + e.value, 0) / dayEmotions.length;
+        emotionsData.push(avgEmotion);
       } else {
-        currentDate = addMonths(currentDate, 1);
+        emotionsData.push(0);
       }
+
+      habitsData.push(this.calculateHabitsValue(dayHabits));
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    console.log('Final chart data:', {
+      labels,
+      steps,
+      emotions: emotionsData,
+      habits: habitsData
+    });
 
     return {
       labels,
@@ -955,30 +948,47 @@ export class HomePage implements OnInit, OnDestroy {
     };
   }
 
-  private calculateEmotionValue(emotions: Emotion[]): number {
-    if (!emotions.length) return 5;
+  private calculateHabitsValue(habits: Habit[]): number {
+    if (!habits || habits.length === 0) {
+      return 0;
+    }
 
-    return emotions.reduce((sum, emotion) => sum + emotion.value, 0) / emotions.length;
-  }
-
-  private calculateHabitsValue(habits: any[]): number {
-    if (!habits || habits.length === 0) return 0;
-
-    const totalCompletedRatio = habits.reduce((sum, habit) => {
-      const todayProgress = habit.periodProgress.find((progress: { progressDate: string; completedTasks: number }) => 
-        isSameDay(new Date(progress.progressDate), new Date())
-      );
-
-      if (todayProgress) {
-        const completed = todayProgress.completedTasks || 0;
-        const total = habit.totalTasks || 1;
-        return sum + (completed / total);
+    // Розраховуємо загальний прогрес звичок
+    const totalProgress = habits.reduce((sum, habit) => {
+      if (!habit || !habit.category || !habit.progress) {
+        return sum;
       }
-      return sum;
+
+      const dateKey = new Date().toISOString().split('T')[0];
+      const progressValue = habit.progress[dateKey];
+
+      // Нормалізуємо значення в діапазоні 0-1
+      let normalizedValue = 0;
+      switch (habit.category) {
+        case 'fitness':
+          normalizedValue = Math.min(progressValue / 10000, 1); // 10,000 кроків = 100%
+          break;
+        case 'mindfulness':
+          normalizedValue = Math.min(progressValue / 10, 1); // 10 хвилин = 100%
+          break;
+        case 'nutrition':
+          normalizedValue = Math.min(progressValue / 2, 1); // 2 літри = 100%
+          break;
+        case 'learning':
+          normalizedValue = Math.min(progressValue / 30, 1); // 30 хвилин = 100%
+          break;
+        case 'health':
+          normalizedValue = Math.min(progressValue / 7, 1); // 7 годин = 100%
+          break;
+        default:
+          return sum;
+      }
+
+      return sum + normalizedValue;
     }, 0);
 
-    // Повертаємо середнє значення від 0 до 10
-    return (totalCompletedRatio / habits.length) * 10;
+    // Повертаємо середнє значення прогресу
+    return (totalProgress / habits.length) * 100;
   }
 
   async onPeriodChange(event: any) {
@@ -1097,6 +1107,36 @@ export class HomePage implements OnInit, OnDestroy {
     }
   */
 
+  private getStartDate(): Date {
+    const today = new Date();
+    let startDate = new Date(today);
 
+    switch (this.selectedPeriod) {
+      case 'week':
+        startDate.setDate(today.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(today.getMonth() - 1);
+        break;
+      case 'year':
+        startDate.setFullYear(today.getFullYear() - 1);
+        break;
+    }
+
+    return startDate;
+  }
+
+  private formatDate(date: Date): string {
+    switch (this.selectedPeriod) {
+      case 'week':
+        return format(date, 'HH:mm');
+      case 'month':
+        return format(date, 'dd.MM');
+      case 'year':
+        return format(date, 'MM.yyyy');
+      default:
+        return format(date, 'HH:mm');
+    }
+  }
 }
 

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { StorageService } from './storage.service';
 import { Habit } from '../models/habit.model';
 import { v4 as uuidv4 } from 'uuid';
+import { Preferences } from '@capacitor/preferences';
 
 interface HabitTranslation {
   name: {
@@ -25,21 +26,30 @@ export class HabitService {
   constructor(private storageService: StorageService) {}
 
   async getHabits(): Promise<Habit[]> {
-    try {
-      const habits = await this.storageService.get(this.STORAGE_KEY);
-      return habits || [];
-    } catch (error) {
-      console.error('Error getting habits:', error);
-      return [];
-    }
+    const { value } = await Preferences.get({ key: this.STORAGE_KEY });
+    return value ? JSON.parse(value) : [];
+  }
+
+  async getHabitsProgress(startDate: Date, endDate: Date): Promise<Habit[]> {
+    const habits = await this.getHabits();
+    return habits.filter(habit => {
+      if (!habit.progress || !habit.isActive) return false;
+      
+      // Перевіряємо, чи є прогрес у вказаному діапазоні дат
+      const hasProgressInRange = Object.entries(habit.progress).some(([date, value]) => {
+        const progressDate = new Date(date);
+        return progressDate >= startDate && progressDate <= endDate;
+      });
+
+      return hasProgressInRange;
+    });
   }
 
   async saveHabits(habits: Habit[]): Promise<void> {
-    try {
-      await this.storageService.set(this.STORAGE_KEY, habits);
-    } catch (error) {
-      console.error('Error saving habits:', error);
-    }
+    await Preferences.set({
+      key: this.STORAGE_KEY,
+      value: JSON.stringify(habits)
+    });
   }
 
   async updateHabitProgress(habitId: string, date: string, progress: number): Promise<void> {

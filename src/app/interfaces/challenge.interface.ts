@@ -1,14 +1,22 @@
 export interface Challenge {
   id: string;
   title: string;
+  name?: {
+    uk: string;
+    en: string;
+    de: string;
+  };
   description: string;
-  duration: number;
   tasks: ChallengeTask[];
-  status: 'active' | 'completed' | 'available' | 'failed';
   startDate?: string;
   endDate?: string;
-  currentDay?: number;
   completedDate?: string;
+  status: 'active' | 'completed' | 'failed' | 'available';
+  progress?: Record<string, DayProgress>;
+  duration: number;
+  currentDay?: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  difficultyLevel: number;
   rewards: {
     points: number;
     discounts: {
@@ -16,12 +24,40 @@ export interface Challenge {
       amount: string;
     }[];
   };
-  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  difficultyLevel: number; // 1-5, де 1 - найлегший, 5 - найскладніший
-  progress?: {
-    [date: string]: ChallengeProgress;
-  };
   phases: ChallengePhase[];
+}
+
+export interface ChallengeTask {
+  id: string;
+  title: string;
+  description: string;
+  icon?: string;
+  completed: boolean;
+  progress: number;
+  type?: string;
+  duration?: number;
+}
+
+export interface DayProgress {
+  completedTasks: number;
+  totalTasks: number;
+  tasks: Record<string, TaskProgress>;
+  date: string;
+  lastUpdated: string;
+}
+
+export interface TaskProgress {
+  completed: boolean;
+  completedAt: string | null;
+  progress: number;
+}
+
+export interface ChallengeProgress {
+  date: string;
+  tasks: Record<string, TaskProgress>;
+  completedTasks: number;
+  totalTasks: number;
+  lastUpdated: string;
 }
 
 export interface ChallengePhase {
@@ -30,45 +66,6 @@ export interface ChallengePhase {
   tasks: ChallengeTask[];
   startDate: string;
   endDate: string;
-}
-
-export interface ChallengeTask {
-  id: string;
-  title: string;
-  description?: string;
-  icon?: string;
-  completed: boolean;
-  progress: number;
-  type?: string;
-  duration?: number;
-}
-
-export interface TaskProgress {
-  completed: boolean;
-  completedAt: string | null;
-  progress: number;
-  date: string;
-}
-
-export interface DayProgress {
-  date: string;
-  tasks: { [taskId: string]: TaskProgress };
-  completedTasks: number;
-  totalTasks: number;
-  lastUpdated: string;
-}
-
-export interface ChallengeProgress {
-  date: string;
-  tasks: { [taskId: string]: TaskProgress };
-  completedTasks: number;
-  totalTasks: number;
-  lastUpdated: string;
-  taskDetails?: Array<{
-    taskId: string;
-    title: string;
-    completedAt?: string | null;
-  }>;
 }
 
 export interface Rewards {
