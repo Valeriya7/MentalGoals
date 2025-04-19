@@ -1,8 +1,8 @@
 {
   "HOME": {
     "TITLE": "Головна",
-    "WELCOME": "Ласкаво просимо",
-    "TODAY_PROGRESS": "Прогрес за сьогодні",
+    "WELCOME": "Вітаємо",
+    "TODAY_PROGRESS": "Сьогоднішній прогрес",
     "CHALLENGES": {
       "TITLE": "Ваші челенджі",
       "ACTIVE": "Активні",
@@ -12,17 +12,17 @@
     "STATS": {
       "TITLE": "Ваша статистика",
       "POINTS": "Бали",
-      "STREAK": "Серія днів",
-      "COMPLETED_CHALLENGES": "Завершені челенджі"
+      "STREAK": "Днів поспіль",
+      "COMPLETED_CHALLENGES": "Завершено челенджів"
     },
     "RECOMMENDATIONS": {
       "TITLE": "Рекомендовано для вас",
-      "VIEW_ALL": "Переглянути все"
+      "VIEW_ALL": "Переглянути всі"
     },
     "CURRENT_CHALLENGE": "Поточний челендж",
     "DAY_OF": "День {{current}} з {{total}}",
     "NO_ACTIVE_CHALLENGE": "Немає активного челенджу",
-    "START_CHALLENGE_DESC": "Почніть свій шлях до покращення з нового челенджу",
+    "START_CHALLENGE_DESC": "Почніть свій шлях до покращення з новим челенджем",
     "START_CHALLENGE": "Почати челендж",
     "VIEW_CHALLENGE_DETAILS": "Переглянути деталі",
     "DAILY_TASKS": "Щоденні завдання",
@@ -31,6 +31,15 @@
     "STEPS": "Кроки",
     "SLEEP": "Сон",
     "WATER": "Вода",
-    "EMPTY_SET": "Середнє значення"
+    "EMPTY_SET": "Середнє",
+    "CHART": {
+      "ACTIVITY_STATS": "Статистика активності",
+      "STEPS": "Кроки",
+      "EMOTIONS_VALUE": "Значення емоцій",
+      "EMOTIONS_ENERGY": "Енергія емоцій",
+      "HABITS": "Звички",
+      "LEVEL": "Рівень",
+      "STEPS_COUNT": "Кількість кроків"
+    }
   }
 } 

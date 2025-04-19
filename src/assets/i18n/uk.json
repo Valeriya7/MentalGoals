@@ -58,7 +58,10 @@
       "HABITS": "Звички",
       "LEVEL": "Рівень (1-10)",
       "STEPS_COUNT": "Кількість кроків",
-      "ACTIVITY_STATS": "Статистика активності"
+      "ACTIVITY_STATS": "Статистика активності",
+      "EMOTIONS_VALUE": "Значення емоцій",
+      "EMOTIONS_ENERGY": "Енергія емоцій",
+      "HABITS": "Звички"
     }
   },
   "CHALLENGES": {

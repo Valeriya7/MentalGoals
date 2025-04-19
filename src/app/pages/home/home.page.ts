@@ -52,6 +52,7 @@ import { Emotion } from '../../models/emotion.model';
 import { PlatformCheckService } from '../../services/platform-check.service';
 import { VersionCheckService } from '../../services/version-check.service';
 import { EmotionService } from '../../services/emotion.service';
+import { HabitService } from '../../services/habit.service';
 
 @Component({
   selector: 'app-home',
@@ -103,6 +104,11 @@ export class HomePage implements OnInit, OnDestroy {
     emotionalState: false,
     dailyWish: false
   };
+  notificationState2: {
+    notifications?: { shouldShow: boolean };
+    emotionalState?: { shouldShow: boolean };
+    dailyWish?: { shouldShow: boolean };
+  } = {};
 
   constructor(
     private router: Router,
@@ -119,7 +125,8 @@ export class HomePage implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private platformCheckService: PlatformCheckService,
     private versionCheckService: VersionCheckService,
-    private emotionService: EmotionService
+    private emotionService: EmotionService,
+    private habitService: HabitService
   ) {
     addIcons({
       iceCreamOutline,
@@ -706,15 +713,15 @@ export class HomePage implements OnInit, OnDestroy {
       await modal.present();
 
       const { data } = await modal.onDidDismiss();
-      
+
       if (data) {
         try {
           // Зберігаємо емоцію
           await this.emotionService.saveEmotion(data);
-          
+
           // Оновлюємо дані в сервісі
           await this.emotionService.loadEmotions();
-          
+
           // Оновлюємо календар через сервіс
           await this.emotionService.refreshCalendar();
 
@@ -772,83 +779,100 @@ export class HomePage implements OnInit, OnDestroy {
 
   // Метод для оновлення графіка
   async updateAchievementChart() {
-    if (this.chart) {
-      this.chart.destroy();
-    }
+    try {
+      const data = await this.getAchievementData();
+      if (!data || !data.labels || data.labels.length === 0) {
+        console.warn('No data available for chart');
+        return;
+      }
 
-    const data = await this.getAchievementData();
+      if (this.chart) {
+        this.chart.destroy();
+      }
 
-    const config: ChartConfiguration = {
-      type: 'line',
-      data: {
-        labels: data.labels,
-        datasets: [
-          {
-            label: this.translate.instant('HOME.CHART.STEPS'),
-            data: data.steps,
-            borderColor: '#36A2EB',
-            tension: 0.4,
-            fill: false,
-            yAxisID: 'stepsAxis'
-          },
-          {
-            label: this.translate.instant('HOME.CHART.EMOTIONS'),
-            data: data.emotions,
-            borderColor: '#FF6384',
-            tension: 0.4,
-            fill: false,
-            yAxisID: 'mainAxis'
-          },
-          {
-            label: this.translate.instant('HOME.CHART.HABITS'),
-            data: data.habits,
-            borderColor: '#4BC0C0',
-            tension: 0.4,
-            fill: false,
-            yAxisID: 'mainAxis'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          mainAxis: {
-            type: 'linear',
-            position: 'left',
-            beginAtZero: true,
-            max: 10,
-            title: {
-              display: true,
-              text: this.translate.instant('HOME.CHART.LEVEL')
-            }
-          },
-          stepsAxis: {
-            type: 'linear',
-            position: 'right',
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: this.translate.instant('HOME.CHART.STEPS_COUNT')
+      const config: ChartConfiguration = {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [
+            {
+              label: this.translate.instant('HOME.CHART.STEPS'),
+              data: data.steps,
+              borderColor: '#36A2EB',
+              tension: 0.4,
+              fill: false,
+              yAxisID: 'stepsAxis'
             },
-            grid: {
-              drawOnChartArea: false
+            {
+              label: this.translate.instant('HOME.CHART.EMOTIONS'),
+              data: data.emotions,
+              borderColor: '#FF6384',
+              tension: 0.4,
+              fill: false,
+              yAxisID: 'mainAxis'
+            },
+            {
+              label: this.translate.instant('HOME.CHART.HABITS'),
+              data: data.habits,
+              borderColor: '#4BC0C0',
+              tension: 0.4,
+              fill: false,
+              yAxisID: 'mainAxis'
             }
-          }
+          ]
         },
-        plugins: {
-          title: {
-            display: true,
-            text: this.translate.instant('HOME.CHART.ACTIVITY_STATS')
-          },
-          tooltip: {
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
             mode: 'index',
             intersect: false
+          },
+          scales: {
+            mainAxis: {
+              type: 'linear',
+              position: 'left',
+              beginAtZero: true,
+              max: 10,
+              title: {
+                display: true,
+                text: this.translate.instant('HOME.CHART.LEVEL')
+              }
+            },
+            stepsAxis: {
+              type: 'linear',
+              position: 'right',
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: this.translate.instant('HOME.CHART.STEPS_COUNT')
+              },
+              grid: {
+                drawOnChartArea: false
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            },
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            }
           }
         }
-      }
-    };
+      };
 
-    this.chart = new Chart(this.achievementChart.nativeElement, config);
+      this.chart = new Chart(this.achievementChart.nativeElement, config);
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error updating achievement chart:', error);
+    }
   }
 
   // Метод для отримання даних для графіка
@@ -896,7 +920,13 @@ export class HomePage implements OnInit, OnDestroy {
       // Знаходимо відповідні дані для цієї дати
       const dayEmotions = emotions.filter(e => isSameDay(new Date(e.date), currentDate));
       const dayProgress = progress.find(p => isSameDay(new Date(p.date), currentDate));
-      const dayHabits = habits.filter(h => isSameDay(new Date(h.date), currentDate));
+      
+      // Знаходимо звички для поточної дати
+      const dayHabits = habits.filter(habit => {
+        return habit.periodProgress.some((progress: { progressDate: string }) => 
+          isSameDay(new Date(progress.progressDate), currentDate)
+        );
+      });
 
       // Розраховуємо показники
       const stepsValue = dayProgress?.steps || 0;
@@ -932,15 +962,23 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private calculateHabitsValue(habits: any[]): number {
-    if (!habits.length) return 0;
+    if (!habits || habits.length === 0) return 0;
 
-    const completedRatio = habits.map(habit => {
-      const completed = habit.completedTasks || 0;
-      const total = habit.totalTasks || 1;
-      return (completed / total) * 10;
-    });
+    const totalCompletedRatio = habits.reduce((sum, habit) => {
+      const todayProgress = habit.periodProgress.find((progress: { progressDate: string; completedTasks: number }) => 
+        isSameDay(new Date(progress.progressDate), new Date())
+      );
 
-    return completedRatio.reduce((sum, ratio) => sum + ratio, 0) / habits.length;
+      if (todayProgress) {
+        const completed = todayProgress.completedTasks || 0;
+        const total = habit.totalTasks || 1;
+        return sum + (completed / total);
+      }
+      return sum;
+    }, 0);
+
+    // Повертаємо середнє значення від 0 до 10
+    return (totalCompletedRatio / habits.length) * 10;
   }
 
   async onPeriodChange(event: any) {
@@ -962,7 +1000,7 @@ export class HomePage implements OnInit, OnDestroy {
         // Set initial state for new day
         const today = new Date().toDateString();
         const { value: lastCheck } = await Preferences.get({ key: 'lastNotificationCheck' });
-        
+
         if (lastCheck !== today) {
           this.notificationState = {
             notifications: true,
@@ -980,9 +1018,9 @@ export class HomePage implements OnInit, OnDestroy {
 
   private async saveNotificationState() {
     try {
-      await Preferences.set({ 
-        key: 'notificationState', 
-        value: JSON.stringify(this.notificationState) 
+      await Preferences.set({
+        key: 'notificationState',
+        value: JSON.stringify(this.notificationState)
       });
     } catch (error) {
       console.error('Error saving notification state:', error);
@@ -992,5 +1030,73 @@ export class HomePage implements OnInit, OnDestroy {
   hasNotification(key: keyof typeof this.notificationState): boolean {
     return this.notificationState[key];
   }
+
+  private createAchievementChart(data: any) {
+    const ctx = document.getElementById('achievementChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    const config: ChartConfiguration = {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: this.translate.instant('HOME.CHART.STEPS'),
+            data: data.steps,
+            borderColor: '#36A2EB',
+            tension: 0.4,
+            fill: false
+          },
+          {
+            label: this.translate.instant('HOME.CHART.EMOTIONS_VALUE'),
+            data: data.emotionsValue,
+            borderColor: '#FF6384',
+            tension: 0.4,
+            fill: false
+          },
+          {
+            label: this.translate.instant('HOME.CHART.EMOTIONS_ENERGY'),
+            data: data.emotionsEnergy,
+            borderColor: '#FF9F40',
+            tension: 0.4,
+            fill: false
+          },
+          {
+            label: this.translate.instant('HOME.CHART.HABITS'),
+            data: data.habits,
+            borderColor: '#4BC0C0',
+            tension: 0.4,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 10
+          }
+        }
+      }
+    };
+
+    this.chart = new Chart(ctx, config);
+  }
+/*
+      hasNotification(buttonType: 'notifications' | 'emotionalState' | 'dailyWish'): boolean {
+          if (!this.notificationState) {
+              return false;
+      }
+          return this.notificationState[buttonType]?.shouldShow ?? false;
+    }
+  */
+
+
 }
 

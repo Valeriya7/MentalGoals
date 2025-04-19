@@ -45,8 +45,8 @@ export class ChallengeService {
 
   private isSecureContext(): boolean {
     try {
-      return window.isSecureContext && 
-             window.location.protocol === 'https:' || 
+      return window.isSecureContext &&
+             window.location.protocol === 'https:' ||
              window.location.hostname === 'localhost';
     } catch {
       return false;
@@ -67,7 +67,7 @@ export class ChallengeService {
             return false;
           }
         }
-        
+
         // Перевіряємо походження батьківського вікна
         try {
           const parentOrigin = window.parent.location.origin;
@@ -124,7 +124,7 @@ export class ChallengeService {
 
       // Отримуємо дані
       const challenges = await this.getStorageData();
-      
+
       // Якщо челенджів немає, створюємо базові
       if (!challenges || challenges.length === 0) {
         const defaultChallenges = this.getDefaultChallenges();
@@ -137,7 +137,7 @@ export class ChallengeService {
     } catch (error) {
       console.error('Storage initialization error:', error);
       this.storageReady.next(false);
-      
+
       // Якщо основне сховище недоступне, спробуємо використовувати тільки Preferences
       if (this.preferenceStorage) {
         try {
@@ -223,7 +223,7 @@ export class ChallengeService {
     if (!this.storageReady.value) {
       await this.init();
     }
-    
+
     if (!this.storageReady.value) {
       throw new Error('Storage not initialized');
     }
@@ -343,7 +343,7 @@ export class ChallengeService {
 
       await this.modalService.hideLoading();
       await this.showSuccessToast(challenge.title);
-      
+
       this.isLoading.next(false);
       return true;
 
@@ -390,7 +390,7 @@ export class ChallengeService {
     if (!challenge || !challenge.tasks || challenge.tasks.length === 0) {
       return null;
     }
-    
+
     return {
       id: challenge.id,
       title: challenge.title,
@@ -414,19 +414,19 @@ export class ChallengeService {
 
   private validateProgress(progress: any): boolean {
     if (!progress || typeof progress !== 'object') return false;
-    
+
     // Перевіряємо структуру прогресу
     for (const dateKey in progress) {
       const dayProgress = progress[dateKey];
-      
+
       if (!dayProgress.date || !dayProgress.tasks || typeof dayProgress.tasks !== 'object') {
         return false;
       }
-      
+
       if (typeof dayProgress.completedTasks !== 'number' || typeof dayProgress.totalTasks !== 'number') {
         return false;
       }
-      
+
       // Перевіряємо кожне завдання
       for (const taskId in dayProgress.tasks) {
         const task = dayProgress.tasks[taskId];
@@ -435,7 +435,7 @@ export class ChallengeService {
         }
       }
     }
-    
+
     return true;
   }
 
@@ -448,19 +448,19 @@ export class ChallengeService {
 
       const challenges = await this.getChallenges();
       const index = challenges.findIndex(c => c.id === challenge.id);
-      
+
       if (index === -1) {
         console.error('Challenge not found');
         return false;
       }
-      
+
       challenges[index] = challenge;
       await this.saveToAllStorages(challenges);
-      
+
       if (challenge.status === 'active') {
         this.activeChallenge.next(challenge);
       }
-      
+
       return true;
     } catch (error) {
       console.error('Error saving progress:', error);
@@ -491,18 +491,18 @@ export class ChallengeService {
       const today = new Date().toISOString().split('T')[0];
       const challenges = await this.getChallenges();
       const challengeIndex = challenges.findIndex(c => c.id === challengeId);
-      
+
       if (challengeIndex === -1) {
         throw new Error('Challenge not found');
       }
 
       const challenge = challenges[challengeIndex];
-      
+
       // Ініціалізуємо прогрес для сьогоднішнього дня, якщо його ще немає
       if (!challenge.progress) {
         challenge.progress = {};
       }
-      
+
       if (!challenge.progress[today]) {
         challenge.progress[today] = {
           date: today,
@@ -547,7 +547,7 @@ export class ChallengeService {
       const challenge = await this.getChallenge(challengeId);
       if (!challenge?.progress) return [];
 
-      return Object.values(challenge.progress).sort((a, b) => 
+      return Object.values(challenge.progress).sort((a, b) =>
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     } catch (error) {
@@ -560,30 +560,30 @@ export class ChallengeService {
     try {
       const storage = await this.ensureStorageReady();
       let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      
-      console.log('Current challenges in storage:', challenges);
-      
+
+      //console.log('Current challenges in storage:', challenges);
+
       // Якщо немає челенджів, ініціалізуємо дефолтні
       if (!challenges || challenges.length === 0) {
         console.log('No challenges found, initializing defaults');
         challenges = this.getDefaultChallenges();
         await this.saveToAllStorages(challenges);
       }
-      
+
       // Перевіряємо наявність всіх дефолтних челенджів
       const defaultChallenges = this.getDefaultChallenges();
       const existingIds = new Set(challenges.map((c: Challenge) => c.id));
-      
+
       defaultChallenges.forEach(defaultChallenge => {
         if (!existingIds.has(defaultChallenge.id)) {
-          console.log('Adding missing default challenge:', defaultChallenge.id);
+          //console.log('Adding missing default challenge:', defaultChallenge.id);
           challenges.push(defaultChallenge);
         }
       });
-      
+
       await this.saveToAllStorages(challenges);
-      console.log('Final challenges list:', challenges);
-      
+      //console.log('Final challenges list:', challenges);
+
       return challenges;
     } catch (error) {
       console.error('Error getting challenges:', error);
@@ -634,7 +634,7 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challengeIndex = challenges.findIndex(c => c.id === challengeId);
-      
+
       if (challengeIndex === -1) return false;
 
       // Перевіряємо кількість активних челенджів
@@ -642,16 +642,16 @@ export class ChallengeService {
       if (activeChallengesCount >= 3) {
         throw new Error('MAX_ACTIVE_CHALLENGES');
       }
-      
+
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + challenges[challengeIndex].duration);
-      
+
       challenges[challengeIndex].status = 'active';
       challenges[challengeIndex].startDate = startDate.toISOString();
       challenges[challengeIndex].endDate = endDate.toISOString();
       challenges[challengeIndex].currentDay = 1;
-      
+
       await this.saveToAllStorages(challenges);
       return true;
     } catch (error) {
@@ -677,7 +677,7 @@ export class ChallengeService {
     try {
       const storage = await this.ensureStorageReady();
       const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      
+
       challenges.forEach((challenge: Challenge) => {
         if (challenge.status === 'active') {
           challenge.status = 'available';
@@ -699,13 +699,13 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challengeIndex = challenges.findIndex(c => c.id === challengeId);
-      
+
       if (challengeIndex === -1) return false;
 
       challenges[challengeIndex].status = 'available';
       delete challenges[challengeIndex].startDate;
       delete challenges[challengeIndex].endDate;
-      
+
       await this.saveToAllStorages(challenges);
       return true;
     } catch (error) {
@@ -718,12 +718,12 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challengeIndex = challenges.findIndex(c => c.id === challengeId);
-      
+
       if (challengeIndex === -1) return false;
 
       challenges[challengeIndex].status = 'completed';
       challenges[challengeIndex].completedDate = new Date().toISOString();
-      
+
       await this.saveToAllStorages(challenges);
       return true;
     } catch (error) {
@@ -736,14 +736,14 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challengeIndex = challenges.findIndex(c => c.id === challengeId);
-      
+
       if (challengeIndex === -1) return false;
 
       const taskIndex = challenges[challengeIndex].tasks.findIndex(t => t.id === taskId);
       if (taskIndex === -1) return false;
 
       challenges[challengeIndex].tasks[taskIndex].completed = completed;
-      
+
       await this.saveToAllStorages(challenges);
       return true;
     } catch (error) {
@@ -756,20 +756,20 @@ export class ChallengeService {
     try {
       const storage = await this.ensureStorageReady();
       const challenges = await this.storageService.get(this.STORAGE_KEY) || [];
-      
+
       // Створюємо Map для зберігання унікальних челенджів
       const uniqueChallenges = new Map<string, Challenge>();
-      
+
       // Проходимо по всіх челенджах у зворотньому порядку
       for (let i = challenges.length - 1; i >= 0; i--) {
         const challenge = challenges[i];
         const type = challenge.id.includes('challenge-') ? 'default' : challenge.id;
-        
+
         if (!uniqueChallenges.has(type)) {
           uniqueChallenges.set(type, challenge);
         }
       }
-      
+
       // Зберігаємо тільки унікальні челенджі
       await this.saveToAllStorages(Array.from(uniqueChallenges.values()));
     } catch (error) {
@@ -1210,7 +1210,7 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challengeIndex = challenges.findIndex(c => c.id === challengeId);
-      
+
       if (challengeIndex !== -1) {
         challenges[challengeIndex].status = status;
         await Preferences.set({ key: 'challenges', value: JSON.stringify(challenges) });
@@ -1227,7 +1227,7 @@ export class ChallengeService {
       return challenges
         .filter((challenge: Challenge) => {
           if (!challenge.progress) return false;
-          
+
           // Перевіряємо чи є прогрес в заданому періоді
           return Object.keys(challenge.progress).some(date => {
             const progressDate = new Date(date);
@@ -1258,4 +1258,4 @@ export class ChallengeService {
       return [];
     }
   }
-} 
+}

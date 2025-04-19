@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { Emotion } from '../models/emotion.model';
 import { StorageService } from './storage.service';
 import { v4 as uuidv4 } from 'uuid';
+import { Preferences } from '@capacitor/preferences';
 
 @Injectable({
   providedIn: 'root'
@@ -18,23 +19,27 @@ export class EmotionService {
 
   private async init() {
     try {
-      const emotions = await this.storageService.get(this.STORAGE_KEY);
+      console.log('Ініціалізація EmotionService');
+      const emotions = await this.getAllEmotions();
+      console.log('Завантажені емоції при ініціалізації:', emotions);
       if (emotions) {
         this.emotionsSubject.next(emotions);
       }
     } catch (error) {
-      console.error('Error initializing emotions:', error);
+      console.error('Помилка при ініціалізації емоцій:', error);
     }
   }
 
   public async loadEmotions() {
     try {
-      const emotions = await this.storageService.get(this.STORAGE_KEY);
+      console.log('Завантаження емоцій');
+      const emotions = await this.getAllEmotions();
+      console.log('Завантажені емоції:', emotions);
       if (emotions) {
         this.emotionsSubject.next(emotions);
       }
     } catch (error) {
-      console.error('Error loading emotions:', error);
+      console.error('Помилка при завантаженні емоцій:', error);
     }
   }
 
@@ -72,9 +77,28 @@ export class EmotionService {
 
   async getAllEmotions(): Promise<Emotion[]> {
     try {
-      return await this.storageService.get(this.STORAGE_KEY) || [];
+      console.log('Отримання всіх емоцій');
+      
+      // Спочатку пробуємо отримати з StorageService
+      let emotions = await this.storageService.get(this.STORAGE_KEY);
+      console.log('Емоції з StorageService:', emotions);
+
+      // Якщо немає даних, пробуємо отримати з Preferences
+      if (!emotions || emotions.length === 0) {
+        console.log('Спробуємо отримати емоції з Preferences');
+        const { value } = await Preferences.get({ key: this.STORAGE_KEY });
+        if (value) {
+          emotions = JSON.parse(value);
+          console.log('Емоції з Preferences:', emotions);
+          
+          // Зберігаємо в StorageService для подальшого використання
+          await this.storageService.set(this.STORAGE_KEY, emotions);
+        }
+      }
+
+      return emotions || [];
     } catch (error) {
-      console.error('Error getting all emotions:', error);
+      console.error('Помилка при отриманні емоцій:', error);
       return [];
     }
   }
@@ -133,19 +157,30 @@ export class EmotionService {
 
   async saveEmotion(emotion: Omit<Emotion, 'id' | 'createdAt'>): Promise<void> {
     try {
+      console.log('Збереження емоції:', emotion);
       const newEmotion: Emotion = {
         ...emotion,
         id: uuidv4(),
         createdAt: new Date().toISOString()
       };
 
-      const currentEmotions = await this.storageService.get(this.STORAGE_KEY) || [];
-      const updatedEmotions = [...currentEmotions, newEmotion];
+      const currentEmotions = await this.getAllEmotions();
+      console.log('Поточні емоції:', currentEmotions);
       
+      const updatedEmotions = [...currentEmotions, newEmotion];
+      console.log('Оновлені емоції:', updatedEmotions);
+      
+      // Зберігаємо в обидва сховища
       await this.storageService.set(this.STORAGE_KEY, updatedEmotions);
+      await Preferences.set({
+        key: this.STORAGE_KEY,
+        value: JSON.stringify(updatedEmotions)
+      });
+      
       this.emotionsSubject.next(updatedEmotions);
+      console.log('Емоція успішно збережена');
     } catch (error) {
-      console.error('Error saving emotion:', error);
+      console.error('Помилка при збереженні емоції:', error);
       throw error;
     }
   }
@@ -166,12 +201,41 @@ export class EmotionService {
   async getEmotionalStates(startDate: Date, endDate: Date): Promise<Emotion[]> {
     try {
       const emotions = await this.getAllEmotions();
-      return emotions.filter(emotion => {
+      console.log('Завантажені емоції:', emotions);
+      
+      if (!emotions || !Array.isArray(emotions)) {
+        console.warn('Немає даних про емоції або невірний формат');
+        return [];
+      }
+
+      // Нормалізуємо дати (встановлюємо час на початок/кінець дня)
+      const normalizedStartDate = new Date(startDate);
+      normalizedStartDate.setHours(0, 0, 0, 0);
+      
+      const normalizedEndDate = new Date(endDate);
+      normalizedEndDate.setHours(23, 59, 59, 999);
+
+      console.log('Пошук емоцій в періоді від', normalizedStartDate, 'до', normalizedEndDate);
+
+      const filteredEmotions = emotions.filter(emotion => {
+        if (!emotion || !emotion.date) {
+          console.log('Пропущено емоцію через відсутність дати:', emotion);
+          return false;
+        }
+
         const emotionDate = new Date(emotion.date);
-        return emotionDate >= startDate && emotionDate <= endDate;
+        emotionDate.setHours(12, 0, 0, 0); // Встановлюємо час на середину дня для уникнення проблем з часовими поясами
+
+        const isInRange = emotionDate >= normalizedStartDate && emotionDate <= normalizedEndDate;
+        console.log(`Перевірка дати ${emotionDate.toISOString()}: ${isInRange}`);
+        
+        return isInRange;
       });
+
+      console.log('Знайдені емоції за період:', filteredEmotions);
+      return filteredEmotions;
     } catch (error) {
-      console.error('Error getting emotional states:', error);
+      console.error('Помилка при отриманні емоцій за період:', error);
       return [];
     }
   }

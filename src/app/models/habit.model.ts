@@ -1,24 +1,29 @@
 export interface Habit {
   id: string;
-  name: string;
-  description: string;
+  name: {
+    uk: string;
+    en: string;
+    de: string;
+  };
+  description: {
+    uk: string;
+    en: string;
+    de: string;
+  };
   icon: string;
-  category: 'health' | 'fitness' | 'mindfulness' | 'nutrition' | 'learning' | 'productivity';
-  difficulty: 'easy' | 'medium' | 'hard';
+  category: string;
+  difficulty: string;
   points: number;
-  target: number;
-  unit: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
   isActive: boolean;
   isChallengeHabit: boolean;
-  completionStatus: { [date: string]: 'completed' | 'partial' };
+  isBaseHabit: boolean;
+  completionStatus: Record<string, boolean>;
   streak: {
     current: number;
     max: number;
-    best: number;
   };
-  progress: { [date: string]: number };
-  dayLimit?: number; // Ліміт днів для звички
-  isCompleted?: boolean; // Чи завершена звичка
-  completedDate?: string; // Дата завершення
+  target: number;
+  unit: string;
+  frequency: string;
+  progress: Record<string, number>;
 } 

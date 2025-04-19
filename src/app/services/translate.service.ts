@@ -9,9 +9,9 @@ import { LangChangeEvent } from '@ngx-translate/core';
   providedIn: 'root'
 })
 export class TranslateService {
-  private currentLang = new BehaviorSubject<string>('en');
-  private defaultLang = 'en';
-  private availableLanguages = ['uk', 'en', 'de'];
+  private currentLang = new BehaviorSubject<string>('uk');
+  private defaultLang = 'uk';
+  private availableLanguages = ['uk', 'en'];
 
   constructor(private translate: NgxTranslateService) {
     console.log('TranslateService initialized');

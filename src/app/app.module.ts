@@ -13,9 +13,16 @@ import { TranslateService } from './services/translate.service';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { StorageService } from './services/storage.service';
 import { ToastService } from './services/toast.service';
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { HttpClient } from '@angular/common/http';
 
 export function initializeStorage(storageService: StorageService) {
   return () => storageService.init();
+}
+
+export function createTranslateLoader(http: HttpClient) {
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
 
 @NgModule({
@@ -27,7 +34,14 @@ export function initializeStorage(storageService: StorageService) {
     IonicStorageModule.forRoot({
       driverOrder: [Drivers.IndexedDB, Drivers.LocalStorage]
     }),
-    HttpClientModule
+    HttpClientModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: createTranslateLoader,
+        deps: [HttpClient]
+      }
+    })
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
