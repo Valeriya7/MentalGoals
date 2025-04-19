@@ -53,7 +53,6 @@ import { PlatformCheckService } from '../../services/platform-check.service';
 import { VersionCheckService } from '../../services/version-check.service';
 import { EmotionService } from '../../services/emotion.service';
 import { HabitService } from '../../services/habit.service';
-import { Habit } from '../../models/habit.model';
 
 @Component({
   selector: 'app-home',
@@ -791,6 +790,10 @@ export class HomePage implements OnInit, OnDestroy {
         this.chart.destroy();
       }
 
+      // Знаходимо максимальне значення для кроків
+      const maxSteps = Math.max(...data.steps, 10000); // Мінімум 10000 кроків
+      const maxPercentage = 100; // Максимальне значення для відсотків
+
       const config: ChartConfiguration = {
         type: 'line',
         data: {
@@ -800,24 +803,27 @@ export class HomePage implements OnInit, OnDestroy {
               label: this.translate.instant('HOME.CHART.STEPS'),
               data: data.steps,
               borderColor: '#36A2EB',
+              backgroundColor: '#36A2EB20',
               tension: 0.4,
-              fill: false,
+              fill: true,
               yAxisID: 'stepsAxis'
             },
             {
               label: this.translate.instant('HOME.CHART.EMOTIONS'),
               data: data.emotions,
               borderColor: '#FF6384',
+              backgroundColor: '#FF638420',
               tension: 0.4,
-              fill: false,
+              fill: true,
               yAxisID: 'mainAxis'
             },
             {
               label: this.translate.instant('HOME.CHART.HABITS'),
               data: data.habits,
               borderColor: '#4BC0C0',
+              backgroundColor: '#4BC0C020',
               tension: 0.4,
-              fill: false,
+              fill: true,
               yAxisID: 'mainAxis'
             }
           ]
@@ -834,16 +840,20 @@ export class HomePage implements OnInit, OnDestroy {
               type: 'linear',
               position: 'left',
               beginAtZero: true,
-              max: 10,
+              max: maxPercentage,
               title: {
                 display: true,
                 text: this.translate.instant('HOME.CHART.LEVEL')
+              },
+              ticks: {
+                callback: (value) => `${value}%`
               }
             },
             stepsAxis: {
               type: 'linear',
               position: 'right',
               beginAtZero: true,
+              max: maxSteps,
               title: {
                 display: true,
                 text: this.translate.instant('HOME.CHART.STEPS_COUNT')
@@ -856,7 +866,19 @@ export class HomePage implements OnInit, OnDestroy {
           plugins: {
             tooltip: {
               mode: 'index',
-              intersect: false
+              intersect: false,
+              callbacks: {
+                label: (context) => {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y;
+
+                  if (context.datasetIndex === 0) {
+                    return `${label}: ${value.toLocaleString()} кроків`;
+                  } else {
+                    return `${label}: ${value.toFixed(1)}%`;
+                  }
+                }
+              }
             },
             legend: {
               position: 'top',
@@ -878,20 +900,20 @@ export class HomePage implements OnInit, OnDestroy {
 
   // Метод для отримання даних для графіка
   async getAchievementData() {
-    const startDate = this.getStartDate();
     const endDate = new Date();
+    const startDate = this.getStartDate();
 
     // Отримуємо дані про емоції
     const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
-    console.log('Fetched emotions:', emotions);
+    console.log('Emotions:', emotions);
 
     // Отримуємо дані про прогрес
     const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
-    console.log('Fetched progress:', progress);
+    console.log('Progress:', progress);
 
     // Отримуємо дані про звички
-    const habits = await this.habitService.getHabits();
-    console.log('Fetched habits:', habits);
+    const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
+    console.log('Habits:', habits);
 
     // Форматуємо дані для графіка
     const labels: string[] = [];
@@ -899,46 +921,35 @@ export class HomePage implements OnInit, OnDestroy {
     const emotionsData: number[] = [];
     const habitsData: number[] = [];
 
-    // Генеруємо дати для вибраного періоду
-    const currentDate = new Date(startDate);
+    // Генеруємо мітки та дані в залежності від періоду
+    let currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateKey = currentDate.toISOString().split('T')[0];
-      labels.push(this.formatDate(currentDate));
+      const dateStr = this.formatDate(currentDate);
+      labels.push(dateStr);
 
       // Знаходимо відповідні дані для цієї дати
       const dayEmotions = emotions.filter(e => isSameDay(new Date(e.date), currentDate));
       const dayProgress = progress.find(p => isSameDay(new Date(p.date), currentDate));
-      
-      // Знаходимо звички для поточної дати
-      const dayHabits = habits.filter(habit => {
-        if (!habit.progress || !habit.isActive) return false;
-        const progressValue = habit.progress[dateKey];
-        return progressValue !== undefined && progressValue !== null;
-      });
-
-      console.log(`Habits for ${dateKey}:`, dayHabits);
+      const dayHabits = habits.filter(habit => isSameDay(new Date(habit.date), currentDate));
 
       // Розраховуємо показники
-      steps.push(dayProgress?.steps || 0);
-      
-      if (dayEmotions.length > 0) {
-        const avgEmotion = dayEmotions.reduce((sum, e) => sum + e.value, 0) / dayEmotions.length;
-        emotionsData.push(avgEmotion);
+      const stepsValue = dayProgress?.steps || 0;
+      const emotionValue = this.calculateEmotionValue(dayEmotions);
+      const habitsValue = this.calculateHabitsValue(dayHabits);
+
+      steps.push(stepsValue);
+      emotionsData.push(emotionValue);
+      habitsData.push(habitsValue);
+
+      // Збільшуємо дату в залежності від періоду
+      if (this.selectedPeriod === 'week') {
+        currentDate = addHours(currentDate, 3);
+      } else if (this.selectedPeriod === 'month') {
+        currentDate = addDays(currentDate, 1);
       } else {
-        emotionsData.push(0);
+        currentDate = addMonths(currentDate, 1);
       }
-
-      habitsData.push(this.calculateHabitsValue(dayHabits));
-
-      currentDate.setDate(currentDate.getDate() + 1);
     }
-
-    console.log('Final chart data:', {
-      labels,
-      steps,
-      emotions: emotionsData,
-      habits: habitsData
-    });
 
     return {
       labels,
@@ -948,46 +959,20 @@ export class HomePage implements OnInit, OnDestroy {
     };
   }
 
-  private calculateHabitsValue(habits: Habit[]): number {
-    if (!habits || habits.length === 0) {
-      return 0;
-    }
+  private calculateEmotionValue(emotions: Emotion[]): number {
+    if (!emotions.length) return 5;
 
-    // Розраховуємо загальний прогрес звичок
+    return emotions.reduce((sum, emotion) => sum + emotion.value, 0) / emotions.length;
+  }
+
+  private calculateHabitsValue(habits: ChallengeProgress[]): number {
+    if (!habits || habits.length === 0) return 0;
+
     const totalProgress = habits.reduce((sum, habit) => {
-      if (!habit || !habit.category || !habit.progress) {
-        return sum;
-      }
-
-      const dateKey = new Date().toISOString().split('T')[0];
-      const progressValue = habit.progress[dateKey];
-
-      // Нормалізуємо значення в діапазоні 0-1
-      let normalizedValue = 0;
-      switch (habit.category) {
-        case 'fitness':
-          normalizedValue = Math.min(progressValue / 10000, 1); // 10,000 кроків = 100%
-          break;
-        case 'mindfulness':
-          normalizedValue = Math.min(progressValue / 10, 1); // 10 хвилин = 100%
-          break;
-        case 'nutrition':
-          normalizedValue = Math.min(progressValue / 2, 1); // 2 літри = 100%
-          break;
-        case 'learning':
-          normalizedValue = Math.min(progressValue / 30, 1); // 30 хвилин = 100%
-          break;
-        case 'health':
-          normalizedValue = Math.min(progressValue / 7, 1); // 7 годин = 100%
-          break;
-        default:
-          return sum;
-      }
-
-      return sum + normalizedValue;
+      const completionRate = habit.completedTasks / habit.totalTasks;
+      return sum + (isNaN(completionRate) ? 0 : completionRate);
     }, 0);
 
-    // Повертаємо середнє значення прогресу
     return (totalProgress / habits.length) * 100;
   }
 
@@ -1049,6 +1034,10 @@ export class HomePage implements OnInit, OnDestroy {
       this.chart.destroy();
     }
 
+    // Знаходимо максимальне значення для кроків
+    const maxSteps = Math.max(...data.steps, 10000); // Мінімум 10000 кроків
+    const maxPercentage = 100; // Максимальне значення для відсотків
+
     const config: ChartConfiguration = {
       type: 'line',
       data: {
@@ -1058,13 +1047,16 @@ export class HomePage implements OnInit, OnDestroy {
             label: this.translate.instant('HOME.CHART.STEPS'),
             data: data.steps,
             borderColor: '#36A2EB',
+            backgroundColor: '#36A2EB20',
             tension: 0.4,
-            fill: false
+            fill: true,
+            yAxisID: 'stepsAxis'
           },
           {
             label: this.translate.instant('HOME.CHART.EMOTIONS_VALUE'),
             data: data.emotionsValue,
             borderColor: '#FF6384',
+            backgroundColor: '#FF638420',
             tension: 0.4,
             fill: false
           },
@@ -1079,18 +1071,71 @@ export class HomePage implements OnInit, OnDestroy {
             label: this.translate.instant('HOME.CHART.HABITS'),
             data: data.habits,
             borderColor: '#4BC0C0',
+            backgroundColor: '#4BC0C020',
             tension: 0.4,
-            fill: false
+            fill: true,
+            yAxisID: 'mainAxis'
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
         scales: {
-          y: {
+          mainAxis: {
+            type: 'linear',
+            position: 'left',
             beginAtZero: true,
-            max: 10
+            max: maxPercentage,
+            title: {
+              display: true,
+              text: this.translate.instant('HOME.CHART.LEVEL')
+            },
+            ticks: {
+              callback: (value) => `${value}%`
+            }
+          },
+          stepsAxis: {
+            type: 'linear',
+            position: 'right',
+            beginAtZero: true,
+            max: maxSteps,
+            title: {
+              display: true,
+              text: this.translate.instant('HOME.CHART.STEPS_COUNT')
+            },
+            grid: {
+              drawOnChartArea: false
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label || '';
+                const value = context.parsed.y;
+
+                if (context.datasetIndex === 0) {
+                  return `${label}: ${value.toLocaleString()} кроків`;
+                } else {
+                  return `${label}: ${value.toFixed(1)}%`;
+                }
+              }
+            }
+          },
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
           }
         }
       }
@@ -1098,28 +1143,20 @@ export class HomePage implements OnInit, OnDestroy {
 
     this.chart = new Chart(ctx, config);
   }
-/*
-      hasNotification(buttonType: 'notifications' | 'emotionalState' | 'dailyWish'): boolean {
-          if (!this.notificationState) {
-              return false;
-      }
-          return this.notificationState[buttonType]?.shouldShow ?? false;
-    }
-  */
 
   private getStartDate(): Date {
-    const today = new Date();
-    let startDate = new Date(today);
+    const endDate = new Date();
+    const startDate = new Date();
 
     switch (this.selectedPeriod) {
       case 'week':
-        startDate.setDate(today.getDate() - 7);
+        startDate.setDate(endDate.getDate() - 7);
         break;
       case 'month':
-        startDate.setMonth(today.getMonth() - 1);
+        startDate.setMonth(endDate.getMonth() - 1);
         break;
       case 'year':
-        startDate.setFullYear(today.getFullYear() - 1);
+        startDate.setFullYear(endDate.getFullYear() - 1);
         break;
     }
 
@@ -1135,7 +1172,7 @@ export class HomePage implements OnInit, OnDestroy {
       case 'year':
         return format(date, 'MM.yyyy');
       default:
-        return format(date, 'HH:mm');
+        return format(date, 'dd.MM');
     }
   }
 }

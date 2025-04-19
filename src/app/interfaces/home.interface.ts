@@ -1,5 +1,16 @@
 import { TaskProgress } from './challenge.interface';
 
+export interface HabitProgress {
+  periodProgress: Array<{
+    progressDate: string;
+    completedTasks: number;
+    totalTasks: number;
+  }>;
+  category: string;
+  progress: Record<string, number>;
+  isActive: boolean;
+}
+
 export interface DiaryEntry {
   date: Date;
   mood: number;
