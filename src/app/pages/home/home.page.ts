@@ -420,10 +420,6 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
-  isCurrentDay(dayNumber: string): boolean {
-    return dayNumber === format(new Date(), 'd');
-  }
-
   isPastDay(date: Date): boolean {
     return new Date(date).getTime() < new Date().setHours(0, 0, 0, 0);
   }
@@ -440,22 +436,6 @@ export class HomePage implements OnInit, OnDestroy {
     const checkDate = new Date(date);
 
     return checkDate >= challengeStart && checkDate <= challengeEnd;
-  }
-
-  async goToCalendar() {
-    try {
-      const user = await this.authService.getCurrentUser();
-      if (user) {
-        console.log('Navigating to calendar, user:', user);
-        this.util.navigateToPage('/tabs/habits');
-      } else {
-        console.log('No user, redirecting to auth');
-        this.util.navigateToPage('/auth');
-      }
-    } catch (error) {
-      console.error('Navigation error:', error);
-      this.util.navigateToPage('/auth');
-    }
   }
 
   async goToNotifications() {

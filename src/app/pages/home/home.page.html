@@ -33,18 +33,6 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Календар
-  <div class="calendar-strip" (click)="goToCalendar()">
-    <div class="week-days">
-      <div *ngFor="let day of weekDays"
-           class="day-item"
-           [class.current]="isCurrentDay(day.date)"
-           [class.marked]="day.marked">
-        <span class="day-name">{{ day.name }}</span>
-        <span class="day-number">{{ day.date }}</span>
-      </div>
-    </div>
-  </div> -->
 
   <!-- Побажання -->
   <ion-card class="wish-card" (click)="showWish()" *ngIf="currentWish">
