@@ -53,6 +53,7 @@ import { PlatformCheckService } from '../../services/platform-check.service';
 import { VersionCheckService } from '../../services/version-check.service';
 import { EmotionService } from '../../services/emotion.service';
 import { HabitService } from '../../services/habit.service';
+import { PointsService } from '../../services/points.service';
 
 @Component({
   selector: 'app-home',
@@ -110,6 +111,8 @@ export class HomePage implements OnInit, OnDestroy {
     dailyWish?: { shouldShow: boolean };
   } = {};
 
+  private hasWishBeenOpened = false;
+
   constructor(
     private router: Router,
     private util: UtilService,
@@ -126,7 +129,8 @@ export class HomePage implements OnInit, OnDestroy {
     private platformCheckService: PlatformCheckService,
     private versionCheckService: VersionCheckService,
     private emotionService: EmotionService,
-    private habitService: HabitService
+    private habitService: HabitService,
+    private pointsService: PointsService,
   ) {
     addIcons({
       iceCreamOutline,
@@ -540,6 +544,20 @@ export class HomePage implements OnInit, OnDestroy {
     const modal = await this.modalService.createModal(WishModalComponent, {
       wish: this.currentWish
     }, 'half-modal');
+
+    // Нараховуємо бали тільки при першому відкритті
+    if (!this.hasWishBeenOpened) {
+      await this.pointsService.addPoints(5);
+      this.hasWishBeenOpened = true;
+      
+      const toast = await this.toastController.create({
+        message: 'Вітаємо! Ви отримали 5 балів за перше відкриття побажання!',
+        duration: 3000,
+        position: 'bottom',
+        color: 'success'
+      });
+      await toast.present();
+    }
 
     await modal.present();
   }

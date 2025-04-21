@@ -13,6 +13,7 @@ import { TranslateService } from '../../services/translate.service';
 import { AuthService } from '../../services/auth.service';
 import { StravaService } from '../../services/strava.service';
 import { ToastController } from '@ionic/angular';
+import { PointsService } from '../../services/points.service';
 
 @Component({
   selector: 'app-profile',
@@ -61,13 +62,16 @@ export class ProfilePage implements OnInit, OnDestroy {
   stravaClientId: string = '';
   stravaClientSecret: string = '';
 
+  userPoints: number = 0;
+
   constructor(
     private router: Router,
     private healthApiService: HealthApiService,
     private authService: AuthService,
     private translateService: TranslateService,
     private toastController: ToastController,
-    private stravaService: StravaService
+    private stravaService: StravaService,
+    private pointsService: PointsService,
   ) {}
 
   async ngOnInit() {
@@ -75,6 +79,11 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.subscribeToHealthData();
     await this.loadLanguageSettings();
     this.checkStravaConnection();
+    this.userPoints = await this.pointsService.getPoints();
+    
+    this.pointsService.points$.subscribe(points => {
+      this.userPoints = points;
+    });
   }
 
   ngOnDestroy() {
