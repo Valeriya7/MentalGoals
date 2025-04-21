@@ -46,6 +46,14 @@
     </div>
   </div> -->
 
+  <!-- Побажання -->
+  <ion-card class="wish-card" (click)="showWish()" *ngIf="currentWish">
+    <ion-card-content>
+      <ion-icon name="heart-outline" [class.unread]="hasUnreadWish"></ion-icon>
+      <p>{{ currentWish }}</p>
+    </ion-card-content>
+  </ion-card>
+
   <!-- Графік досягнень -->
   <ion-card class="achievement-chart-card">
     <ion-card-header>
@@ -178,14 +186,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Побажання -->
-  <ion-card class="wish-card" (click)="showWish()" *ngIf="currentWish">
-    <ion-card-content>
-      <ion-icon name="heart-outline" [class.unread]="hasUnreadWish"></ion-icon>
-      <p>{{ currentWish }}</p>
-    </ion-card-content>
-  </ion-card>
 
   <!-- Швидкі дії -->
   <ion-grid>

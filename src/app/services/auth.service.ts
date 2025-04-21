@@ -5,15 +5,17 @@ import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Router } from '@angular/router';
 import { appConfig } from '../config/app.config';
 import { Capacitor } from '@capacitor/core';
+import { StorageService } from './storage.service';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<any>(null);
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private storageService: StorageService) {
     this.loadStoredUser();
     this.initializeGoogleAuth();
   }
@@ -115,6 +117,28 @@ export class AuthService {
       appConfig.ID_TOKEN = null;
       this.currentUserSubject.next(null);
       await this.router.navigate(['/auth']);
+    }
+  }
+
+  async updateUserPoints(points: number): Promise<void> {
+    try {
+      const user = await this.getCurrentUser();
+      if (!user) return;
+
+      const currentPoints = user.points || 0;
+      const newPoints = currentPoints + points;
+
+      // Оновлюємо бали користувача в Preferences
+      await Preferences.set({ key: 'userPoints', value: newPoints.toString() });
+
+      // Оновлюємо бали в поточному об'єкті користувача
+      user.points = newPoints;
+      this.currentUserSubject.next(user);
+
+      // Оновлюємо бали в базі даних
+      await this.storageService.set('userPoints', newPoints);
+    } catch (error) {
+      console.error('Error updating user points:', error);
     }
   }
 }

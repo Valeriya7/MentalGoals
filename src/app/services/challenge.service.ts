@@ -1322,4 +1322,47 @@ export class ChallengeService {
       challenge.currentDay = diffDays;
     }
   }
+
+  async checkChallengeProgress(challenge: Challenge): Promise<{ completed: boolean; progress: number; points: number }> {
+    try {
+      if (!challenge.startDate || !challenge.endDate) {
+        return { completed: false, progress: 0, points: 0 };
+      }
+
+      const startDate = new Date(challenge.startDate);
+      const endDate = new Date(challenge.endDate);
+      const today = new Date();
+
+      // Перевіряємо, чи челендж завершився
+      if (today > endDate) {
+        let completedDays = 0;
+        let totalDays = 0;
+
+        // Рахуємо кількість днів, коли були виконані завдання
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+          const dayProgress = await this.getTodayProgress(challenge.id, d.toISOString().split('T')[0]);
+          const hasCompletedTasks = Object.values(dayProgress).some(Boolean);
+          
+          if (hasCompletedTasks) {
+            completedDays++;
+          }
+          totalDays++;
+        }
+
+        const progress = (completedDays / totalDays) * 100;
+        const points = Math.round((challenge.rewards?.points || 0) * (progress / 100));
+
+        return {
+          completed: true,
+          progress,
+          points
+        };
+      }
+
+      return { completed: false, progress: 0, points: 0 };
+    } catch (error) {
+      console.error('Error checking challenge progress:', error);
+      return { completed: false, progress: 0, points: 0 };
+    }
+  }
 } 

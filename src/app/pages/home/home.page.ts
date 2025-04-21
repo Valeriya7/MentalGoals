@@ -92,7 +92,7 @@ export class HomePage implements OnInit, OnDestroy {
   Math = Math;
 
   // Константа для розрахунку довжини кола
-  private readonly CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 54; // 2πr, де r = 54 (радіус кола)
+  private readonly CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 34; // 2πr, де r = 34 (радіус кола)
 
   isToday: boolean = false;
 
@@ -206,9 +206,35 @@ export class HomePage implements OnInit, OnDestroy {
           const diffTime = Math.abs(today.getTime() - startDate.getTime());
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-          // Перевіряємо, чи челендж не завершився
-          if (diffDays > this.activeChallenge.duration) {
+          // Перевіряємо прогрес челенджу
+          const progressCheck = await this.challengeService.checkChallengeProgress(this.activeChallenge);
+
+          if (progressCheck.completed) {
             // Якщо челендж завершився, оновлюємо його статус
+            await this.challengeService.updateChallengeStatus(this.activeChallenge.id, 'completed');
+
+            // Показуємо повідомлення про завершення
+            const toast = await this.toastController.create({
+              message: `Челендж завершено на ${progressCheck.progress.toFixed(1)}%. Нараховано ${progressCheck.points} балів`,
+              duration: 5000,
+              position: 'bottom',
+              color: 'success'
+            });
+            await toast.present();
+
+            // Оновлюємо дані профілю
+            await this.authService.updateUserPoints(progressCheck.points);
+
+            this.activeChallenge = null;
+            this.dailyTasks = [];
+            this.challengeDay = 0;
+            this.currentDay = 0;
+            this.totalDays = 0;
+            return;
+          }
+
+          // Перевіряємо, чи челендж не завершився за часом
+          if (diffDays > this.activeChallenge.duration) {
             await this.challengeService.updateChallengeStatus(this.activeChallenge.id, 'completed');
             this.activeChallenge = null;
             this.dailyTasks = [];
@@ -263,10 +289,10 @@ export class HomePage implements OnInit, OnDestroy {
           this.challengeDay = 0;
           this.currentDay = 0;
           this.totalDays = 0;
-
-          // Запускаємо детекцію змін після оновлення значень
-          this.cdr.detectChanges();
         }
+
+        // Запускаємо детекцію змін після оновлення значень
+        this.cdr.detectChanges();
       });
 
       // Завантажуємо всі активні челенджі
@@ -284,6 +310,7 @@ export class HomePage implements OnInit, OnDestroy {
       // Завантажуємо завдання для всіх активних челенджів
       this.allDailyTasks = [];
       let hasAnyCompletedTasks = false;
+      console.log('!! this.activeChallenges: ', this.activeChallenges);
 
       for (const challenge of this.activeChallenges) {
         if (challenge.tasks) {
@@ -336,10 +363,10 @@ export class HomePage implements OnInit, OnDestroy {
     const weekStart = startOfWeek(today);
     const locale = this.translate.currentLang === 'uk' ? uk : enUS;
 
-    this.weekDays = Array.from({ length: 7 }, (_, i) => {
+    this.weekDays = Array.from({length: 7}, (_, i) => {
       const date = addDays(weekStart, i);
       return {
-        name: format(date, 'EEE', { locale }).slice(0, 2),
+        name: format(date, 'EEE', {locale}).slice(0, 2),
         date: format(date, 'd'),
         marked: Math.random() > 0.5, // Приклад позначення днів
         fullDate: date
@@ -352,7 +379,7 @@ export class HomePage implements OnInit, OnDestroy {
   updateWeekLabel() {
     const firstDay = this.weekDays[0].fullDate;
     const lastDay = this.weekDays[6].fullDate;
-    this.currentWeekLabel = `${firstDay.getDate()} - ${lastDay.getDate()} ${lastDay.toLocaleString('uk-UA', { month: 'long' })}`;
+    this.currentWeekLabel = `${firstDay.getDate()} - ${lastDay.getDate()} ${lastDay.toLocaleString('uk-UA', {month: 'long'})}`;
   }
 
   previousWeek() {
@@ -435,6 +462,7 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.getCurrentUser();
       if (user) {
+        this.notificationState.notifications = false;
         this.util.navigateToPage('/tabs/notifications');
       } else {
         this.util.navigateToPage('/auth');
@@ -449,7 +477,7 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       const user = await this.authService.getCurrentUser();
       if (user) {
-        this.util.navigateToPage('/tabs/habits', { queryParams: { type } });
+        this.util.navigateToPage('/tabs/habits', {queryParams: {type}});
       } else {
         this.util.navigateToPage('/auth');
       }
@@ -503,7 +531,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   async getUserData() {
     try {
-      const { value: name } = await Preferences.get({ key: 'name' });
+      const {value: name} = await Preferences.get({key: 'name'});
       if (name) {
         this.userName = name;
       }
@@ -517,6 +545,8 @@ export class HomePage implements OnInit, OnDestroy {
       component: DailyWishComponent,
       cssClass: 'half-modal'
     });
+
+    this.notificationState.dailyWish = false;
     return await modal.present();
   }
 
@@ -561,7 +591,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   private async checkAuth(): Promise<boolean> {
     const user = await this.authService.getCurrentUser();
-    console.log('getCurrentUser: ',user);
+    console.log('getCurrentUser: ', user);
     return !!user;
   }
 
@@ -572,13 +602,17 @@ export class HomePage implements OnInit, OnDestroy {
 
       if (userEntries && userEntries.length > 0) {
         // Підраховуємо суму всіх значень
-        const totals = userEntries.reduce((acc: { steps: number; sleep: number; water: number }, entry: UserProgress) => {
+        const totals = userEntries.reduce((acc: {
+          steps: number;
+          sleep: number;
+          water: number
+        }, entry: UserProgress) => {
           return {
             steps: acc.steps + (entry.steps || 0),
             sleep: acc.sleep + (entry.sleepHours || 0),
             water: acc.water + (entry.waterAmount || 0)
           };
-        }, { steps: 0, sleep: 0, water: 0 });
+        }, {steps: 0, sleep: 0, water: 0});
 
         // Обчислюємо середні значення
         const entriesCount = userEntries.length;
@@ -614,10 +648,10 @@ export class HomePage implements OnInit, OnDestroy {
 
       // Оновлюємо завдання в обох списках
       this.dailyTasks = this.dailyTasks.map(t =>
-        t.name === task.name ? { ...t, completed: isCompleted } : t
+        t.name === task.name ? {...t, completed: isCompleted} : t
       );
       this.allDailyTasks = this.allDailyTasks.map(t =>
-        t.name === task.name ? { ...t, completed: isCompleted } : t
+        t.name === task.name ? {...t, completed: isCompleted} : t
       );
 
       // Сортуємо завдання
@@ -667,8 +701,8 @@ export class HomePage implements OnInit, OnDestroy {
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const currentDay = Math.min(diffDays + 1, challenge.duration);
-    const progress = currentDay / challenge.duration;
-    return (this.CIRCLE_CIRCUMFERENCE * (1 - progress)).toString();
+    const progress = this.getProgressPercentage(challenge);
+    return (this.CIRCLE_CIRCUMFERENCE * (1 - progress / 100)).toString();
   }
 
   // Отримуємо відсоток прогресу
@@ -712,7 +746,7 @@ export class HomePage implements OnInit, OnDestroy {
 
       await modal.present();
 
-      const { data } = await modal.onDidDismiss();
+      const {data} = await modal.onDidDismiss();
 
       if (data) {
         try {
@@ -801,7 +835,7 @@ export class HomePage implements OnInit, OnDestroy {
               borderColor: '#36A2EB',
               backgroundColor: '#36A2EB20',
               tension: 0.4,
-              fill: true,
+              fill: false,
               yAxisID: 'stepsAxis'
             },
             {
@@ -810,7 +844,7 @@ export class HomePage implements OnInit, OnDestroy {
               borderColor: '#FF6384',
               backgroundColor: '#FF638420',
               tension: 0.4,
-              fill: true,
+              fill: false,
               yAxisID: 'mainAxis'
             },
             {
@@ -819,7 +853,7 @@ export class HomePage implements OnInit, OnDestroy {
               borderColor: '#4BC0C0',
               backgroundColor: '#4BC0C020',
               tension: 0.4,
-              fill: true,
+              fill: false,
               yAxisID: 'mainAxis'
             }
           ]
@@ -881,89 +915,84 @@ export class HomePage implements OnInit, OnDestroy {
   // Метод для отримання даних для графіка
   async getAchievementData() {
     const endDate = new Date();
-    const startDate = this.getStartDate();
+    let startDate = new Date();
 
-    try {
-      // Отримуємо дані про емоції
-      const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
-      console.log('Emotions:', emotions);
-
-      // Отримуємо дані про прогрес
-      const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
-      console.log('Progress:', progress);
-
-      // Отримуємо дані про звички
-      const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
-      console.log('Habits:', habits);
-
-      // Форматуємо дані для графіка
-      const labels: string[] = [];
-      const steps: number[] = [];
-      const emotionsData: number[] = [];
-      const habitsData: number[] = [];
-
-      // Генеруємо мітки та дані в залежності від періоду
-      let currentDate = new Date(startDate);
-      while (currentDate <= endDate) {
-        const dateStr = this.formatDate(currentDate);
-        labels.push(dateStr);
-
-        // Знаходимо відповідні дані для цієї дати
-        const dayEmotions = emotions?.filter(e => e?.date && isSameDay(new Date(e.date), currentDate)) || [];
-        const dayProgress = progress?.find(p => p?.date && isSameDay(new Date(p.date), currentDate));
-        const dayHabits = habits?.filter(habit => habit?.date && isSameDay(new Date(habit.date), currentDate)) || [];
-
-        // Розраховуємо показники
-        const stepsValue = dayProgress?.steps || 0;
-        const emotionValue = this.calculateEmotionValue(dayEmotions);
-        const habitsValue = this.calculateHabitsValue(dayHabits);
-
-        steps.push(stepsValue);
-        emotionsData.push(emotionValue);
-        habitsData.push(habitsValue);
-
-        // Збільшуємо дату в залежності від періоду
-        if (this.selectedPeriod === 'week') {
-          currentDate = addHours(currentDate, 3);
-        } else if (this.selectedPeriod === 'month') {
-          currentDate = addDays(currentDate, 1);
-        } else {
-          currentDate = addMonths(currentDate, 1);
-        }
-      }
-
-      return {
-        labels,
-        steps,
-        emotions: emotionsData,
-        habits: habitsData
-      };
-    } catch (error) {
-      console.error('Error in getAchievementData:', error);
-      return {
-        labels: [],
-        steps: [],
-        emotions: [],
-        habits: []
-      };
+    switch (this.selectedPeriod) {
+      case 'week':
+        startDate.setDate(endDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(endDate.getMonth() - 1);
+        break;
+      case 'year':
+        startDate.setFullYear(endDate.getFullYear() - 1);
+        break;
     }
-  }
 
-  private calculateEmotionValue(emotions: Emotion[]): number {
-    if (!emotions.length) return 5;
+    // Отримуємо дані про емоції
+    const emotions = await this.emotionalService.getEmotionalStates(startDate, endDate);
 
-    return emotions.reduce((sum, emotion) => sum + emotion.value, 0) / emotions.length;
+    // Отримуємо дані про прогрес
+    const progress = await this.progressService.getUserProgressInRange(startDate, endDate);
+
+    // Отримуємо дані про звички
+    const habits = await this.challengeService.getChallengesProgress(startDate, endDate);
+
+    // Форматуємо дані для графіка
+    const labels: string[] = [];
+    const stepsData: number[] = [];
+    const emotionsData: number[] = [];
+    const habitsData: number[] = [];
+
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = format(currentDate,
+        this.selectedPeriod === 'week' ? 'HH:mm' :
+          this.selectedPeriod === 'month' ? 'dd.MM' : 'MM.yyyy'
+      );
+      labels.push(dateStr);
+
+      // Знаходимо відповідні дані для цієї дати
+      const dayEmotions = emotions.filter(e => isSameDay(new Date(e.date), currentDate));
+      const dayProgress = progress.find(p => isSameDay(new Date(p.date), currentDate));
+
+      // Знаходимо звички для поточної дати
+      const dayHabits = habits.filter(habit =>
+        isSameDay(new Date(habit.date), currentDate)
+      );
+
+      // Розраховуємо показники
+      const stepsValue = dayProgress ? dayProgress.steps : 0;
+      const emotionsValue = dayEmotions.length > 0 ?
+        dayEmotions.reduce((sum, e) => sum + e.value, 0) / dayEmotions.length : 0;
+      const habitsValue = this.calculateHabitsValue(dayHabits);
+
+      stepsData.push(stepsValue);
+      emotionsData.push(emotionsValue);
+      habitsData.push(habitsValue);
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return {
+      labels,
+      steps: stepsData,
+      emotions: emotionsData,
+      habits: habitsData
+    };
   }
 
   private calculateHabitsValue(habits: ChallengeProgress[]): number {
     if (!habits || habits.length === 0) return 0;
 
-    const totalProgress = habits.reduce((sum, habit) => {
-      const completionRate = habit.completedTasks / habit.totalTasks;
-      return sum + (isNaN(completionRate) ? 0 : completionRate);
+    const totalCompletedRatio = habits.reduce((sum, habit) => {
+      const completed = habit.completedTasks || 0;
+      const total = habit.totalTasks || 1;
+      return sum + (completed / total);
     }, 0);
 
-    return (totalProgress / habits.length) * 10;
+    // Повертаємо середнє значення від 0 до 10
+    return (totalCompletedRatio / habits.length) * 10;
   }
 
   async onPeriodChange(event: any) {
@@ -972,19 +1001,20 @@ export class HomePage implements OnInit, OnDestroy {
       await this.changePeriod(value);
     }
   }
-  async goToChallenges(){
+
+  async goToChallenges() {
     await this.router.navigate(['/tabs/challenges']);
   }
 
   private async loadNotificationState() {
     try {
-      const { value } = await Preferences.get({ key: 'notificationState' });
+      const {value} = await Preferences.get({key: 'notificationState'});
       if (value) {
         this.notificationState = JSON.parse(value);
       } else {
         // Set initial state for new day
         const today = new Date().toDateString();
-        const { value: lastCheck } = await Preferences.get({ key: 'lastNotificationCheck' });
+        const {value: lastCheck} = await Preferences.get({key: 'lastNotificationCheck'});
 
         if (lastCheck !== today) {
           this.notificationState = {
@@ -993,7 +1023,7 @@ export class HomePage implements OnInit, OnDestroy {
             dailyWish: true
           };
           await this.saveNotificationState();
-          await Preferences.set({ key: 'lastNotificationCheck', value: today });
+          await Preferences.set({key: 'lastNotificationCheck', value: today});
         }
       }
     } catch (error) {
@@ -1012,8 +1042,11 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
-  hasNotification(key: keyof typeof this.notificationState): boolean {
-    return this.notificationState[key];
+  hasNotification(buttonType: 'notifications' | 'emotionalState' | 'dailyWish'): boolean {
+    if (!this.notificationState) {
+      return false;
+    }
+    return this.notificationState[buttonType] ?? false;
   }
 
   private createAchievementChart(data: any) {
@@ -1074,34 +1107,4 @@ export class HomePage implements OnInit, OnDestroy {
     this.chart = new Chart(ctx, config);
   }
 
-  private getStartDate(): Date {
-    const endDate = new Date();
-    const startDate = new Date();
-    switch (this.selectedPeriod) {
-      case 'week':
-        startDate.setDate(endDate.getDate() - 7);
-        break;
-      case 'month':
-        startDate.setMonth(endDate.getMonth() - 1);
-        break;
-      case 'year':
-        startDate.setFullYear(endDate.getFullYear() - 1);
-        break;
-    }
-    return startDate;
-  }
-
-  private formatDate(date: Date): string {
-    switch (this.selectedPeriod) {
-      case 'week':
-        return format(date, 'HH:mm');
-      case 'month':
-        return format(date, 'dd.MM');
-      case 'year':
-        return format(date, 'MM.yyyy');
-      default:
-        return format(date, 'dd.MM');
-    }
-  }
 }
-
