@@ -289,27 +289,38 @@ ion-header {
 }
 
 .wish-card {
-  margin: 0 0.5rem;
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  cursor: pointer;
+
+  &.fade-out {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+  }
 
   ion-card-content {
     display: flex;
     align-items: center;
-    padding: 0.3rem;
+    gap: 12px;
+    padding: 16px;
 
     ion-icon {
-      font-size: 1.5rem;
-      margin-right: 1rem;
-      color: var(--ion-color-medium);
+      font-size: 24px;
+      color: var(--ion-color-primary);
 
       &.unread {
-        color: var(--ion-color-primary);
+        color: var(--ion-color-danger);
       }
     }
 
     p {
       margin: 0;
+      font-size: 16px;
+      line-height: 1.4;
       color: var(--ion-color-dark);
-      font-size: 1rem;
     }
   }
 }

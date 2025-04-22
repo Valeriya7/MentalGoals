@@ -101,7 +101,7 @@ export class HabitsService {
     }
   }
 
-  async updateStreak(habitId: string): Promise<boolean> {
+  public async updateStreak(habitId: string): Promise<boolean> {
     const habits = await firstValueFrom(this.getHabits());
     const habit = habits.find((h: Habit) => h.id === habitId);
     if (!habit) return false;

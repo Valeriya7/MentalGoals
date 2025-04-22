@@ -266,5 +266,8 @@
     "TASK_COMPLETED": "Aufgabe abgeschlossen!",
     "TASK_CANCELLED": "Aufgabe abgebrochen",
     "UPDATE_ERROR": "Fehler beim Aktualisieren der Aufgabe"
+  },
+  "POINTS": {
+    "EARNED": "Herzlichen Glückwunsch! Sie haben {{points}} Punkte verdient! 🎉"
   }
 }

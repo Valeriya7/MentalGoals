@@ -82,7 +82,7 @@ export class HomePage implements OnInit, OnDestroy {
   allDailyTasks: DailyTask[] = [];
 
   hasUnreadWish = false;
-  currentWish = '';
+  currentWish: string | null = '';
   private subscriptions: Subscription[] = [];
   stepsCount = '12,345';
   sleepHours = '7:30 Hr';
@@ -110,6 +110,8 @@ export class HomePage implements OnInit, OnDestroy {
   private hasWishBeenOpened = false;
 
   completedHabits: Set<string> = new Set();
+
+  isWishHidden = false;
 
   constructor(
     private router: Router,
@@ -557,22 +559,11 @@ export class HomePage implements OnInit, OnDestroy {
 
   // Wish modal window
   async showWish(): Promise<void> {
-    if (this.hasUnreadWish) {
-      await this.wishesService.markWishAsRead();
-      this.hasUnreadWish = false;
-    }
-
-    const modal = await this.modalService.createModal(WishModalComponent, {
-      wish: this.currentWish
-    }, 'half-modal');
-
-    // Нараховуємо бали тільки при першому відкритті
     if (!this.hasWishBeenOpened) {
       await this.pointsService.addPoints(5);
       this.hasWishBeenOpened = true;
-      
       const toast = await this.toastController.create({
-        message: 'Вітаємо! Ви отримали 5 балів за перше відкриття побажання!',
+        message: this.translate.instant('POINTS.EARNED', { points: 5 }),
         duration: 3000,
         position: 'bottom',
         color: 'success'
@@ -580,7 +571,14 @@ export class HomePage implements OnInit, OnDestroy {
       await toast.present();
     }
 
-    await modal.present();
+    // Додаємо клас для анімації зникнення
+    this.isWishHidden = true;
+
+    // Видаляємо картку після завершення анімації
+    setTimeout(() => {
+      this.currentWish = null;
+      this.isWishHidden = false;
+    }, 500); // Час має відповідати тривалості анімації в CSS
   }
 
   async goToCurrentChallenge() {
@@ -1147,7 +1145,7 @@ export class HomePage implements OnInit, OnDestroy {
     try {
       // Очищаємо старі записи при завантаженні сторінки
       await this.habitTracker.clearOldCompletions();
-      
+
       // Завантажуємо завершені звички для сьогоднішнього дня
       for (const task of this.allDailyTasks) {
         const isCompleted = await this.habitTracker.isHabitCompletedToday(task.name);

@@ -321,5 +321,9 @@
     "TASK_COMPLETED": "Task completed!",
     "TASK_CANCELLED": "Task cancelled",
     "UPDATE_ERROR": "Error updating task"
+  },
+  "REWARDS": "Rewards",
+  "POINTS": {
+    "EARNED": "Congratulations! You've earned {{points}} points! 🎉"
   }
 }
