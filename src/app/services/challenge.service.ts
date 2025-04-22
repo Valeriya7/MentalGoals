@@ -580,8 +580,6 @@ export class ChallengeService {
       const storage = await this.ensureStorageReady();
       let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
 
-      //console.log('Current challenges in storage:', challenges);
-
       // Якщо немає челенджів, ініціалізуємо дефолтні
       if (!challenges || challenges.length === 0) {
         console.log('No challenges found, initializing defaults');
@@ -592,17 +590,19 @@ export class ChallengeService {
       // Перевіряємо наявність всіх дефолтних челенджів
       const defaultChallenges = this.getDefaultChallenges();
       const existingIds = new Set(challenges.map((c: Challenge) => c.id));
+      const hasActiveChallenge = challenges.some((c: Challenge) => c.status === 'active');
 
       defaultChallenges.forEach(defaultChallenge => {
         if (!existingIds.has(defaultChallenge.id)) {
-          //console.log('Adding missing default challenge:', defaultChallenge.id);
+          // Якщо вже є активний челендж, додаємо новий як доступний
+          if (hasActiveChallenge) {
+            defaultChallenge.status = 'available';
+          }
           challenges.push(defaultChallenge);
         }
       });
 
       await this.saveToAllStorages(challenges);
-      //console.log('Final challenges list:', challenges);
-
       return challenges;
     } catch (error) {
       console.error('Error getting challenges:', error);

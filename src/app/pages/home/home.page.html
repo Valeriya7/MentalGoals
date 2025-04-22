@@ -35,7 +35,7 @@
 <ion-content class="ion-padding">
 
   <!-- Побажання -->
-  <ion-card class="wish-card" (click)="showWish()" *ngIf="currentWish" [class.fade-out]="isWishHidden">
+  <ion-card class="wish-card" (click)="showWish()" *ngIf="currentWish && !hasWishBeenOpened" [class.fade-out]="isWishHidden">
     <ion-card-content>
       <ion-icon name="heart-outline" [class.unread]="hasUnreadWish"></ion-icon>
       <p>{{ currentWish }}</p>

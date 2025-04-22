@@ -107,7 +107,8 @@ export class HomePage implements OnInit, OnDestroy {
     dailyWish: false
   };
 
-  private hasWishBeenOpened = false;
+  public hasWishBeenOpened = false;
+  private readonly WISH_OPENED_KEY = 'wish_opened_date';
 
   completedHabits: Set<string> = new Set();
 
@@ -161,6 +162,31 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     console.log('Initializing home page...');
+
+    // Перевіряємо, чи було відкрито побажання сьогодні
+    const { value } = await Preferences.get({ key: this.WISH_OPENED_KEY });
+    if (value) {
+      try {
+        const lastOpenedDate = new Date(value);
+        const today = new Date();
+
+        // Встановлюємо час на початок дня для коректного порівняння
+        lastOpenedDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        this.hasWishBeenOpened = lastOpenedDate.getTime() === today.getTime();
+
+        // Якщо побажання вже було відкрито сьогодні, очищуємо його
+        if (this.hasWishBeenOpened) {
+          this.currentWish = null;
+        }
+      } catch (error) {
+        console.error('Error parsing wish date:', error);
+        this.hasWishBeenOpened = false;
+      }
+    } else {
+      this.hasWishBeenOpened = false;
+    }
 
     // Підписуємось на зміни мови
     this.subscriptions.push(
@@ -559,17 +585,26 @@ export class HomePage implements OnInit, OnDestroy {
 
   // Wish modal window
   async showWish(): Promise<void> {
-    if (!this.hasWishBeenOpened) {
-      await this.pointsService.addPoints(5);
-      this.hasWishBeenOpened = true;
-      const toast = await this.toastController.create({
-        message: this.translate.instant('POINTS.EARNED', { points: 5 }),
-        duration: 3000,
-        position: 'bottom',
-        color: 'success'
-      });
-      await toast.present();
-    }
+    // Set initial state for new day
+
+      if (!this.hasWishBeenOpened) {
+        await this.pointsService.addPoints(5);
+        this.hasWishBeenOpened = true;
+
+        // Зберігаємо дату відкриття
+        await Preferences.set({
+          key: this.WISH_OPENED_KEY,
+          value: new Date().toISOString()
+        });
+
+        const toast = await this.toastController.create({
+          message: this.translate.instant('POINTS.EARNED', {points: 5}),
+          duration: 3000,
+          position: 'bottom',
+          color: 'success'
+        });
+        await toast.present();
+      }
 
     // Додаємо клас для анімації зникнення
     this.isWishHidden = true;
@@ -578,7 +613,7 @@ export class HomePage implements OnInit, OnDestroy {
     setTimeout(() => {
       this.currentWish = null;
       this.isWishHidden = false;
-    }, 500); // Час має відповідати тривалості анімації в CSS
+    }, 500);
   }
 
   async goToCurrentChallenge() {
