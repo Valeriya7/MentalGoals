@@ -57,6 +57,24 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
     private toastController: ToastController
   ) {
     this.generateCalendarDays();
+    this.editingHabit = {
+      id: '',
+      name: '',
+      description: '',
+      icon: 'ellipse-outline',
+      category: 'health',
+      difficulty: 'medium',
+      points: 0,
+      isActive: false,
+      isChallengeHabit: false,
+      isBaseHabit: false,
+      completionStatus: {},
+      streak: { current: 0, best: 0 },
+      target: 1,
+      unit: '',
+      frequency: 'daily',
+      progress: {}
+    };
   }
 
   ngOnInit() {
@@ -279,20 +297,57 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   }
 
   openEditHabitModal(habit: Habit) {
+    if (!habit) return;
+    
     this.editingHabit = {
-      ...habit,
+      ...this.editingHabit,
+      id: habit.id,
+      name: habit.name || '',
+      description: habit.description || '',
+      icon: habit.icon || 'ellipse-outline',
+      category: habit.category || 'health',
+      difficulty: habit.difficulty || 'medium',
+      points: habit.points || 0,
+      isActive: habit.isActive || false,
+      isChallengeHabit: habit.isChallengeHabit || false,
+      isBaseHabit: habit.isBaseHabit || false,
+      completionStatus: habit.completionStatus || {},
       streak: {
-        current: habit.streak.current || 0,
-        best: habit.streak.best || 0
+        current: habit.streak?.current || 0,
+        best: habit.streak?.best || 0
       },
-      progress: habit.progress || {}
+      target: habit.target || 1,
+      unit: habit.unit || '',
+      frequency: habit.frequency || 'daily',
+      challengeId: habit.challengeId,
+      reminder: habit.reminder,
+      progress: habit.progress || {},
+      createdAt: habit.createdAt,
+      activationDate: habit.activationDate
     };
     this.isEditHabitModalOpen = true;
   }
 
   closeEditHabitModal() {
     this.isEditHabitModalOpen = false;
-    this.editingHabit = null;
+    this.editingHabit = {
+      id: '',
+      name: '',
+      description: '',
+      icon: 'ellipse-outline',
+      category: 'health',
+      difficulty: 'medium',
+      points: 0,
+      isActive: false,
+      isChallengeHabit: false,
+      isBaseHabit: false,
+      completionStatus: {},
+      streak: { current: 0, best: 0 },
+      target: 1,
+      unit: '',
+      frequency: 'daily',
+      progress: {}
+    };
   }
 
   async updateHabit() {
@@ -340,23 +395,20 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
 
   async onDrop(event: DragEvent, targetList: 'active' | 'available', targetHabit: Habit) {
     event.preventDefault();
-
-    if (!this.draggedHabit || this.draggedHabit === targetHabit) {
-      return;
-    }
+    if (!this.draggedHabit) return;
 
     const sourceList = this.draggedHabit.isActive ? 'active' : 'available';
+    if (sourceList === targetList) return;
 
-    if (sourceList === targetList) {
-      return;
+    try {
+      if (targetList === 'active') {
+        await this.activateHabit(this.draggedHabit);
+      } else {
+        await this.deactivateHabit(this.draggedHabit);
+      }
+    } catch (error) {
+      console.error('Error handling drop:', error);
+      await this.presentToast(this.translateService.instant('HABITS.DROP_ERROR'));
     }
-
-    if (sourceList === 'active' && targetList === 'available') {
-      await this.deactivateHabit(this.draggedHabit);
-    } else if (sourceList === 'available' && targetList === 'active') {
-      await this.activateHabit(this.draggedHabit);
-    }
-
-    this.loadHabits();
   }
 }

@@ -43,7 +43,8 @@
                  (dragover)="onDragOver($event)"
                  (drop)="onDrop($event, 'active', habit)"
                  [class.dragging]="draggedHabit === habit"
-                 [class.drag-over]="draggedHabit && draggedHabit !== habit">
+                 [class.drag-over]="draggedHabit && draggedHabit !== habit"
+                 [attr.passive]="true">
           <ion-icon [name]="getHabitIcon(habit.category)" slot="start" [color]="getHabitColor(habit.category)"></ion-icon>
           <ion-label>
             <h2>{{ habit.name }}</h2>
@@ -90,7 +91,8 @@
                  (dragover)="onDragOver($event)"
                  (drop)="onDrop($event, 'available', habit)"
                  [class.dragging]="draggedHabit === habit"
-                 [class.drag-over]="draggedHabit && draggedHabit !== habit">
+                 [class.drag-over]="draggedHabit && draggedHabit !== habit"
+                 [attr.passive]="true">
           <ion-icon [name]="getHabitIcon(habit.category)" slot="start" [color]="getHabitColor(habit.category)"></ion-icon>
           <ion-label>
             <h2>{{ habit.name }}</h2>

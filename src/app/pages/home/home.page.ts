@@ -199,7 +199,16 @@ export class HomePage implements OnInit, OnDestroy {
 
   async loadActiveChallenge() {
     try {
-      // Підписуємось на зміни активних челенджів
+      // Завантажуємо збережений стан завдань
+      const { value: savedTasks } = await Preferences.get({ key: 'allDailyTasks' });
+      if (savedTasks) {
+        const parsedTasks = JSON.parse(savedTasks);
+        const today = new Date().toDateString();
+        if (parsedTasks.date === today) {
+          this.allDailyTasks = parsedTasks.tasks;
+        }
+      }
+
       this.challengeService.getActiveChallenge().subscribe(async challenge => {
         console.log('Active challenge received:', challenge);
         this.activeChallenge = challenge;
@@ -355,6 +364,15 @@ export class HomePage implements OnInit, OnDestroy {
       this.allDailyTasks.sort((a, b) => {
         if (a.completed === b.completed) return 0;
         return a.completed ? 1 : -1;
+      });
+
+      // Зберігаємо оновлений стан
+      await Preferences.set({
+        key: 'allDailyTasks',
+        value: JSON.stringify({
+          date: new Date().toDateString(),
+          tasks: this.allDailyTasks
+        })
       });
 
     } catch (error) {
@@ -662,6 +680,15 @@ export class HomePage implements OnInit, OnDestroy {
       this.allDailyTasks = this.allDailyTasks.map(t =>
         t.name === task.name ? {...t, completed: isCompleted} : t
       );
+
+      // Зберігаємо оновлений стан
+      await Preferences.set({
+        key: 'allDailyTasks',
+        value: JSON.stringify({
+          date: new Date().toDateString(),
+          tasks: this.allDailyTasks
+        })
+      });
 
       // Сортуємо завдання
       this.dailyTasks.sort((a, b) => {
