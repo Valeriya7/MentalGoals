@@ -54,6 +54,7 @@ import { VersionCheckService } from '../../services/version-check.service';
 import { EmotionService } from '../../services/emotion.service';
 import { HabitService } from '../../services/habit.service';
 import { PointsService } from '../../services/points.service';
+import { HabitTrackerService } from '../../services/habit-tracker.service';
 
 @Component({
   selector: 'app-home',
@@ -105,13 +106,10 @@ export class HomePage implements OnInit, OnDestroy {
     emotionalState: false,
     dailyWish: false
   };
-  notificationState2: {
-    notifications?: { shouldShow: boolean };
-    emotionalState?: { shouldShow: boolean };
-    dailyWish?: { shouldShow: boolean };
-  } = {};
 
   private hasWishBeenOpened = false;
+
+  completedHabits: Set<string> = new Set();
 
   constructor(
     private router: Router,
@@ -131,6 +129,7 @@ export class HomePage implements OnInit, OnDestroy {
     private emotionService: EmotionService,
     private habitService: HabitService,
     private pointsService: PointsService,
+    private habitTracker: HabitTrackerService,
   ) {
     addIcons({
       iceCreamOutline,
@@ -191,6 +190,7 @@ export class HomePage implements OnInit, OnDestroy {
     await this.loadSelectedDayProgress();
     await this.loadAverageMetrics();
     await this.loadNotificationState();
+    await this.loadCompletedHabits();
   }
 
   ngOnDestroy() {
@@ -447,6 +447,7 @@ export class HomePage implements OnInit, OnDestroy {
       const user = await this.authService.getCurrentUser();
       if (user) {
         this.notificationState.notifications = false;
+        await this.saveNotificationState();
         this.util.navigateToPage('/tabs/notifications');
       } else {
         this.util.navigateToPage('/auth');
@@ -531,6 +532,8 @@ export class HomePage implements OnInit, OnDestroy {
     });
 
     this.notificationState.dailyWish = false;
+    await this.saveNotificationState();
+
     return await modal.present();
   }
 
@@ -644,6 +647,14 @@ export class HomePage implements OnInit, OnDestroy {
       // Оновлюємо прогрес на сервері
       await this.challengeService.updateTodayProgress(task.challengeId, task.name, isCompleted);
 
+      // Відстежуємо завершення звички
+      if (isCompleted) {
+        await this.habitTracker.markHabitAsCompleted(task.name);
+        this.completedHabits.add(task.name);
+      } else {
+        this.completedHabits.delete(task.name);
+      }
+
       // Оновлюємо завдання в обох списках
       this.dailyTasks = this.dailyTasks.map(t =>
         t.name === task.name ? {...t, completed: isCompleted} : t
@@ -664,7 +675,7 @@ export class HomePage implements OnInit, OnDestroy {
 
       // Показуємо повідомлення про успіх
       const toast = await this.toastController.create({
-        message: this.translate.instant(isCompleted ? 'TASKS.TASK_COMPLETED' : 'TASKS.TASK_CANCELLED'), //isCompleted ? 'Завдання виконано!' : 'Завдання скасовано',
+        message: this.translate.instant(isCompleted ? 'TASKS.TASK_COMPLETED' : 'TASKS.TASK_CANCELLED'),
         duration: 2000,
         position: 'bottom',
         color: isCompleted ? 'success' : 'medium'
@@ -1103,6 +1114,27 @@ export class HomePage implements OnInit, OnDestroy {
     };
 
     this.chart = new Chart(ctx, config);
+  }
+
+  private async loadCompletedHabits() {
+    try {
+      // Очищаємо старі записи при завантаженні сторінки
+      await this.habitTracker.clearOldCompletions();
+      
+      // Завантажуємо завершені звички для сьогоднішнього дня
+      for (const task of this.allDailyTasks) {
+        const isCompleted = await this.habitTracker.isHabitCompletedToday(task.name);
+        if (isCompleted) {
+          this.completedHabits.add(task.name);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading completed habits:', error);
+    }
+  }
+
+  isHabitCompletedToday(taskName: string): boolean {
+    return this.completedHabits.has(taskName);
   }
 
 }

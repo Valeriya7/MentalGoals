@@ -289,12 +289,12 @@ ion-header {
 }
 
 .wish-card {
-  margin: 0 1rem;
+  margin: 0 0.5rem;
 
   ion-card-content {
     display: flex;
     align-items: center;
-    padding: 1rem;
+    padding: 0.3rem;
 
     ion-icon {
       font-size: 1.5rem;
@@ -557,7 +557,6 @@ ion-grid {
     ion-icon {
       font-size: 24px;
       color: var(--ion-color-primary);
-      margin-bottom: 8px;
     }
 
     h3 {
@@ -606,7 +605,6 @@ ion-grid {
 .active-challenges {
   //background: var(--ion-color-light);
   border-radius: 16px;
-  padding: 10px;
 
   h2 {
     margin: 0 0 16px 0;
@@ -768,6 +766,10 @@ ion-item {
 ion-icon {
   font-size: 24px;
   color: var(--ion-color-medium);
+
+  &.completed-icon {
+    color: var(--ion-color-light);
+  }
 }
 
 .no-challenge {
@@ -946,7 +948,6 @@ ion-icon {
 }
 
 .achievement-chart-card {
-  margin: 16px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 

@@ -118,7 +118,10 @@
           <p>{{ task.description }}</p>
           <span class="challenge-title">{{ task.challengeTitle }}</span>
         </div>
-        <ion-icon [name]="task.icon" slot="end"></ion-icon>
+        <ion-icon 
+          [name]="task.icon" 
+          slot="end"
+          [class.completed-icon]="isHabitCompletedToday(task.name)"></ion-icon>
       </ion-item>
     </ion-list>
   </div>

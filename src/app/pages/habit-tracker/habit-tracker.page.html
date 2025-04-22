@@ -58,7 +58,9 @@
             </div>
             <span class="progress-text">{{ habit.streak.current }}/{{ habit.target }}</span>
           </div>
-          <ion-button slot="end" (click)="toggleHabitCompletion(habit, selectedDate, getHabitStatus(habit, selectedDate) === 'completed' ? 'not_completed' : 'completed')">
+          <ion-button slot="end" 
+                    (click)="toggleHabitCompletion(habit, selectedDate, getHabitStatus(habit, selectedDate) === 'completed' ? 'not_completed' : 'completed')"
+                    [class.completed]="getHabitStatus(habit, selectedDate) === 'completed'">
             <ion-icon [name]="getHabitStatus(habit, selectedDate) === 'completed' ? 'checkmark-circle-outline' : 'time-outline'"></ion-icon>
           </ion-button>
           <ion-button slot="end" (click)="deactivateHabit(habit)" color="warning" >
