@@ -111,24 +111,46 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   }
 
   async toggleHabitCompletion(habit: Habit, date: Date, status: 'completed' | 'partial' | 'not_completed') {
-    const dateStr = date.toISOString().split('T')[0];
+    try {
+      await this.habitsService.toggleHabit(habit.id, date.toISOString().split('T')[0], status);
 
-    // Перевіряємо поточний статус звички
-    const currentStatus = habit.completionStatus[dateStr];
+      // Перевіряємо, чи досягнуто ціль
+      const targetReached = await this.habitsService.updateStreak(habit.id);
 
-    // Якщо звичка вже відмічена як виконана, і користувач намагається відмітити її знову
-    if (currentStatus === 'completed') {
-      // Якщо користувач намагається змінити статус на 'not_completed', дозволяємо це
-      if (status === 'not_completed') {
-        await this.habitsService.toggleHabit(habit.id, dateStr, status);
+      if (targetReached) {
+        // Показуємо повідомлення про досягнення цілі
+        const toast = await this.toastController.create({
+          message: this.translateService.instant('HABITS.TARGET_REACHED', { name: habit.name }),
+          duration: 5000,
+          position: 'bottom',
+          color: 'success',
+          icon: 'trophy-outline',
+          cssClass: 'target-reached-toast'
+        });
+        await toast.present();
+
+        // Додаємо клас для анімації
+        const habitElement = document.querySelector(`[data-habit-id="${habit.id}"]`);
+        if (habitElement) {
+          habitElement.classList.add('target-reached');
+          setTimeout(() => {
+            habitElement.classList.remove('target-reached');
+          }, 2000);
+        }
+
+        // Оновлюємо список звичок
+        this.loadHabits();
       }
-      // В іншому випадку ігноруємо спробу повторної відмітки
-      return;
+    } catch (error) {
+      console.error('Error toggling habit completion:', error);
+      const toast = await this.toastController.create({
+        message: this.translateService.instant('HABITS.TOGGLE_ERROR'),
+        duration: 2000,
+        position: 'top',
+        color: 'danger'
+      });
+      await toast.present();
     }
-
-    // Якщо звичка ще не відмічена або відмічена як 'partial'/'not_completed',
-    // дозволяємо змінити її статус
-    await this.habitsService.toggleHabit(habit.id, dateStr, status);
   }
 
   getHabitStatus(habit: Habit, date: Date): 'completed' | 'partial' | 'not_completed' {
@@ -298,7 +320,7 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
 
   openEditHabitModal(habit: Habit) {
     if (!habit) return;
-    
+
     this.editingHabit = {
       ...this.editingHabit,
       id: habit.id,

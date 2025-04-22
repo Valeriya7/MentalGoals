@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { Habit } from '../interfaces/habit.interface';
 import { Preferences } from '@capacitor/preferences';
 
@@ -101,78 +101,55 @@ export class HabitsService {
     }
   }
 
-  private updateStreak(habitId: string) {
-    const habits = this.habits.value;
-    const habitIndex = habits.findIndex(h => h.id === habitId);
+  async updateStreak(habitId: string): Promise<boolean> {
+    const habits = await firstValueFrom(this.getHabits());
+    const habit = habits.find((h: Habit) => h.id === habitId);
+    if (!habit) return false;
 
-    if (habitIndex !== -1) {
-      const habit = habits[habitIndex];
-      const today = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    const completionStatus = habit.completionStatus[today];
 
-      // Перевіряємо частоту звички
+    if (completionStatus === 'completed') {
       if (habit.frequency === 'daily') {
-        if (habit.completionStatus[today] === 'completed') {
-          if (habit.completionStatus[yesterday] === 'completed') {
-            habit.streak.current++;
-          } else {
-            // Перевіряємо, чи не було пропущених днів
-            const lastCompletedDate = this.getLastCompletedDate(habit);
-            if (lastCompletedDate && this.getDaysBetween(lastCompletedDate, today) <= 1) {
-              habit.streak.current++;
-            } else {
-              habit.streak.current = 1;
-            }
+        // Для щоденних звичок
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        if (habit.completionStatus[yesterdayStr] === 'completed') {
+          habit.streak.current++;
+          if (habit.streak.current > habit.streak.best) {
+            habit.streak.best = habit.streak.current;
           }
-        } else if (habit.completionStatus[today] === 'not_completed') {
-          habit.streak.current = 0;
+        } else {
+          habit.streak.current = 1;
         }
       } else if (habit.frequency === 'weekly') {
-        const weekStart = new Date(today);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-        const weekStartStr = weekStart.toISOString().split('T')[0];
+        // Для тижневих звичок
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        const lastWeekStr = lastWeek.toISOString().split('T')[0];
         
-        if (habit.completionStatus[today] === 'completed') {
-          const lastWeekStart = new Date(weekStart);
-          lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-          const lastWeekStartStr = lastWeekStart.toISOString().split('T')[0];
-          
-          if (habit.completionStatus[lastWeekStartStr] === 'completed') {
-            habit.streak.current++;
-          } else {
-            habit.streak.current = 1;
+        if (habit.completionStatus[lastWeekStr] === 'completed') {
+          habit.streak.current++;
+          if (habit.streak.current > habit.streak.best) {
+            habit.streak.best = habit.streak.current;
           }
-        } else if (habit.completionStatus[today] === 'not_completed') {
-          habit.streak.current = 0;
-        }
-      } else if (habit.frequency === 'monthly') {
-        const monthStart = new Date(today);
-        monthStart.setDate(1);
-        const monthStartStr = monthStart.toISOString().split('T')[0];
-        
-        if (habit.completionStatus[today] === 'completed') {
-          const lastMonthStart = new Date(monthStart);
-          lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-          const lastMonthStartStr = lastMonthStart.toISOString().split('T')[0];
-          
-          if (habit.completionStatus[lastMonthStartStr] === 'completed') {
-            habit.streak.current++;
-          } else {
-            habit.streak.current = 1;
-          }
-        } else if (habit.completionStatus[today] === 'not_completed') {
-          habit.streak.current = 0;
+        } else {
+          habit.streak.current = 1;
         }
       }
-
-      // Оновлюємо найкращий streak
-      if (habit.streak.current > habit.streak.best) {
-        habit.streak.best = habit.streak.current;
-      }
-
-      this.habits.next(habits);
-      this.saveHabits(habits);
     }
+
+    // Перевіряємо, чи досягнуто ціль
+    if (habit.streak.current >= habit.target) {
+      habit.isActive = false;
+      await this.saveHabits(habits);
+      return true;
+    }
+
+    await this.saveHabits(habits);
+    return false;
   }
 
   private getLastCompletedDate(habit: Habit): string | null {

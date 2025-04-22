@@ -151,3 +151,42 @@ ion-fab-button {
   --background: var(--ion-color-primary);
   --background-activated: var(--ion-color-primary-shade);
 }
+
+.target-reached {
+  animation: targetReached 2s ease-in-out;
+}
+
+@keyframes targetReached {
+  0% {
+    transform: scale(1);
+    background-color: var(--ion-color-light);
+  }
+  25% {
+    transform: scale(1.05);
+    background-color: var(--ion-color-success-tint);
+  }
+  50% {
+    transform: scale(1);
+    background-color: var(--ion-color-success);
+  }
+  75% {
+    transform: scale(0.95);
+    background-color: var(--ion-color-success-tint);
+  }
+  100% {
+    transform: scale(1);
+    background-color: var(--ion-color-light);
+  }
+}
+
+.target-reached-toast {
+  --background: var(--ion-color-success);
+  --color: var(--ion-color-light);
+  --border-radius: 8px;
+  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  
+  &::part(icon) {
+    font-size: 24px;
+    margin-right: 8px;
+  }
+}

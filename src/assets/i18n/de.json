@@ -213,7 +213,13 @@
       "SOCIAL": "Soziales Leben",
       "FINANCE": "Finanzen",
       "OTHER": "Sonstiges"
-    }
+    },
+    "UPDATED_SUCCESS": "Gewohnheit erfolgreich aktualisiert",
+    "TARGET_REACHED": "Herzlichen Glückwunsch! Sie haben das Ziel der Gewohnheit \"{{name}}\" erreicht! 🎉",
+    "TOGGLE_ERROR": "Fehler beim Aktualisieren des Gewohnheitsstatus",
+    "DEACTIVATE_CONFIRMATION": "Gewohnheit deaktivieren",
+    "DEACTIVATE_MESSAGE": "Sind Sie sicher, dass Sie diese Gewohnheit deaktivieren möchten? Sie können sie später wieder aktivieren.",
+    "DEACTIVATE": "Deaktivieren"
   },
   "PROFILE": {
     "TITLE": "Profil",
