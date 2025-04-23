@@ -7,6 +7,7 @@ import { appConfig } from '../config/app.config';
 import { Capacitor } from '@capacitor/core';
 import { StorageService } from './storage.service';
 import { User } from '../models/user.model';
+import { FirebaseService } from './firebase.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,11 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private router: Router, private storageService: StorageService) {
+  constructor(
+    private router: Router,
+    private storageService: StorageService,
+    private firebaseService: FirebaseService
+  ) {
     this.loadStoredUser();
     this.initializeGoogleAuth();
   }
@@ -55,11 +60,15 @@ export class AuthService {
     try {
       const { value } = await Preferences.get({ key: 'userData' });
       if (value) {
-        return JSON.parse(value);
+        const userData = JSON.parse(value);
+        this.currentUserSubject.next(userData);
+        return userData;
       }
+      this.currentUserSubject.next(null);
       return null;
     } catch (error) {
       console.error('Error getting current user:', error);
+      this.currentUserSubject.next(null);
       return null;
     }
   }
@@ -75,6 +84,30 @@ export class AuthService {
         idToken: user.authentication.idToken
       };
 
+      console.log('User data to be saved:', userData);
+
+      // Перевіряємо і створюємо користувача в Firebase Authentication
+      try {
+        // Використовуємо idToken як пароль для Firebase Authentication
+        const password = user.idToken;
+        
+        // Спочатку пробуємо увійти
+        try {
+          const firebaseUser = await this.firebaseService.login(user.email, password);
+          console.log('Firebase user logged in:', firebaseUser);
+        } catch (loginError: any) {
+          // Якщо не вдалося увійти, створюємо нового користувача
+          if (loginError.code === 'auth/user-not-found') {
+            const firebaseUser = await this.firebaseService.register(user.email, password);
+            console.log('Firebase user created:', firebaseUser);
+          } else {
+            console.log('Firebase login error:', loginError);
+          }
+        }
+      } catch (error) {
+        console.log('Firebase authentication error:', error);
+      }
+
       // Зберігаємо дані користувача
       await Preferences.set({
         key: 'userData',
@@ -87,6 +120,15 @@ export class AuthService {
       // Оновлюємо стан користувача
       this.currentUserSubject.next(userData);
 
+      // Зберігаємо дані в Firebase
+      try {
+        await this.storageService.set('users', userData);
+        console.log('User data saved to Firebase:', userData);
+        await this.router.navigate(['/tabs/home']);
+      } catch (error) {
+        console.error('Error saving user data to Firebase:', error);
+      }
+
       return userData;
     } catch (error) {
       console.error('Error handling successful login:', error);
@@ -98,6 +140,7 @@ export class AuthService {
     try {
       // Очищаємо дані користувача
       await Preferences.remove({ key: 'userData' });
+      await Preferences.remove({ key: 'isFirstLogin' });
       
       // Очищаємо токен в конфігурації
       appConfig.ID_TOKEN = null;
@@ -114,6 +157,7 @@ export class AuthService {
       console.error('Error signing out:', error);
       // Навіть якщо виникла помилка, все одно очищаємо дані
       await Preferences.remove({ key: 'userData' });
+      await Preferences.remove({ key: 'isFirstLogin' });
       appConfig.ID_TOKEN = null;
       this.currentUserSubject.next(null);
       await this.router.navigate(['/auth']);

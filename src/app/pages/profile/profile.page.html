@@ -39,8 +39,8 @@
         <!-- Вибір мови -->
         <ion-item>
           <ion-icon slot="start" name="language-outline"></ion-icon>
-          <ion-label>{{ 'PROFILE.LANGUAGE' | translate }}</ion-label>
           <ion-select
+            label="{{ 'PROFILE.LANGUAGE' | translate }}"
             [(ngModel)]="currentLanguage"
             (ionChange)="changeLanguage($event)"
             interface="action-sheet"

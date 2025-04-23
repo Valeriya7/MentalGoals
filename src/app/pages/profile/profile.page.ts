@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { IonicModule, NavController } from '@ionic/angular';
+import { Router, RouterModule } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import { HealthApiService } from '../../services/health-api.service';
 import { HealthData } from '../../interfaces/health-data.interface';
@@ -21,11 +21,12 @@ import { PointsService } from '../../services/points.service';
   styleUrls: ['./profile.page.scss'],
   standalone: true,
   imports: [
-    IonicModule, 
-    CommonModule, 
-    FormsModule, 
-    HealthApiModule, 
-    TranslateModule
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    HealthApiModule,
+    TranslateModule,
+    RouterModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -80,7 +81,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     await this.loadLanguageSettings();
     this.checkStravaConnection();
     this.userPoints = await this.pointsService.getPoints();
-    
+
     this.pointsService.points$.subscribe(points => {
       this.userPoints = points;
     });
@@ -150,14 +151,20 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async editProfile() {
-    this.router.navigate(['/edit-profile']);
+    try {
+      console.log('Navigating to edit profile...');
+      await this.router.navigateByUrl('/tabs/edit-profile');
+    } catch (error) {
+      console.error('Error navigating to edit profile:', error);
+      await this.presentToast('Помилка навігації до сторінки редагування профілю');
+    }
   }
 
   async logout() {
     try {
       await this.healthApiService.disconnectDevice();
       await this.authService.signOut();
-      await this.router.navigate(['/auth'], { replaceUrl: true });
+      await this.router.navigateByUrl('/auth');
     } catch (error) {
       console.error('Error during logout:', error);
     }

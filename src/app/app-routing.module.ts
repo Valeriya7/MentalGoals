@@ -9,12 +9,17 @@ import { StravaCallbackPage } from './pages/strava-callback/strava-callback.page
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'questions',
     pathMatch: 'full'
   },
   {
+    path: 'questions',
+    loadComponent: () => import('./pages/questions/questions.page').then(m => m.QuestionsPage)
+  },
+  {
     path: 'home',
-    loadComponent: () => import('./pages/home/home.page').then(m => m.HomePage)
+    loadComponent: () => import('./pages/home/home.page').then(m => m.HomePage),
+    canActivate: [AuthGuard]
   },
   {
     path: 'auth',
@@ -22,19 +27,17 @@ const routes: Routes = [
   },
   {
     path: 'profile',
-    loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage)
+    loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage),
+    canActivate: [AuthGuard]
   },
   {
     path: 'emotional-calendar',
-    loadComponent: () => import('./pages/emotional-calendar/emotional-calendar.page').then(m => m.EmotionalCalendarPage)
+    loadComponent: () => import('./pages/emotional-calendar/emotional-calendar.page').then(m => m.EmotionalCalendarPage),
+    canActivate: [AuthGuard]
   },
   {
     path: 'strava-callback',
     loadComponent: () => import('./pages/strava-callback/strava-callback.page').then(m => m.StravaCallbackPage)
-  },
-  {
-    path: 'questions',
-    loadComponent: () => import('./pages/questions/questions.page').then(m => m.QuestionsPage)
   },
   {
     path: 'tabs',

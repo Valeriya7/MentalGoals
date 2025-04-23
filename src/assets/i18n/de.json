@@ -256,7 +256,13 @@
     "REMINDERS": "Erinnerungen",
     "ACHIEVEMENTS": "Erfolge",
     "LOGOUT": "Abmelden",
-    "POINTS": "Punkte"
+    "POINTS": "Punkte",
+    "NAME_REQUIRED": "Bitte geben Sie Ihren Namen ein",
+    "INVALID_EMAIL": "Ungültiges E-Mail-Format",
+    "NO_CHANGES": "Keine Änderungen zum Speichern",
+    "SAVE_SUCCESS": "Profil erfolgreich gespeichert",
+    "SAVE_ERROR": "Fehler beim Speichern des Profils",
+    "LOAD_ERROR": "Fehler beim Laden des Profils"
   },
   "TASKS": {
     "TITLE": "Aufgaben",

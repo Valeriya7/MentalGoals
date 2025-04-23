@@ -281,7 +281,13 @@
     "TRAINING_DATA": "Training Data",
     "TOTAL_ACTIVITIES": "Total Activities",
     "TOTAL_DISTANCE": "Total Distance",
-    "TOTAL_TIME": "Total Time"
+    "TOTAL_TIME": "Total Time",
+    "NAME_REQUIRED": "Please enter your name",
+    "INVALID_EMAIL": "Invalid email format",
+    "NO_CHANGES": "No changes to save",
+    "SAVE_SUCCESS": "Profile saved successfully",
+    "SAVE_ERROR": "Error saving profile",
+    "LOAD_ERROR": "Error loading profile"
   },
   "STRAVA": {
     "CONNECTING": "Connecting to Strava...",

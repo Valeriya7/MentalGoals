@@ -1,27 +1,19 @@
-import { NgModule, APP_INITIALIZER } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouteReuseStrategy } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
-
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { IonicStorageModule } from '@ionic/storage-angular';
-import { Drivers } from '@ionic/storage';
-
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { TranslateService } from './services/translate.service';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
-import { StorageService } from './services/storage.service';
-import { ToastService } from './services/toast.service';
+import { HttpClientModule } from '@angular/common/http';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { HttpClient } from '@angular/common/http';
+import { FirebaseService } from './services/firebase.service';
+import { DataService } from "./services/data.service";
 
-export function initializeStorage(storageService: StorageService) {
-  return () => storageService.init();
-}
-
-export function createTranslateLoader(http: HttpClient) {
+export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
 
@@ -29,33 +21,25 @@ export function createTranslateLoader(http: HttpClient) {
   declarations: [AppComponent],
   imports: [
     BrowserModule,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     IonicModule.forRoot(),
     AppRoutingModule,
-    IonicStorageModule.forRoot({
-      driverOrder: [Drivers.IndexedDB, Drivers.LocalStorage]
-    }),
     HttpClientModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
-        useFactory: createTranslateLoader,
+        useFactory: HttpLoaderFactory,
         deps: [HttpClient]
       }
     })
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    TranslateService,
-    GoogleAuth,
-    StorageService,
-    ToastService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeStorage,
-      multi: true,
-      deps: [StorageService]
-    }
+    FirebaseService,
+    DataService
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {} 
+export class AppModule {}

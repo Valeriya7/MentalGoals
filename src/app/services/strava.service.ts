@@ -151,8 +151,16 @@ export class StravaService {
     };
 
     try {
+      // Зберігаємо в localStorage
       localStorage.setItem(this.STRAVA_TOKEN_KEY, JSON.stringify(tokenInfo));
       console.log('✅ Strava token saved successfully in localStorage');
+      
+      // Зберігаємо в Preferences
+      await Preferences.set({
+        key: this.STRAVA_TOKEN_KEY,
+        value: JSON.stringify(tokenInfo)
+      });
+      console.log('✅ Strava token saved successfully in Preferences');
       
       // Verify token was saved
       const savedToken = localStorage.getItem(this.STRAVA_TOKEN_KEY);
@@ -161,16 +169,28 @@ export class StravaService {
         length: savedToken?.length
       });
     } catch (error) {
-      console.error('❌ Error saving token to localStorage:', error);
+      console.error('❌ Error saving token:', error);
       throw error;
     }
   }
 
-  private getToken(): StravaToken | null {
+  private async getToken(): Promise<StravaToken | null> {
     try {
-      const tokenStr = localStorage.getItem(this.STRAVA_TOKEN_KEY);
+      // Спочатку перевіряємо localStorage
+      let tokenStr = localStorage.getItem(this.STRAVA_TOKEN_KEY);
+      
+      // Якщо в localStorage немає, перевіряємо Preferences
       if (!tokenStr) {
-        console.error('No token found in localStorage');
+        const { value } = await Preferences.get({ key: this.STRAVA_TOKEN_KEY });
+        if (value) {
+          tokenStr = value;
+          // Синхронізуємо з localStorage
+          localStorage.setItem(this.STRAVA_TOKEN_KEY, value);
+        }
+      }
+
+      if (!tokenStr) {
+        console.error('No token found');
         return null;
       }
 
@@ -201,7 +221,7 @@ export class StravaService {
   }
 
   async isConnected(): Promise<boolean> {
-    const token = this.getToken();
+    const token = await this.getToken();
     const isConnected = !!token;
     console.log('Strava connection status:', isConnected);
     return isConnected;
@@ -236,7 +256,7 @@ export class StravaService {
   }
 
   private async getValidToken(): Promise<StravaToken | null> {
-    const token = this.getToken();
+    const token = await this.getToken();
     if (!token) {
       console.error('No token found');
       return null;

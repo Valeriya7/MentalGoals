@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule } from '@ionic/angular'; // Додаємо модулі Ionic
+import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-//import { QuestionService } from '../../services/question.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { DataService } from '../../services/data.service';
+import { AuthGuard } from '../../guards/auth.guard';
 
 @Component({
   selector: 'app-questions',
-  standalone: true, // Це standalone компонент
-  imports: [CommonModule, IonicModule, FormsModule], // Додаємо модулі
+  standalone: true,
+  imports: [CommonModule, IonicModule, FormsModule, RouterModule],
+  providers: [DataService, AuthGuard],
   templateUrl: './questions.page.html',
   styleUrls: ['./questions.page.scss'],
 })
@@ -17,37 +19,35 @@ export class QuestionsPage implements OnInit {
   currentIndex: number = 0;
   userAnswers: any = {};
   currentSlideIndex = 0;
-
   userAnswers2: { [key: number]: string } = {};
-  //userAnswers: { [key: number]: string } = {};
 
   constructor(
-    //private questionService: QuestionService,
-     private router: Router) {}
+    private router: Router,
+    private dataService: DataService
+  ) {}
 
   ngOnInit() {
-    this.loadQuestions(); // Load questions from the JSON file
+    this.loadQuestions();
   }
+
   async loadQuestions() {
     try {
-      const userLanguage = navigator.language; // Get user language ("en", "uk", "de", etc.)
-      let langFile = 'en.json'; // Default to English
+      const userLanguage = navigator.language;
+      let langFile = 'en.json';
 
       if (userLanguage.startsWith('uk')) {
-        langFile = 'uk.json'; // Ukrainian
+        langFile = 'uk.json';
       } else if (userLanguage.startsWith('de')) {
-        langFile = 'de.json'; // German
+        langFile = 'de.json';
       }
-      console.log('langFile: ', langFile);
+      console.log('Loading questions from:', langFile);
 
-      // Fetch the appropriate JSON file
       const response = await fetch(`assets/json/${langFile}`);
       const data = await response.json();
       this.questions = data.questions;
-      console.log('Questions:', this.questions);
+      console.log('Questions loaded:', this.questions);
     } catch (error) {
       console.error('Error loading questions:', error);
-      // Fallback to English if no suitable file is found
       try {
         const response = await fetch('assets/json/en.json');
         const data = await response.json();
@@ -58,51 +58,61 @@ export class QuestionsPage implements OnInit {
       }
     }
   }
-  saveAnswers() {
-    console.log('Selected answers:', this.userAnswers);
 
-    return new Promise((resolve, reject) => {
-      try {
-        localStorage.setItem('quizAnswers', JSON.stringify(this.userAnswers));
-        localStorage.setItem('quizAnswers2', JSON.stringify(this.userAnswers2));
-        resolve('Answers successfully saved');  // Success response
-      } catch (error) {
-        reject('Error saving to localStorage: ' + error);  // Error response
-      }
-    })
-      .then((message) => {
-        console.log(message);  // 'Answers successfully saved'
-      })
-      .catch((error) => {
-        console.error(error);  // Handle error during save
+  async saveAnswers() {
+    try {
+      await this.dataService.saveQuestionAnswers({
+        answers: this.userAnswers,
+        answers2: this.userAnswers2,
+        timestamp: new Date()
       });
-  }
-  isAnswerSelected(): boolean {
-    if (!this.questions.length) return false; // If questions are not loaded
 
+      localStorage.setItem('quizAnswers', JSON.stringify(this.userAnswers));
+      localStorage.setItem('quizAnswers2', JSON.stringify(this.userAnswers2));
+      
+      console.log('Answers saved successfully');
+      return 'Answers successfully saved';
+    } catch (error) {
+      console.error('Error saving answers:', error);
+      throw new Error('Error saving to Firebase: ' + error);
+    }
+  }
+
+  isAnswerSelected(): boolean {
+    if (!this.questions.length) return false;
     const currentQuestionId = this.questions[this.currentSlideIndex]?.id;
     return currentQuestionId !== undefined && currentQuestionId in this.userAnswers;
   }
-  // Update answers when a selection changes
-  onAnswerChange(id: any) {
 
+  onAnswerChange(id: any) {
     this.saveAnswers();
-    console.log('Selected answers: id', id);
+    console.log('Selected answer for question:', id);
   }
-  // Save an individual answer
+
   saveAnswer(answer: string, questionId: number) {
     this.userAnswers[questionId] = answer;
-    console.log('saveAnswer: ', this.userAnswers);
+    console.log('Answer saved:', { questionId, answer });
   }
+
   nextQuestion() {
     if (this.currentIndex < this.questions.length - 1) {
       this.currentSlideIndex = this.currentIndex;
       this.currentIndex++;
+      console.log('Moving to next question:', this.currentIndex);
     } else {
+      console.log('All questions answered, navigating to auth');
       this.router.navigate(['/auth']);
     }
   }
-  submitAnswers(){
-    console.log('Selected answers:', this.userAnswers2);
+
+  async submitAnswers() {
+    try {
+      console.log('Submitting answers...');
+      await this.saveAnswers();
+      console.log('Answers submitted, navigating to home');
+      await this.router.navigate(['/tabs/home']);
+    } catch (error) {
+      console.error('Error submitting answers:', error);
+    }
   }
 }
