@@ -12,6 +12,10 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { HttpClient } from '@angular/common/http';
 import { FirebaseService } from './services/firebase.service';
 import { DataService } from "./services/data.service";
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { getAuth, provideAuth } from '@angular/fire/auth';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
+import { environment } from '../environments/environment';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -27,6 +31,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     IonicModule.forRoot(),
     AppRoutingModule,
     HttpClientModule,
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
+    provideFirestore(() => getFirestore()),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

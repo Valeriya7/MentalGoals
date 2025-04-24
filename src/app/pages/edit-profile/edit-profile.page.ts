@@ -8,6 +8,7 @@ import { saveOutline } from 'ionicons/icons';
 import { Preferences } from '@capacitor/preferences';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DataService } from "../../services/data.service";
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-edit-profile',
@@ -30,7 +31,8 @@ export class EditProfilePage implements OnInit {
     private router: Router,
     private dataService: DataService,
     private toastController: ToastController,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private authService: AuthService
   ) {
     addIcons({
       'save-outline': saveOutline
@@ -40,11 +42,19 @@ export class EditProfilePage implements OnInit {
   async ngOnInit() {
     console.log('ngOnInit!!!');
     try {
-      await this.loadUserData();
+      const currentUser = await this.authService.getCurrentUser();
+      if (!currentUser) {
+        console.log('No authenticated user, redirecting to auth');
+        await this.router.navigate(['/auth']);
+        return;
+      }
+      
+    await this.loadUserData();
       this.originalUserData = { ...this.userData };
     } catch (error) {
       console.error('Error initializing edit profile page:', error);
       await this.showToast('PROFILE.LOAD_ERROR', 'danger');
+      await this.router.navigate(['/auth']);
     }
   }
 
@@ -56,15 +66,15 @@ export class EditProfilePage implements OnInit {
         this.userData = { ...this.userData, ...firebaseData };
       } else {
         // Якщо в Firebase немає даних, завантажуємо з Preferences
-        const { value: name } = await Preferences.get({ key: 'name' });
-        const { value: email } = await Preferences.get({ key: 'email' });
-        const { value: phone } = await Preferences.get({ key: 'phone' });
-        const { value: bio } = await Preferences.get({ key: 'bio' });
-
-        if (name) this.userData.name = name;
-        if (email) this.userData.email = email;
-        if (phone) this.userData.phone = phone;
-        if (bio) this.userData.bio = bio;
+      const { value: name } = await Preferences.get({ key: 'name' });
+      const { value: email } = await Preferences.get({ key: 'email' });
+      const { value: phone } = await Preferences.get({ key: 'phone' });
+      const { value: bio } = await Preferences.get({ key: 'bio' });
+      
+      if (name) this.userData.name = name;
+      if (email) this.userData.email = email;
+      if (phone) this.userData.phone = phone;
+      if (bio) this.userData.bio = bio;
       }
       this.originalUserData = { ...this.userData };
     } catch (error) {
@@ -112,7 +122,7 @@ export class EditProfilePage implements OnInit {
   async saveProfile() {
     if (!this.hasChanges()) {
       await this.showToast('PROFILE.NO_CHANGES', 'warning');
-      try {
+    try {
         await this.router.navigate(['/tabs/profile']);
       } catch (error) {
         console.error('Error navigating back to profile:', error);
@@ -152,4 +162,4 @@ export class EditProfilePage implements OnInit {
       this.isSaving = false;
     }
   }
-}
+} 

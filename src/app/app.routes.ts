@@ -46,6 +46,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage)
       },
       {
+        path: 'edit-profile',
+        loadComponent: () => import('./pages/edit-profile/edit-profile.page').then(m => m.EditProfilePage)
+      },
+      {
         path: 'emotional-calendar',
         loadComponent: () => import('./pages/emotional-calendar/emotional-calendar.page').then(m => m.EmotionalCalendarPage)
       },

@@ -21,10 +21,10 @@ import { PointsService } from '../../services/points.service';
   styleUrls: ['./profile.page.scss'],
   standalone: true,
   imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    HealthApiModule,
+    IonicModule, 
+    CommonModule, 
+    FormsModule, 
+    HealthApiModule, 
     TranslateModule,
     RouterModule
   ],
@@ -152,8 +152,14 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   async editProfile() {
     try {
-      console.log('Navigating to edit profile...');
-      await this.router.navigateByUrl('/tabs/edit-profile');
+      const user = await this.authService.getCurrentUser();
+      if (user) {
+        console.log('Navigating to edit profile...');
+        await this.router.navigate(['/tabs/edit-profile']);
+      } else {
+        console.log('User not authenticated, redirecting to auth...');
+        await this.router.navigate(['/auth']);
+      }
     } catch (error) {
       console.error('Error navigating to edit profile:', error);
       await this.presentToast('Помилка навігації до сторінки редагування профілю');

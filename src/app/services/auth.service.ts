@@ -8,6 +8,11 @@ import { Capacitor } from '@capacitor/core';
 import { StorageService } from './storage.service';
 import { User } from '../models/user.model';
 import { FirebaseService } from './firebase.service';
+import { ChallengeService } from '../services/challenge.service';
+import { ToastController } from '@ionic/angular';
+import { ModalService } from '../services/modal.service';
+import { Platform } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +24,12 @@ export class AuthService {
   constructor(
     private router: Router,
     private storageService: StorageService,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private challengeService: ChallengeService,
+    private toastController: ToastController,
+    private modalService: ModalService,
+    private platform: Platform,
+    private translate: TranslateService
   ) {
     this.loadStoredUser();
     this.initializeGoogleAuth();
@@ -27,18 +37,14 @@ export class AuthService {
 
   private async initializeGoogleAuth() {
     try {
-      let clientId = appConfig.GOOGLE_CLIENT_ID;
-      if (Capacitor.getPlatform() === 'ios') {
-        clientId = '629190984804-oqit9rd3t8rb7jucei1lq8g236c1bpjg.apps.googleusercontent.com';
-      } else if (Capacitor.getPlatform() === 'android') {
-        clientId = '629190984804-hihuo9k8tj6bn2f3pm3b3omgfiqdualp.apps.googleusercontent.com';
+      if (Capacitor.isNativePlatform()) {
+        await GoogleAuth.initialize({
+          clientId: appConfig.GOOGLE_CLIENT_ID,
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true,
+          forceCodeForRefreshToken: true
+        });
       }
-
-      await GoogleAuth.initialize({
-        clientId: clientId,
-        scopes: ['profile', 'email'],
-        forceCodeForRefreshToken: true
-      });
     } catch (error) {
       console.error('Error initializing Google Auth:', error);
     }
@@ -61,6 +67,22 @@ export class AuthService {
       const { value } = await Preferences.get({ key: 'userData' });
       if (value) {
         const userData = JSON.parse(value);
+        
+        // Перевіряємо наявність та валідність токена
+        if (!userData.idToken) {
+          console.log('No valid token found');
+          this.currentUserSubject.next(null);
+          return null;
+        }
+
+        // Перевіряємо, чи не минув час дії токена
+        const tokenExpiration = userData.tokenExpiration;
+        if (tokenExpiration && new Date(tokenExpiration) < new Date()) {
+          console.log('Token has expired');
+          this.currentUserSubject.next(null);
+          return null;
+        }
+
         this.currentUserSubject.next(userData);
         return userData;
       }
@@ -81,31 +103,32 @@ export class AuthService {
         name: user.name,
         photoURL: user.imageUrl,
         accessToken: user.authentication.accessToken,
-        idToken: user.authentication.idToken
+        idToken: user.authentication.idToken,
+        tokenExpiration: new Date(Date.now() + 3600 * 1000).toISOString() // Токен діє 1 годину
       };
 
       console.log('User data to be saved:', userData);
 
-      // Перевіряємо і створюємо користувача в Firebase Authentication
+      // Автентифікація через Google в Firebase
       try {
-        // Використовуємо idToken як пароль для Firebase Authentication
-        const password = user.idToken;
-        
-        // Спочатку пробуємо увійти
-        try {
-          const firebaseUser = await this.firebaseService.login(user.email, password);
-          console.log('Firebase user logged in:', firebaseUser);
-        } catch (loginError: any) {
-          // Якщо не вдалося увійти, створюємо нового користувача
-          if (loginError.code === 'auth/user-not-found') {
-            const firebaseUser = await this.firebaseService.register(user.email, password);
-            console.log('Firebase user created:', firebaseUser);
-          } else {
-            console.log('Firebase login error:', loginError);
-          }
-        }
+        const firebaseUser = await this.firebaseService.signInWithGoogle();
+        console.log('Firebase user authenticated:', firebaseUser);
       } catch (error) {
         console.log('Firebase authentication error:', error);
+      }
+
+      // Перевіряємо, чи це перший вхід користувача
+      const { value: isFirstLogin } = await Preferences.get({ key: 'isFirstLogin' });
+      if (!isFirstLogin) {
+        // Якщо це перший вхід, встановлюємо прапорець
+        await Preferences.set({ key: 'isFirstLogin', value: 'true' });
+        
+        // Очищаємо всі активні челенджі
+        try {
+          await this.challengeService.deactivateAllChallenges();
+        } catch (error) {
+          console.error('Error deactivating challenges:', error);
+        }
       }
 
       // Зберігаємо дані користувача
@@ -124,7 +147,6 @@ export class AuthService {
       try {
         await this.storageService.set('users', userData);
         console.log('User data saved to Firebase:', userData);
-        await this.router.navigate(['/tabs/home']);
       } catch (error) {
         console.error('Error saving user data to Firebase:', error);
       }
@@ -149,7 +171,9 @@ export class AuthService {
       this.currentUserSubject.next(null);
 
       // Виходимо з Google Auth
-      await GoogleAuth.signOut();
+      if (Capacitor.isNativePlatform()) {
+        await GoogleAuth.signOut();
+      }
 
       // Перенаправляємо на сторінку автентифікації
       await this.router.navigate(['/auth']);
@@ -183,6 +207,22 @@ export class AuthService {
       await this.storageService.set('userPoints', newPoints);
     } catch (error) {
       console.error('Error updating user points:', error);
+    }
+  }
+
+  async signInWithGoogle() {
+    try {
+      const googleUser = await GoogleAuth.signIn();
+      if (googleUser) {
+        const credential = await this.firebaseService.getGoogleCredential(googleUser.authentication.idToken);
+        const userCredential = await this.firebaseService.signInWithCredential(credential);
+        await this.handleSuccessfulLogin(userCredential.user);
+        return userCredential.user;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+      throw error;
     }
   }
 }

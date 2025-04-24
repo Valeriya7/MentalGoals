@@ -880,7 +880,7 @@ export class ChallengeService {
             progress: 0
           }
         ],
-        status: 'active',
+        status: 'available',
         startDate: new Date().toISOString(),
         endDate: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000).toISOString(),
         progress: {},

@@ -101,6 +101,11 @@ export class HomePage implements OnInit, OnDestroy {
   selectedPeriod: 'week' | 'month' | 'year' = 'week';
   chart: Chart | null = null;
 
+  private readonly WISH_OPENED_KEY = 'wish_opened_date';
+  private readonly NOTIFICATION_CHECK_KEY = 'notification_check_date';
+  private readonly NOTIFICATION_STATE_KEY = 'notification_state';
+  private readonly EMOTION_ADDED_KEY = 'emotion_added_date';
+
   private notificationState = {
     notifications: false,
     emotionalState: false,
@@ -108,7 +113,6 @@ export class HomePage implements OnInit, OnDestroy {
   };
 
   public hasWishBeenOpened = false;
-  private readonly WISH_OPENED_KEY = 'wish_opened_date';
 
   completedHabits: Set<string> = new Set();
 
@@ -164,10 +168,10 @@ export class HomePage implements OnInit, OnDestroy {
     console.log('Initializing home page...');
 
     // Перевіряємо, чи було відкрито побажання сьогодні
-    const { value } = await Preferences.get({ key: this.WISH_OPENED_KEY });
-    if (value) {
+    const { value: wishValue } = await Preferences.get({ key: this.WISH_OPENED_KEY });
+    if (wishValue) {
       try {
-        const lastOpenedDate = new Date(value);
+        const lastOpenedDate = new Date(wishValue);
         const today = new Date();
 
         // Встановлюємо час на початок дня для коректного порівняння
@@ -187,6 +191,9 @@ export class HomePage implements OnInit, OnDestroy {
     } else {
       this.hasWishBeenOpened = false;
     }
+
+    // Перевіряємо стан сповіщень для нового дня
+    await this.checkNotificationStateForNewDay();
 
     // Підписуємось на зміни мови
     this.subscriptions.push(
@@ -819,6 +826,21 @@ export class HomePage implements OnInit, OnDestroy {
 
       if (data) {
         try {
+          // Перевіряємо, чи користувач вже додавав емоцію сьогодні
+          const { value: lastEmotionDate } = await Preferences.get({ key: this.EMOTION_ADDED_KEY });
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          let shouldAwardPoints = false;
+
+          if (lastEmotionDate) {
+            const lastDate = new Date(lastEmotionDate);
+            lastDate.setHours(0, 0, 0, 0);
+            shouldAwardPoints = lastDate.getTime() !== today.getTime();
+          } else {
+            shouldAwardPoints = true;
+          }
+
           // Зберігаємо емоцію
           await this.emotionService.saveEmotion(data);
 
@@ -827,6 +849,23 @@ export class HomePage implements OnInit, OnDestroy {
 
           // Оновлюємо календар через сервіс
           await this.emotionService.refreshCalendar();
+
+          // Якщо це перша емоція за день, нараховуємо бали
+          if (shouldAwardPoints) {
+            await this.pointsService.addPoints(1); // Нараховуємо 1 бал
+            await Preferences.set({
+              key: this.EMOTION_ADDED_KEY,
+              value: today.toISOString()
+            });
+
+            const toast = await this.toastController.create({
+              message: this.translate.instant('POINTS.EARNED', {points: 1}),
+              duration: 4000,
+              position: 'bottom',
+              color: 'success'
+            });
+            await toast.present();
+          }
 
           const toast = await this.toastController.create({
             message: 'Емоцію збережено',
@@ -1195,6 +1234,52 @@ export class HomePage implements OnInit, OnDestroy {
 
   isHabitCompletedToday(taskName: string): boolean {
     return this.completedHabits.has(taskName);
+  }
+
+  private async checkNotificationStateForNewDay() {
+    try {
+      const { value: lastCheckValue } = await Preferences.get({ key: this.NOTIFICATION_CHECK_KEY });
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let shouldResetNotifications = false;
+
+      if (lastCheckValue) {
+        const lastCheckDate = new Date(lastCheckValue);
+        lastCheckDate.setHours(0, 0, 0, 0);
+
+        // Якщо остання перевірка була не сьогодні, скидаємо стан сповіщень
+        if (lastCheckDate.getTime() !== today.getTime()) {
+          shouldResetNotifications = true;
+        }
+      } else {
+        // Якщо немає збереженої дати, вважаємо це новим днем
+        shouldResetNotifications = true;
+      }
+
+      if (shouldResetNotifications) {
+        // Оновлюємо стан сповіщень для нового дня
+        this.notificationState = {
+          notifications: true,
+          emotionalState: true,
+          dailyWish: true
+        };
+        await this.saveNotificationState();
+        // Зберігаємо поточну дату як дату останньої перевірки
+        await Preferences.set({
+          key: this.NOTIFICATION_CHECK_KEY,
+          value: today.toISOString()
+        });
+      } else {
+        // Завантажуємо збережений стан сповіщень
+        const { value: stateValue } = await Preferences.get({ key: this.NOTIFICATION_STATE_KEY });
+        if (stateValue) {
+          this.notificationState = JSON.parse(stateValue);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking notification state for new day:', error);
+    }
   }
 
 }

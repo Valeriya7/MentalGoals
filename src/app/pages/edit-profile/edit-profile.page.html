@@ -15,23 +15,38 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-list>
     <ion-item>
-      <ion-label position="stacked">{{ 'PROFILE.NAME' | translate }}</ion-label>
-      <ion-input [(ngModel)]="userData.name" [placeholder]="'PROFILE.ENTER_NAME' | translate"></ion-input>
+      <ion-input 
+        label="{{ 'PROFILE.NAME' | translate }}"
+        [(ngModel)]="userData.name" 
+        [placeholder]="'PROFILE.ENTER_NAME' | translate">
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">{{ 'PROFILE.EMAIL' | translate }}</ion-label>
-      <ion-input [(ngModel)]="userData.email" type="email" [placeholder]="'PROFILE.ENTER_EMAIL' | translate"></ion-input>
+      <ion-input 
+        label="{{ 'PROFILE.EMAIL' | translate }}"
+        type="email" 
+        [(ngModel)]="userData.email" 
+        [placeholder]="'PROFILE.ENTER_EMAIL' | translate">
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">{{ 'PROFILE.PHONE' | translate }}</ion-label>
-      <ion-input [(ngModel)]="userData.phone" type="tel" [placeholder]="'PROFILE.ENTER_PHONE' | translate"></ion-input>
+      <ion-input 
+        label="{{ 'PROFILE.PHONE' | translate }}"
+        type="tel" 
+        [(ngModel)]="userData.phone" 
+        [placeholder]="'PROFILE.ENTER_PHONE' | translate">
+      </ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-label position="stacked">{{ 'PROFILE.BIO' | translate }}</ion-label>
-      <ion-textarea [(ngModel)]="userData.bio" [placeholder]="'PROFILE.ENTER_BIO' | translate" rows="4"></ion-textarea>
+      <ion-textarea 
+        label="{{ 'PROFILE.BIO' | translate }}"
+        [(ngModel)]="userData.bio" 
+        [placeholder]="'PROFILE.ENTER_BIO' | translate" 
+        rows="4">
+      </ion-textarea>
     </ion-item>
   </ion-list>
 </ion-content> 
