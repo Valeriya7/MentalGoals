@@ -55,6 +55,7 @@ export class AuthPage implements OnInit {
         scopes: ['profile', 'email'],
         forceCodeForRefreshToken: true
       });
+
     } catch (error) {
       console.error('Error initializing Google Auth:', error);
       this.error = 'Помилка ініціалізації Google Auth';

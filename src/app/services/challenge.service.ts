@@ -45,8 +45,8 @@ export class ChallengeService {
 
   private isSecureContext(): boolean {
     try {
-      return window.isSecureContext && 
-             window.location.protocol === 'https:' || 
+      return window.isSecureContext &&
+             window.location.protocol === 'https:' ||
              window.location.hostname === 'localhost';
     } catch {
       return false;
@@ -212,7 +212,7 @@ export class ChallengeService {
       // Зберігаємо в основне сховище
       try {
         await this.storageService.set(this.STORAGE_KEY, data);
-        console.log('✅ Data saved to Storage');
+        //console.log('✅ Data saved to Storage');
       } catch (error) {
         console.error('❌ Error saving to storage:', error);
         if (!this.preferenceStorage) {
@@ -223,7 +223,7 @@ export class ChallengeService {
       // Зберігаємо в localStorage як резервне сховище
       try {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
-        console.log('✅ Data saved to localStorage');
+        //console.log('✅ Data saved to localStorage');
       } catch (error) {
         console.error('❌ Error saving to localStorage:', error);
       }
@@ -482,11 +482,11 @@ export class ChallengeService {
         const phaseStartDate = new Date(phase.startDate);
         const phaseEndDate = new Date(phase.endDate);
         const phaseDays = Math.ceil((phaseEndDate.getTime() - phaseStartDate.getTime()) / (1000 * 60 * 60 * 24));
-        
+
         if (totalDays + phaseDays >= currentDay) {
           return phase;
         }
-        
+
         totalDays += phaseDays;
       }
 
@@ -524,7 +524,7 @@ export class ChallengeService {
 
     for (const dateKey in progress) {
       const dayProgress = progress[dateKey];
-      
+
       // Перевіряємо основні поля
       if (typeof dayProgress.completedTasks !== 'number' ||
           typeof dayProgress.totalTasks !== 'number' ||
@@ -643,7 +643,7 @@ export class ChallengeService {
       const challenge = await this.getChallenge(challengeId);
       if (!challenge?.progress) return [];
 
-      return Object.values(challenge.progress).sort((a, b) => 
+      return Object.values(challenge.progress).sort((a, b) =>
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     } catch (error) {
@@ -730,7 +730,7 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challenge = challenges.find(c => c.id === challengeId);
-      
+
       if (!challenge) {
         console.error('Challenge not found');
         return false;
@@ -744,7 +744,7 @@ export class ChallengeService {
       challenge.startDate = new Date().toISOString();
       challenge.endDate = new Date(Date.now() + challenge.duration * 24 * 60 * 60 * 1000).toISOString();
       challenge.progress = {};
-      
+
       await this.saveToAllStorages(challenges);
       this.activeChallenge.next(challenge);
 
@@ -786,7 +786,7 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challenge = challenges.find(c => c.id === challengeId);
-      
+
       if (!challenge) {
         console.error('Challenge not found');
         return false;
@@ -794,7 +794,7 @@ export class ChallengeService {
 
       challenge.status = 'failed';
       await this.saveToAllStorages(challenges);
-      
+
       if (this.activeChallenge.value?.id === challengeId) {
         this.activeChallenge.next(null);
       }
@@ -810,7 +810,7 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challenge = challenges.find(c => c.id === challengeId);
-      
+
       if (!challenge) {
         console.error('Challenge not found');
         return false;
@@ -819,7 +819,7 @@ export class ChallengeService {
       challenge.status = 'completed';
       challenge.completedDate = new Date().toISOString();
       await this.saveToAllStorages(challenges);
-      
+
       if (this.activeChallenge.value?.id === challengeId) {
         this.activeChallenge.next(null);
       }
@@ -835,19 +835,19 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challenge = challenges.find(c => c.id === challengeId);
-      
+
       if (!challenge) {
         console.error('Challenge not found');
         return false;
       }
 
       const today = new Date().toISOString().split('T')[0];
-      
+
       // Ініціалізуємо прогрес для сьогоднішнього дня, якщо його ще немає
       if (!challenge.progress) {
         challenge.progress = {};
       }
-      
+
       if (!challenge.progress[today]) {
         challenge.progress[today] = {
           completedTasks: 0,
@@ -873,7 +873,7 @@ export class ChallengeService {
       challenge.progress[today].lastUpdated = new Date().toISOString();
 
       await this.saveToAllStorages(challenges);
-      
+
       if (challenge.status === 'active') {
         this.activeChallenge.next(challenge);
       }
@@ -1306,11 +1306,11 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const activeChallenge = challenges.find(c => c.status === 'active');
-      
+
       if (activeChallenge) {
         // Оновлюємо поточний день
         this.updateCurrentDay(activeChallenge);
-        
+
         // Перевіряємо, чи не завершився челендж
         if (activeChallenge.endDate && new Date(activeChallenge.endDate) < new Date()) {
           activeChallenge.status = 'failed';
@@ -1332,19 +1332,19 @@ export class ChallengeService {
     try {
       const challenges = await this.getChallenges();
       const challenge = challenges.find(c => c.id === challengeId);
-      
+
       if (!challenge) {
         throw new Error('Challenge not found');
       }
 
       challenge.status = status;
-      
+
       if (status === 'completed') {
         challenge.completedDate = new Date().toISOString();
       }
 
       await this.saveToAllStorages(challenges);
-      
+
       if (status === 'active') {
         this.activeChallenge.next(challenge);
       } else if (this.activeChallenge.value?.id === challengeId) {
@@ -1378,7 +1378,7 @@ export class ChallengeService {
         }
       }
 
-      return result.sort((a, b) => 
+      return result.sort((a, b) =>
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     } catch (error) {
@@ -1394,7 +1394,7 @@ export class ChallengeService {
     const currentDate = new Date();
     const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays <= challenge.duration) {
       challenge.currentDay = diffDays;
     }
@@ -1419,7 +1419,7 @@ export class ChallengeService {
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
           const dayProgress = await this.getTodayProgress(challenge.id, d.toISOString().split('T')[0]);
           const hasCompletedTasks = Object.values(dayProgress).some(Boolean);
-          
+
           if (hasCompletedTasks) {
             completedDays++;
           }
@@ -1442,4 +1442,4 @@ export class ChallengeService {
       return { completed: false, progress: 0, points: 0 };
     }
   }
-} 
+}

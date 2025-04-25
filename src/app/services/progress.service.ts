@@ -20,55 +20,43 @@ export class ProgressService {
   }
 
   private async initializeTestData() {
-    const existingData = await this.getAllUserProgress();
-    if (existingData.length === 0) {
+    try {
       const today = new Date();
-      const testData: UserProgress[] = [
-        {
-          steps: 8500,
-          sleepHours: 7,
-          waterAmount: 2,
-          date: new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString() // 6 днів тому
-        },
-        {
-          steps: 6200,
-          sleepHours: 8,
-          waterAmount: 1.5,
-          date: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString() // 5 днів тому
-        },
-        {
-          steps: 4300,
-          sleepHours: 6,
-          waterAmount: 1.8,
-          date: new Date(today.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString() // 4 дні тому
-        },
-        {
-          steps: 7800,
-          sleepHours: 7.5,
-          waterAmount: 2.2,
-          date: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString() // 3 дні тому
-        },
-        {
-          steps: 5600,
-          sleepHours: 8,
-          waterAmount: 1.7,
-          date: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 дні тому
-        },
-        {
-          steps: 4100,
-          sleepHours: 7,
-          waterAmount: 1.9,
-          date: new Date(today.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString() // вчора
-        },
-        {
-          steps: 8500,
-          sleepHours: 8,
-          waterAmount: 2.1,
-          date: today.toISOString() // сьогодні
-        }
-      ];
+      const testData: UserProgress[] = [];
 
+      // Створюємо дані за останні 2 тижні
+      for (let i = 0; i < 14; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+
+        // Базові значення для кожного дня
+        let steps = 8000;
+        let sleepHours = 7.5;
+        let waterAmount = 2.0;
+
+        // Додаємо варіативність для більш реалістичних даних
+        steps += Math.floor(Math.random() * 4000) - 2000; // Від 6000 до 12000 кроків
+        sleepHours += (Math.random() * 2) - 1; // Від 6.5 до 8.5 годин
+        waterAmount += (Math.random() * 1) - 0.5; // Від 1.5 до 2.5 літрів
+
+        // Забезпечуємо мінімальні значення
+        steps = Math.max(3000, steps);
+        sleepHours = Math.max(4, Math.min(10, sleepHours));
+        waterAmount = Math.max(0.5, Math.min(4, waterAmount));
+
+        testData.push({
+          date: date.toISOString(),
+          steps: Math.round(steps),
+          sleepHours: Number(sleepHours.toFixed(1)),
+          waterAmount: Number(waterAmount.toFixed(1))
+        });
+      }
+
+      // Зберігаємо дані
       await this.saveTestData(testData);
+      console.log('Test data initialized successfully');
+    } catch (error) {
+      console.error('Error initializing test data:', error);
     }
   }
 
@@ -116,7 +104,26 @@ export class ProgressService {
       return [];
     }
   }
- /*
+
+  async getStepsHistory(startDate: Date, endDate: Date): Promise<{ date: string; steps: number }[]> {
+    try {
+      const allProgress = await this.getAllUserProgress();
+      return allProgress
+        .filter(progress => {
+          const progressDate = new Date(progress.date);
+          return progressDate >= startDate && progressDate <= endDate;
+        })
+        .map(progress => ({
+          date: new Date(progress.date).toISOString().split('T')[0],
+          steps: progress.steps
+        }));
+    } catch (error) {
+      console.error('Error getting steps history:', error);
+      return [];
+    }
+  }
+
+  /*
   async saveProgress(progress: UserProgress): Promise<void> {
     try {
       const existingData = await this.getAllUserProgress();

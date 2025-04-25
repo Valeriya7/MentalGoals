@@ -30,19 +30,85 @@ export class HabitService {
     return value ? JSON.parse(value) : [];
   }
 
-  async getHabitsProgress(startDate: Date, endDate: Date): Promise<Habit[]> {
+  async getHabitsProgress(startDate: Date, endDate: Date): Promise<{ date: string; completedTasks: number; totalTasks: number; progressPercentage: number }[]> {
+    console.log('=== getHabitsProgress started ===');
+    console.log('Start date:', startDate);
+    console.log('End date:', endDate);
+
     const habits = await this.getHabits();
-    return habits.filter(habit => {
-      if (!habit.progress || !habit.isActive) return false;
-      
-      // Перевіряємо, чи є прогрес у вказаному діапазоні дат
-      const hasProgressInRange = Object.entries(habit.progress).some(([date, value]) => {
-        const progressDate = new Date(date);
-        return progressDate >= startDate && progressDate <= endDate;
+    console.log('All habits:', habits);
+
+    const activeHabits = habits.filter(habit => habit.isActive);
+    console.log('Active habits:', activeHabits);
+
+    if (activeHabits.length === 0) {
+      console.log('No active habits found');
+      return [];
+    }
+
+    const result: { date: string; completedTasks: number; totalTasks: number; progressPercentage: number }[] = [];
+    const currentDate = new Date(startDate);
+
+    // Тестові дані для completionStatus
+    const testCompletionStatus: Record<string, string> = {
+      "2025-04-16": "completed",
+      "2025-04-18": "completed",
+      "2025-04-19": "completed",
+      "2025-04-21": "completed",
+      "2025-04-22": "completed",
+      "2025-04-23": "completed",
+      "2025-04-24": "completed",
+      "2025-04-25": "completed"
+    };
+
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      //console.log('\nProcessing date:', dateStr);
+
+      // Рахуємо кількість виконаних звичок за день
+      const completedTasks = activeHabits.reduce((sum, habit) => {
+        const status = habit.completionStatus[dateStr];
+        //console.log('Habit:', habit.name);
+        //console.log('Status for', dateStr, ':', status);
+        //console.log('Status type:', typeof status);
+
+        // Перевіряємо статус виконання
+        if (typeof status === 'boolean' && status === true) {
+          //console.log('Found completed habit (boolean)');
+          return sum + 1;
+        }
+        if (typeof status === 'string' && status === "completed") {
+          //console.log('Found completed habit (string)');
+          return sum + 1;
+        }
+        return sum;
+      }, 0);
+
+      //console.log('Completed tasks for', dateStr, ':', completedTasks);
+
+      // Рахуємо загальний прогрес для всіх активних звичок
+      const totalProgress = activeHabits.reduce((sum, habit) => {
+        const progress = habit.progress[dateStr] || 0;
+        const target = habit.target || 1;
+        return sum + (progress / target);
+      }, 0);
+
+      // Розраховуємо відсоток прогресу
+      const progressPercentage = activeHabits.length > 0 ? (totalProgress / activeHabits.length) * 100 : 0;
+
+      result.push({
+        date: dateStr,
+        completedTasks,
+        totalTasks: activeHabits.length,
+        progressPercentage
       });
 
-      return hasProgressInRange;
-    });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    console.log('=== getHabitsProgress finished ===');
+    console.log('Final result:', result);
+    return result;
   }
 
   async saveHabits(habits: Habit[]): Promise<void> {
@@ -56,7 +122,7 @@ export class HabitService {
     try {
       const habits = await this.getHabits();
       const habitIndex = habits.findIndex(h => h.id === habitId);
-      
+
       if (habitIndex !== -1) {
         habits[habitIndex].progress[date] = progress;
         await this.saveHabits(habits);
@@ -70,7 +136,7 @@ export class HabitService {
     try {
       const habits = await this.getHabits();
       const habitIndex = habits.findIndex(h => h.id === habitId);
-      
+
       if (habitIndex !== -1) {
         habits[habitIndex].completionStatus[date] = completed;
         await this.saveHabits(habits);
@@ -241,4 +307,4 @@ export class HabitService {
       }
     ];
   }
-} 
+}
