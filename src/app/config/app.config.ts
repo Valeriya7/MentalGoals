@@ -21,7 +21,7 @@ export class AppConfig {
 
   // Інші конфігураційні параметри
   readonly API_URL: string = 'http://localhost:3000';
-  readonly GOOGLE_CLIENT_ID: string = '629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com';
+  readonly GOOGLE_CLIENT_ID: string = '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com'; //'629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com';
   readonly DEFAULT_LANGUAGE: string = 'en';
   readonly DOMAIN: string = 'https://mental-goals.com';
   readonly JWT_PATH: string = '/wp-json/jwt-auth/v1/token';
@@ -41,4 +41,4 @@ export class AppConfig {
   readonly VERSION: string = '0.0.1';
 }
 
-export const appConfig = AppConfig.getInstance(); 
+export const appConfig = AppConfig.getInstance();

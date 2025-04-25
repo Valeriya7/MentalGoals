@@ -8,6 +8,7 @@ import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Preferences } from '@capacitor/preferences';
 import { appConfig } from '../../config/app.config';
 import { Capacitor } from '@capacitor/core';
+import { FirebaseService } from '../../services/firebase.service';
 
 @Component({
   selector: 'app-auth',
@@ -29,7 +30,8 @@ export class AuthPage implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private firebaseService: FirebaseService
   ) {}
 
   ngOnInit() {
@@ -68,63 +70,13 @@ export class AuthPage implements OnInit {
 
       this.user = await GoogleAuth.signIn();
       console.log('User Info:', this.user);
-      console.log('accessToken:', this.user.authentication.accessToken);
-      console.log('idToken:', this.user.authentication.idToken);
-      /*
-      User Info:
-      authentication :{
-           accessToken: 'ya29.a0AXeO80TPZUU3Cv_hcs99F8ApIF6knRGBmHXNMhIMcct…IgaCgYKATUSARASFQHGX2MiSJ6LTl36G_cTBGRxJv6QAQ0175',
-           idToken: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjVkMTJhYjc4MmNiNjA5Nj…wAR1732USNpIbV88-buqYdaU6uF9OCnqmzbgStDfoNgb8HmVw',
-           refreshToken: ''}
-      email : "lebedevavaleriya@gmail.com"
-      familyName :"M"
-      givenName : "Valeriya"
-      id : "100064947706655698581"
-      imageUrl : "https://lh3.googleusercontent.com/a/ACg8ocJUXfk1spYk2YmA2cwR2U_XlDCmdPj2bXE6mVJ-aFn81yoNZrJk=s96-c"
-      name : "Valeriya M"
-      serverAuthCode : undefined
-       */
-      // Перевірка на наявність необхідних даних
-      if (this.user && this.user.authentication.idToken) {
-        console.log("idToken:", this.user.authentication.idToken);
-        console.log("accessToken:", this.user.authentication.accessToken);
 
-        // Відправляємо idToken на бекенд для логіну
-        /*
-        await fetch("https://your-backend.com/auth/google", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ this.user.idToken })
-        });*/
-
-        const idToken = this.user.authentication.idToken;
-        const accessToken = this.user.authentication.accessToken;
-        const email = this.user.email;
-        const name = this.user.name;
-        const photoURL = this.user.imageUrl;
-        
-        console.log('this.user: ',this.user);
-
-        // Оновлюємо токен в конфігурації
-        appConfig.ID_TOKEN = idToken;
-
-        // Зберігаємо дані
-        await Preferences.set({key: 'idToken', value: idToken});
-        await Preferences.set({key: 'accessToken', value: accessToken});
-        await Preferences.set({key: 'email', value: email});
-        await Preferences.set({key: 'name', value: name});
-        await Preferences.set({key: 'photoURL', value: photoURL});
-
-        // Оновлюємо стан автентифікації
-        await this.authService.handleSuccessfulLogin(this.user);
-
-        // Перенаправляємо на головну сторінку
-        await this.router.navigate(['/tabs/home']);
-      } else {
-        this.error = 'Помилка входу через Google: токен не отримано';
+      if (!this.user || !this.user.authentication || !this.user.authentication.idToken) {
+        throw new Error('Не вдалося отримати токен автентифікації');
       }
+
+      await this.authService.handleSuccessfulLogin(this.user);
+      this.router.navigate(['/tabs/home']);
     } catch (error) {
       console.error('Login error:', error);
       this.error = 'Помилка входу через Google. Спробуйте ще раз.';

@@ -25,7 +25,7 @@ export interface MentalGoalsConfig {
 const config: MentalGoalsConfig = {
   ID_TOKEN: '',
   API_URL: 'http://localhost:3000',
-  GOOGLE_CLIENT_ID: '629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com',
+  GOOGLE_CLIENT_ID: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com', //'629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com',
   DEFAULT_LANGUAGE: 'en',
   DOMAIN: 'https://mental-goals.com',
   JWT_PATH: '/wp-json/jwt-auth/v1/token',

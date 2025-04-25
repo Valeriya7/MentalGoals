@@ -13,6 +13,7 @@ import { ToastController } from '@ionic/angular';
 import { ModalService } from '../services/modal.service';
 import { Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -111,7 +112,7 @@ export class AuthService {
 
       // Автентифікація через Google в Firebase
       try {
-        const firebaseUser = await this.firebaseService.signInWithGoogle();
+        const firebaseUser = await this.firebaseService.signInWithGoogle(user.authentication.idToken);
         console.log('Firebase user authenticated:', firebaseUser);
       } catch (error) {
         console.log('Firebase authentication error:', error);
@@ -212,14 +213,26 @@ export class AuthService {
 
   async signInWithGoogle() {
     try {
-      const googleUser = await GoogleAuth.signIn();
-      if (googleUser) {
-        const credential = await this.firebaseService.getGoogleCredential(googleUser.authentication.idToken);
-        const userCredential = await this.firebaseService.signInWithCredential(credential);
-        await this.handleSuccessfulLogin(userCredential.user);
-        return userCredential.user;
+      const auth = this.firebaseService.getAuthInstance();
+      const provider = new GoogleAuthProvider();
+      
+      const result = await signInWithPopup(auth, provider);
+      if (!result || !result.user) {
+        throw new Error('Не вдалося увійти через Google');
       }
-      return null;
+
+      const idToken = await result.user.getIdToken();
+      const userData = {
+        id: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        idToken: idToken,
+        tokenExpiration: Date.now() + 3600 * 1000
+      };
+
+      await this.handleSuccessfulLogin(userData);
+      return userData;
     } catch (error) {
       console.error('Error signing in with Google:', error);
       throw error;

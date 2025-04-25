@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, updateDoc } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, updateDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithCredential, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { environment } from '../../environments/environment';
 import { Preferences } from '@capacitor/preferences';
@@ -12,6 +12,8 @@ import { ToastController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Capacitor } from '@capacitor/core';
+import { take } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
@@ -21,6 +23,7 @@ export class FirebaseService {
   private isOnline = new BehaviorSubject<boolean>(true);
   private readonly OFFLINE_DATA_KEY = 'offline_data';
   private googleAuthInitialized = false;
+  private firebaseReady = new BehaviorSubject<boolean>(false);
 
   constructor(
     private router: Router,
@@ -30,6 +33,7 @@ export class FirebaseService {
     try {
       // Ініціалізуємо Firebase
       const app = initializeApp(environment.firebase);
+      this.auth = getAuth(app);  // Initialize auth first
 
       // Очищення кешу IndexedDB
       if (typeof window !== 'undefined' && window.indexedDB) {
@@ -42,13 +46,23 @@ export class FirebaseService {
         };
       }
 
-      // Ініціалізуємо Firestore з відключеним кешем
+      // Ініціалізуємо Firestore з налаштуваннями для офлайн-режиму
       this.db = initializeFirestore(app, {
-        cacheSizeBytes: 0,
-        experimentalForceLongPolling: true
+        experimentalForceLongPolling: true,
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
       });
-      // Configure cache settings after initialization if needed
-      //enableIndexedDbPersistence(this.db);
+
+      // Вмикаємо офлайн-персистентність
+      enableIndexedDbPersistence(this.db)
+        .then(() => {
+          console.log('Firestore offline persistence enabled');
+        })
+        .catch((error) => {
+          console.warn('Firestore offline persistence could not be enabled:', error);
+        });
+
       this.auth = getAuth(app);
 
       // Обробляємо перенаправлення після входу
@@ -123,17 +137,25 @@ export class FirebaseService {
       // Ініціалізуємо Google Auth для Capacitor
       if (Capacitor.isNativePlatform()) {
         try {
+          // Get the correct client ID from your environment.ts or from Firebase console
+          //const clientId = environment.googleClientId; // Make sure this is set in your environment files
+
           await GoogleAuth.initialize({
-            clientId: '629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com',
+            clientId: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com', //'629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com',
             scopes: ['profile', 'email'],
             grantOfflineAccess: true
           });
           this.googleAuthInitialized = true;
           console.log('Google Auth initialized successfully');
+          // Signal that Firebase is ready at the end
+          this.firebaseReady.next(true);
         } catch (error) {
           console.error('Error initializing Google Auth:', error);
           this.googleAuthInitialized = false;
         }
+      }else {
+        // For web platform, just signal that Firebase is ready
+        this.firebaseReady.next(true);
       }
 
       // Перевіряємо, чи є збережені дані користувача
@@ -150,62 +172,54 @@ export class FirebaseService {
     }
   }
 
-  async signInWithGoogle(): Promise<User | null> {
+  async signInWithGoogle(idToken: string): Promise<any> {
     try {
-      if (Capacitor.isNativePlatform()) {
-        if (!this.googleAuthInitialized) {
-          throw new Error('Google Auth not initialized');
-        }
-
-        // Використовуємо нативний Google Auth для мобільних платформ
-        const googleUser = await GoogleAuth.signIn();
-        if (!googleUser || !googleUser.authentication || !googleUser.authentication.idToken) {
-          throw new Error('Failed to get Google authentication token');
-        }
-
-        const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
-        const result = await signInWithCredential(this.auth, credential);
-        const user = result.user;
-
-        if (user) {
-          const userData: User = {
-            id: user.uid,
-            email: user.email || '',
-            displayName: user.displayName || '',
-            photoURL: user.photoURL || '',
-            points: 0,
-            level: 1,
-            challenges: [],
-            completedChallenges: [],
-            activeChallenge: null,
-            lastLogin: new Date().toISOString()
-          };
-
-          // Зберігаємо дані користувача в Firestore
-          const userRef = doc(this.db, 'users', user.uid);
-          await setDoc(userRef, userData, { merge: true });
-
-          // Зберігаємо дані локально
-          await Preferences.set({
-            key: 'userData',
-            value: JSON.stringify(userData)
-          });
-
-          return userData;
-        }
-      } else {
-        // Для веб-версії використовуємо перенаправлення
-        const provider = new GoogleAuthProvider();
-        await signInWithRedirect(this.auth, provider);
-        return null; // Повертаємо null, оскільки перенаправлення буде оброблено в іншому місці
+      // Wait for Firebase to be ready
+      if (!this.firebaseReady.value) {
+        await firstValueFrom(this.firebaseReady.pipe(
+          take(1) // Use take instead of filter
+        ));
       }
-      return null;
-    } catch (error: unknown) {
+      if (!this.auth) {
+        console.error('Auth not initialized, attempting to reinitialize');
+        this.auth = getAuth();  // Try to get auth again
+
+        if (!this.auth) {
+          throw new Error('Firebase Auth not initialized');
+        }
+      }
+
+      // Створюємо credential з idToken
+      const credential = GoogleAuthProvider.credential(idToken);
+
+      // Використовуємо credential для входу
+      const result = await signInWithCredential(this.auth, credential);
+
+      if (!result.user) {
+        throw new Error('Failed to sign in with Google');
+      }
+
+      // Отримуємо додаткові дані користувача
+      const userData = {
+        id: result.user.uid,
+        email: result.user.email || '',
+        displayName: result.user.displayName || '',
+        photoURL: result.user.photoURL || '',
+        idToken: idToken,
+        tokenExpiration: Date.now() + 3600 * 1000 // Токен дійсний 1 годину
+      };
+      console.log('userData: ',userData);
+
+      // Зберігаємо дані користувача
+      await Preferences.set({
+        key: 'userData',
+        value: JSON.stringify(userData)
+      });
+
+      return result;
+    } catch (error) {
       console.error('Error signing in with Google:', error);
-      if (error instanceof Error) {
-        await this.showErrorToast(error.message);
-      }
-      return null;
+      throw error;
     }
   }
 
@@ -418,6 +432,13 @@ export class FirebaseService {
   async signInWithCredential(credential: any) {
     const auth = getAuth();
     return await signInWithCredential(auth, credential);
+  }
+
+  getAuthInstance() {
+    if (!this.auth) {
+      throw new Error('Firebase Auth not initialized');
+    }
+    return this.auth;
   }
 }
 

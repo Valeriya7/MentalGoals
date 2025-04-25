@@ -23,15 +23,19 @@
   <link rel="manifest" href="assets/manifest.json" />
 
   <!-- Google Sign-In -->
-  <meta name="google-signin-client_id" content="629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com">
-  <script src="https://accounts.google.com/gsi/client" async></script>
+  <meta name="google-signin-client_id" content="316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com">
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-cookiepolicy" content="single_host_origin">
+  <meta name="google-signin-redirect_uri" content="https://localhost:4200/auth/callback">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap">
 
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline';
     connect-src 'self' https://*.google.com https://*.googleapis.com https://accounts.google.com https://*.strava.com;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com https://accounts.google.com;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.googleapis.com https://accounts.google.com https://apis.google.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' data: https: https://*.google.com https://*.googleapis.com https://*.googleusercontent.com;
     font-src 'self' data: https://fonts.gstatic.com;

@@ -331,5 +331,9 @@
   "REWARDS": "Rewards",
   "POINTS": {
     "EARNED": "Congratulations! You've earned {{points}} points! 🎉"
+  },
+  "NOTIFICATIONS": {
+    "OFFLINE_MODE": "You are currently offline. Some features may be limited.",
+    "ONLINE_MODE": "You are back online. All features are now available."
   }
 }
