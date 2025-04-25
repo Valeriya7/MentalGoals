@@ -14,6 +14,7 @@ import { ModalService } from '../services/modal.service';
 import { Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { AnalyticsService } from './analytics.service';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +31,8 @@ export class AuthService {
     private toastController: ToastController,
     private modalService: ModalService,
     private platform: Platform,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private analyticsService: AnalyticsService
   ) {
     this.loadStoredUser();
     this.initializeGoogleAuth();
@@ -141,6 +143,19 @@ export class AuthService {
       // Оновлюємо токен в конфігурації
       appConfig.ID_TOKEN = user.authentication.idToken;
 
+      // Відстеження успішного входу
+      await this.analyticsService.logEvent('login_success', {
+        method: 'google',
+        user_id: userData.id
+      });
+
+      // Встановлення ID користувача для Analytics
+      await this.analyticsService.setUserId(userData.id);
+
+      // Встановлення властивостей користувача
+      await this.analyticsService.setUserProperty('email', userData.email);
+      await this.analyticsService.setUserProperty('display_name', userData.name);
+
       // Оновлюємо стан користувача
       this.currentUserSubject.next(userData);
 
@@ -178,6 +193,12 @@ export class AuthService {
 
       // Перенаправляємо на сторінку автентифікації
       await this.router.navigate(['/auth']);
+
+      // Відстеження виходу
+      await this.analyticsService.logEvent('logout');
+      
+      // Очищення ID користувача
+      await this.analyticsService.setUserId('');
     } catch (error) {
       console.error('Error signing out:', error);
       // Навіть якщо виникла помилка, все одно очищаємо дані

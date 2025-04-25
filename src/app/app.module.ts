@@ -16,6 +16,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
+import { AnalyticsService } from './services/analytics.service';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -45,7 +46,8 @@ export function HttpLoaderFactory(http: HttpClient) {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     FirebaseService,
-    DataService
+    DataService,
+    AnalyticsService
   ],
   bootstrap: [AppComponent],
 })

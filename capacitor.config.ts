@@ -2,19 +2,86 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.mentalgoals.app',
-  appName: 'MentalGoals',
+  appName: 'Mental Goals',
   webDir: 'www',
   server: {
     androidScheme: 'https',
-    cleartext: true,
-    allowNavigation: ['*']
+    iosScheme: 'https',
+    cleartext: false,
+    url: 'https://localhost:4200',
+    allowNavigation: [
+      'localhost:*',
+      'https://localhost:*',
+      'https://127.0.0.1:*',
+      'https://localhost:4200',
+      'https://127.0.0.1:4200',
+      'https://localhost:4200/auth',
+      'https://127.0.0.1:4200/auth',
+      'https://localhost:4200/auth/callback',
+      'https://127.0.0.1:4200/auth/callback',
+      'https://localhost:4200/auth/google/callback',
+      'https://127.0.0.1:4200/auth/google/callback',
+      'https://accounts.google.com',
+      'https://*.google.com',
+      'https://*.googleapis.com',
+      'https://www.googletagmanager.com',
+      'https://*.googletagmanager.com'
+    ],
+    contentSecurityPolicy: {
+      'default-src': ["'self'"],
+      'script-src': [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        'https://*.google.com',
+        'https://*.googleapis.com',
+        'https://accounts.google.com',
+        'https://apis.google.com',
+        'https://www.googletagmanager.com',
+        'https://*.googletagmanager.com'
+      ],
+      'connect-src': [
+        "'self'",
+        'https://*.google.com',
+        'https://*.googleapis.com',
+        'https://accounts.google.com',
+        'https://apis.google.com',
+        'https://www.googletagmanager.com',
+        'https://*.googletagmanager.com'
+      ],
+      'img-src': [
+        "'self'",
+        'data:',
+        'https://*.google.com',
+        'https://*.googleapis.com'
+      ],
+      'style-src': [
+        "'self'",
+        "'unsafe-inline'",
+        'https://*.google.com',
+        'https://*.googleapis.com'
+      ],
+      'font-src': ["'self'", 'data:']
+    }
   },
   plugins: {
+    Preferences: {
+      group: 'com.mentalgoals.app.preferences'
+    },
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      serverClientId: '629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com',
-      iosClientId: '629190984804-oqit9rd3t8rb7jucei1lq8g236c1bpjg.apps.googleusercontent.com',
-      androidClientId: '629190984804-hihuo9k8tj6bn2f3pm3b3omgfiqdualp.apps.googleusercontent.com'
+      serverClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
+      androidClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
+      iosClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
+      webClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true
+    },
+    FirebaseAnalytics: {
+      enabled: true,
+      collectionEnabled: true,
+      screenTrackingEnabled: true,
+      automaticScreenReports: true,
+      userPropertyTrackingEnabled: true
     }
   }
 };
