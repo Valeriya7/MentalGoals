@@ -8,6 +8,9 @@ import { RangeChangeEventDetail } from '@ionic/core';
 import { StorageService } from '../../services/storage.service';
 import {Router} from "@angular/router";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AnalyticsService } from '../../services/analytics.service';
+import { DataService } from '../../services/data.service';
+
 interface LifeWheelArea {
   key: string;
   icon: string;
@@ -44,7 +47,9 @@ export class LifeWheelPage implements OnInit {
     private router: Router,
     public translateService: TranslateService,
     private toastController: ToastController,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private analyticsService: AnalyticsService,
+    private dataService: DataService
   ) {}
 
   async ngOnInit() {
@@ -112,6 +117,25 @@ export class LifeWheelPage implements OnInit {
         [area.key]: area.value
       }), {});
 
+      // Перевіряємо, чи це перше заповнення
+      const { value: firstCompletion } = await Preferences.get({ key: 'lifeWheelFirstCompletion' });
+      if (!firstCompletion) {
+        await Preferences.set({ key: 'lifeWheelFirstCompletion', value: 'true' });
+        await this.analyticsService.logEvent('life_wheel_first_completion');
+        await this.dataService.savePoints(5); // Нараховуємо 5 балів за перше заповнення
+      }
+
+      // Перевіряємо щотижневе заповнення
+      const { value: lastCompletion } = await Preferences.get({ key: 'lifeWheelLastCompletion' });
+      const now = new Date();
+      const lastCompletionDate = lastCompletion ? new Date(lastCompletion) : null;
+      
+      if (!lastCompletionDate || (now.getTime() - lastCompletionDate.getTime()) >= 7 * 24 * 60 * 60 * 1000) {
+        await Preferences.set({ key: 'lifeWheelLastCompletion', value: now.toISOString() });
+        await this.analyticsService.logEvent('life_wheel_weekly_completion');
+        await this.dataService.savePoints(5); // Нараховуємо 5 балів за щотижневе заповнення
+      }
+
       await Preferences.set({
         key: 'lifeWheelData',
         value: JSON.stringify(dataToSave)
@@ -120,7 +144,6 @@ export class LifeWheelPage implements OnInit {
       this.isDataSaved = true;
       this.isEditing = false;
       console.log('Data saved successfully, isDataSaved:', this.isDataSaved);
-
 
       // Показуємо повідомлення про успішне збереження
       const toast = await this.toastController.create({

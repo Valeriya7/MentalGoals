@@ -191,31 +191,108 @@ export class ChallengeService {
         throw new Error('Storage access denied due to security restrictions');
       }
 
-      // Зберігаємо в Preferences API, якщо доступно
+      // Перевіряємо цілісність даних
+      if (!this.validateDataIntegrity(data)) {
+        throw new Error('Invalid data structure');
+      }
+
+      // Зберігаємо в Preferences API
       if (this.preferenceStorage) {
         try {
           await Preferences.set({
             key: this.STORAGE_KEY,
             value: JSON.stringify(data)
           });
+          console.log('✅ Data saved to Preferences');
         } catch (error) {
-          console.error('Error saving to Preferences:', error);
+          console.error('❌ Error saving to Preferences:', error);
         }
       }
 
       // Зберігаємо в основне сховище
       try {
         await this.storageService.set(this.STORAGE_KEY, data);
+        console.log('✅ Data saved to Storage');
       } catch (error) {
-        console.error('Error saving to storage:', error);
-        // Якщо збереження в основне сховище не вдалося, але є Preferences
+        console.error('❌ Error saving to storage:', error);
         if (!this.preferenceStorage) {
-          throw error; // Перекидаємо помилку тільки якщо немає резервного сховища
+          throw error;
+        }
+      }
+
+      // Зберігаємо в localStorage як резервне сховище
+      try {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        console.log('✅ Data saved to localStorage');
+      } catch (error) {
+        console.error('❌ Error saving to localStorage:', error);
+      }
+
+      // Оновлюємо кеш
+      this.updateCache(data);
+
+    } catch (error) {
+      console.error('❌ Error saving to storages:', error);
+      throw error;
+    }
+  }
+
+  private validateDataIntegrity(data: any): boolean {
+    try {
+      // Перевіряємо, що дані є масивом
+      if (!Array.isArray(data)) {
+        console.error('Data is not an array');
+        return false;
+      }
+
+      // Перевіряємо кожен челендж
+      for (const challenge of data) {
+        // Перевіряємо обов'язкові поля
+        if (!challenge.id || !challenge.title || !challenge.description || !challenge.status) {
+          console.error('Missing required fields in challenge:', challenge);
+          return false;
+        }
+
+        // Перевіряємо валідність статусу
+        const validStatuses = ['active', 'completed', 'failed', 'available'];
+        if (!validStatuses.includes(challenge.status)) {
+          console.error('Invalid challenge status:', challenge.status);
+          return false;
+        }
+
+        // Перевіряємо структуру прогресу
+        if (challenge.progress) {
+          for (const [date, dayProgress] of Object.entries(challenge.progress)) {
+            const progress = dayProgress as ChallengeProgress;
+            if (!progress.tasks || !progress.completedTasks || !progress.totalTasks) {
+              console.error('Invalid progress structure for date:', date);
+              return false;
+            }
+          }
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error validating data integrity:', error);
+      return false;
+    }
+  }
+
+  private updateCache(data: any): void {
+    try {
+      // Оновлюємо кеш прогресу
+      for (const challenge of data) {
+        if (challenge.progress) {
+          for (const [date, dayProgress] of Object.entries(challenge.progress)) {
+            const progress = dayProgress as ChallengeProgress;
+            this.progressCache.set(`${challenge.id}-${date}`, progress);
+            this.lastSyncTime.set(`${challenge.id}-${date}`, Date.now());
+          }
         }
       }
     } catch (error) {
-      console.error('Error saving to storages:', error);
-      throw error;
+      console.error('Error updating cache:', error);
     }
   }
 
