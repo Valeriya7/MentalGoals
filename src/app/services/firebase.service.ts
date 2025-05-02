@@ -139,9 +139,9 @@ export class FirebaseService {
         try {
           // Get the correct client ID from your environment.ts or from Firebase console
           //const clientId = environment.googleClientId; // Make sure this is set in your environment files
-
+          console.log('Initializing Google Auth with clientId:', environment.googleAuth.clientId);
           await GoogleAuth.initialize({
-            clientId: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com', //'629190984804-no655ouoceoo29td33q34f32ek2eanne.apps.googleusercontent.com',
+            clientId: environment.googleAuth.clientId,
             scopes: ['profile', 'email'],
             grantOfflineAccess: true
           });
@@ -152,9 +152,9 @@ export class FirebaseService {
         } catch (error) {
           console.error('Error initializing Google Auth:', error);
           this.googleAuthInitialized = false;
+          throw error;
         }
-      }else {
-        // For web platform, just signal that Firebase is ready
+      } else {
         this.firebaseReady.next(true);
       }
 
@@ -169,56 +169,63 @@ export class FirebaseService {
       if (error instanceof Error) {
         await this.showErrorToast(error.message);
       }
+      throw error; // Propagate the error
     }
   }
 
   async signInWithGoogle(idToken: string): Promise<any> {
     try {
-      // Wait for Firebase to be ready
-      if (!this.firebaseReady.value) {
-        await firstValueFrom(this.firebaseReady.pipe(
-          take(1) // Use take instead of filter
-        ));
+      console.log('Starting Google sign in process...');
+      
+      if (!this.googleAuthInitialized) {
+        console.log('Google Auth not initialized, attempting to initialize...');
+        await this.init();
       }
+
       if (!this.auth) {
         console.error('Auth not initialized, attempting to reinitialize');
-        this.auth = getAuth();  // Try to get auth again
-
-        if (!this.auth) {
-          throw new Error('Firebase Auth not initialized');
-        }
+        const app = initializeApp(environment.firebase);
+        this.auth = getAuth(app);
       }
 
-      // Створюємо credential з idToken
+      console.log('Creating credential with idToken...');
       const credential = GoogleAuthProvider.credential(idToken);
 
-      // Використовуємо credential для входу
+      console.log('Signing in with credential...');
       const result = await signInWithCredential(this.auth, credential);
 
       if (!result.user) {
-        throw new Error('Failed to sign in with Google');
+        throw new Error('Failed to sign in with Google - no user returned');
       }
 
-      // Отримуємо додаткові дані користувача
-      const userData = {
+      console.log('User signed in successfully:', result.user.uid);
+
+      const userData: User = {
         id: result.user.uid,
         email: result.user.email || '',
         displayName: result.user.displayName || '',
         photoURL: result.user.photoURL || '',
-        idToken: idToken,
-        tokenExpiration: Date.now() + 3600 * 1000 // Токен дійсний 1 годину
+        points: 0,
+        level: 1,
+        challenges: [],
+        completedChallenges: [],
+        activeChallenge: null,
+        lastLogin: new Date().toISOString()
       };
-      console.log('userData: ',userData);
 
-      // Зберігаємо дані користувача
+      // Зберігаємо дані користувача в Firestore
+      const userRef = doc(this.db, 'users', result.user.uid);
+      await setDoc(userRef, userData, { merge: true });
+
+      // Зберігаємо дані локально
       await Preferences.set({
         key: 'userData',
         value: JSON.stringify(userData)
       });
 
-      return result;
+      return userData;
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Error during Google sign in:', error);
       throw error;
     }
   }
