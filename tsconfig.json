@@ -30,6 +30,10 @@
     "typeRoots": [
       "./node_modules/@types",
       "./src/types"
+    ],
+    "types": [
+      "node",
+      "firebase"
     ]
   },
   "angularCompilerOptions": {

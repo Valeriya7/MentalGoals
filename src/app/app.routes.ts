@@ -62,7 +62,7 @@ export const routes: Routes = [
   },
   {
     path: 'challenge-details/:id',
-    loadComponent: () => import('./pages/challenge-details/challenge-details.page').then(m => m.ChallengeDetailsPage),
+    loadComponent: () => import('./pages/challenge-details/challenge-details.page').then(m => m.ChallengeDetailsPageComponent),
     canActivate: [AuthGuard]
   },
   {

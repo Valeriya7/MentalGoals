@@ -4,7 +4,7 @@ import { Preferences } from '@capacitor/preferences';
 import { AppleHealthConfig } from '../interfaces/api-config.interface';
 import { HealthData, SleepData, ActivityData, StressData } from '../interfaces/health-data.interface';
 
-declare var window: any;
+declare let window: any;
 
 @Injectable({
   providedIn: 'root'

@@ -1,29 +1,24 @@
 import { CapacitorConfig } from '@capacitor/cli';
+import { GOOGLE_OAUTH_CONFIG } from './src/app/constants/firebase.config';
+import { APP_CONFIG } from './src/app/constants/firebase.config';
 
 const config: CapacitorConfig = {
-  appId: 'com.mentalgoals.app',
-  appName: 'Mental Goals',
+  appId: APP_CONFIG.android.packageName,
+  appName: 'MentalGoals',
   webDir: 'www',
+  server: {
+    androidScheme: 'https'
+  },
   plugins: {
-    Preferences: {
-      group: 'com.mentalgoals.app.preferences'
-    },
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      serverClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      androidClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      iosClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      webClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      forceCodeForRefreshToken: true
-    },
-    FirebaseAnalytics: {
-      enabled: true,
-      collectionEnabled: true,
-      screenTrackingEnabled: true,
-      automaticScreenReports: true,
-      userPropertyTrackingEnabled: true
+      serverClientId: GOOGLE_OAUTH_CONFIG.web.clientId,
+      androidClientId: GOOGLE_OAUTH_CONFIG.android.clientId,
+      iosClientId: GOOGLE_OAUTH_CONFIG.ios.clientId,
+      forceCodeForRefreshToken: true,
+      webClientId: GOOGLE_OAUTH_CONFIG.web.clientId
     }
   }
 };
 
-export default config;
+export default config; 

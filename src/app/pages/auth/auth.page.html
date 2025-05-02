@@ -1,25 +1,17 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Вхід</ion-title>
+  </ion-toolbar>
+</ion-header>
+
 <ion-content class="ion-padding">
   <div class="auth-container">
-    <div class="auth-image">
-      <img src="assets/images/auth.jpg" alt="Mental Health">
-    </div>
+    <h1>Ласкаво просимо до MentalGoals</h1>
+    <p>Увійдіть, щоб продовжити</p>
 
-    <div class="auth-content">
-
-      <div class="google-signin-container">
-        <div id="googleSignInButton"></div>
-      </div>
-
-      <ion-button expand="full" color="primary" (click)="googleLogin()" >
-        Login with Google
-      </ion-button>
-      <div *ngIf="isLoading" class="loading-container">
-        <ion-spinner></ion-spinner>
-      </div>
-
-      <div *ngIf="error" class="error-message">
-        {{ error }}
-      </div>
-    </div>
+    <ion-button expand="block" (click)="signInWithGoogle()">
+      <ion-icon name="logo-google" slot="start"></ion-icon>
+      Увійти через Google
+    </ion-button>
   </div>
 </ion-content>

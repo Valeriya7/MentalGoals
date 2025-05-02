@@ -4,38 +4,15 @@ import { environment } from '../../environments/environment';
 import { Platform } from '@ionic/angular';
 import { Browser } from '@capacitor/browser';
 import { Router } from '@angular/router';
-import { StravaActivity, StravaTokenResponse } from '../interfaces/strava.interface';
+import { StravaActivity, StravaTokenResponse, StravaActivityDetails } from '../interfaces/strava.interface';
 import { firstValueFrom } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
+import { Observable } from 'rxjs';
 
 interface StravaToken {
   access_token: string;
   refresh_token: string;
   expires_at: number;
-}
-
-interface StravaActivityDetails extends StravaActivity {
-  description: string;
-  trainer: boolean;
-  commute: boolean;
-  manual: boolean;
-  device_watts: boolean;
-  average_watts: number;
-  max_watts: number;
-  weighted_average_watts: number;
-  kilojoules: number;
-  average_cadence: number;
-  average_temp: number;
-  has_heartrate: boolean;
-  has_kudoed: boolean;
-  splits_metric: any[];
-  splits_standard: any[];
-  laps: any[];
-  best_efforts: any[];
-  photos: any;
-  stats_visibility: any[];
-  similar_activities: any;
-  available_zones: any[];
 }
 
 interface StravaSleepData {
@@ -72,6 +49,7 @@ export class StravaService {
   private readonly STRAVA_EMAIL_KEY = 'strava_email';
   private readonly clientId: string;
   private readonly clientSecret: string;
+  private activities: StravaActivityDetails[] = [];
 
   constructor(
     private http: HttpClient,
@@ -378,10 +356,10 @@ export class StravaService {
       if (response && response.length > 0) {
         const latestHR = response[0];
         return {
-          current: latestHR.current,
-          average: latestHR.average,
-          max: latestHR.max,
-          min: latestHR.min
+          current: latestHR.current || 0,
+          average: latestHR.average || 0,
+          max: latestHR.max || 0,
+          min: latestHR.min || 0
         };
       }
 
@@ -409,7 +387,7 @@ export class StravaService {
       if (response && response.length > 0) {
         const latestStress = response[0];
         return {
-          level: latestStress.level
+          level: latestStress.level || 0
         };
       }
 

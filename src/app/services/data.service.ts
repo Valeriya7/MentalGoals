@@ -9,7 +9,7 @@ export class DataService {
 
   // Збереження відповідей на питання
   async saveQuestionAnswers(answers: any) {
-    await this.firebaseService.saveData('questions', answers);
+    await this.firebaseService.saveData('questions', answers.id || 'default', answers);
   }
 
   // Отримання відповідей на питання
@@ -19,7 +19,7 @@ export class DataService {
 
   // Збереження даних користувача
   async saveUserData(userData: any) {
-    await this.firebaseService.saveData('users', userData);
+    await this.firebaseService.saveData('users', userData.uid || 'default', userData);
   }
 
   // Отримання даних користувача
@@ -29,7 +29,7 @@ export class DataService {
 
   // Збереження челенджів
   async saveChallenge(challenge: any) {
-    await this.firebaseService.saveData('challenges', challenge);
+    await this.firebaseService.saveData('challenges', challenge.id || 'default', challenge);
   }
 
   // Отримання челенджів
@@ -39,7 +39,7 @@ export class DataService {
 
   // Збереження звичок
   async saveHabit(habit: any) {
-    await this.firebaseService.saveData('habits', habit);
+    await this.firebaseService.saveData('habits', habit.id || 'default', habit);
   }
 
   // Отримання звичок
@@ -49,7 +49,7 @@ export class DataService {
 
   // Збереження емоцій
   async saveEmotion(emotion: any) {
-    await this.firebaseService.saveData('emotions', emotion);
+    await this.firebaseService.saveData('emotions', emotion.id || 'default', emotion);
   }
 
   // Отримання емоцій
@@ -59,7 +59,8 @@ export class DataService {
 
   // Збереження балів
   async savePoints(points: number) {
-    await this.firebaseService.saveData('points', { points, date: new Date() });
+    const pointsData = { points, date: new Date() };
+    await this.firebaseService.saveData('points', 'current', pointsData);
   }
 
   // Отримання балів

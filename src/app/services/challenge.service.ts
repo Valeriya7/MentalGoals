@@ -7,6 +7,11 @@ import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';
 import { StorageService } from './storage.service';
 import { TranslateService } from '@ngx-translate/core';
+import { doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { TaskProgress, TaskProgressDocument } from '../interfaces/task-progress.interface';
+import { Firestore } from '@angular/fire/firestore';
+import { FirebaseService } from './firebase.service';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +32,9 @@ export class ChallengeService {
     private modalService: ModalService,
     private storageService: StorageService,
     private platform: Platform,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private firestore: Firestore,
+    private firebaseService: FirebaseService
   ) {
     this.init();
     this.initializeActiveChallenge();
@@ -448,17 +455,14 @@ export class ChallengeService {
     return this.activeChallenge.asObservable();
   }
 
-  async getChallenge(id: string): Promise<Challenge | undefined> {
+  async getChallenge(id: string): Promise<Challenge | null> {
     try {
-      const challenges = await this.getChallenges();
-      const challenge = challenges.find(c => c.id === id);
-      if (challenge && challenge.status === 'active') {
-        this.updateCurrentDay(challenge);
-      }
-      return challenge;
+      const docRef = doc(this.firestore, 'challenges', id);
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists() ? docSnap.data() as Challenge : null;
     } catch (error) {
       console.error('Error getting challenge:', error);
-      return undefined;
+      return null;
     }
   }
 
@@ -1440,6 +1444,50 @@ export class ChallengeService {
     } catch (error) {
       console.error('Error checking challenge progress:', error);
       return { completed: false, progress: 0, points: 0 };
+    }
+  }
+
+  async getTaskProgress(challengeId: string): Promise<TaskProgress[]> {
+    try {
+      const docRef = doc(this.firestore, 'challenges', challengeId, 'progress', 'tasks');
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.exists() ? docSnap.data() as TaskProgressDocument : { tasks: [] };
+      return data.tasks;
+    } catch (error) {
+      console.error('Error getting task progress:', error);
+      return [];
+    }
+  }
+
+  async completeTask(challengeId: string, taskId: string): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'challenges', challengeId, 'progress', 'tasks');
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.exists() ? docSnap.data() as TaskProgressDocument : { tasks: [] };
+      
+      const updatedTasks = [
+        ...data.tasks.filter((t: TaskProgress) => t.taskId !== taskId),
+        { taskId, completed: true, completedAt: new Date() }
+      ];
+
+      await setDoc(docRef, { tasks: updatedTasks }, { merge: true });
+    } catch (error) {
+      console.error('Error completing task:', error);
+      throw error;
+    }
+  }
+
+  async uncompleteTask(challengeId: string, taskId: string): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'challenges', challengeId, 'progress', 'tasks');
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.exists() ? docSnap.data() as TaskProgressDocument : { tasks: [] };
+      
+      const updatedTasks = data.tasks.filter((t: TaskProgress) => t.taskId !== taskId);
+      await setDoc(docRef, { tasks: updatedTasks }, { merge: true });
+    } catch (error) {
+      console.error('Error uncompleting task:', error);
+      throw error;
     }
   }
 }

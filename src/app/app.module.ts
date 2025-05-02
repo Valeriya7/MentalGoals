@@ -17,6 +17,7 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
 import { AnalyticsService } from './services/analytics.service';
+import { GooglePlus } from '@awesome-cordova-plugins/google-plus/ngx';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -47,7 +48,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     FirebaseService,
     DataService,
-    AnalyticsService
+    AnalyticsService,
+    GooglePlus
   ],
   bootstrap: [AppComponent],
 })

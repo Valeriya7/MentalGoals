@@ -1,20 +1,12 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Preferences } from '@capacitor/preferences';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Router } from '@angular/router';
-import { appConfig } from '../config/app.config';
-import { Capacitor } from '@capacitor/core';
-import { StorageService } from './storage.service';
-import { User } from '../models/user.model';
-import { FirebaseService } from './firebase.service';
-import { ChallengeService } from '../services/challenge.service';
-import { ToastController } from '@ionic/angular';
-import { ModalService } from '../services/modal.service';
 import { Platform } from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { AnalyticsService } from './analytics.service';
+import { User } from '../models/user.model';
+import { GoogleAuthService } from './google-auth.service';
+import { map } from 'rxjs/operators';
+import { FirebaseService } from './firebase.service';
+import { UserCredential } from 'firebase/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -25,238 +17,67 @@ export class AuthService {
 
   constructor(
     private router: Router,
-    private storageService: StorageService,
-    private firebaseService: FirebaseService,
-    private challengeService: ChallengeService,
-    private toastController: ToastController,
-    private modalService: ModalService,
     private platform: Platform,
-    private translate: TranslateService,
-    private analyticsService: AnalyticsService
+    private googleAuthService: GoogleAuthService,
+    private firebaseService: FirebaseService
   ) {
-    this.loadStoredUser();
-    this.initializeGoogleAuth();
+    this.firebaseService.currentUser$.subscribe(user => {
+      this.currentUserSubject.next(user);
+    });
   }
 
-  private async initializeGoogleAuth() {
-    try {
-      if (Capacitor.isNativePlatform()) {
-        await GoogleAuth.initialize({
-          clientId: appConfig.GOOGLE_CLIENT_ID,
-          scopes: ['profile', 'email'],
-          grantOfflineAccess: true,
-          forceCodeForRefreshToken: true
-        });
-      }
-    } catch (error) {
-      console.error('Error initializing Google Auth:', error);
-    }
-  }
-
-  private async loadStoredUser() {
-    try {
-      const { value } = await Preferences.get({ key: 'userData' });
-      if (value) {
-        const userData = JSON.parse(value);
-        this.currentUserSubject.next(userData);
-      }
-    } catch (error) {
-      console.error('Error loading stored user:', error);
-    }
-  }
-
-  async getCurrentUser(): Promise<any> {
-    try {
-      const { value } = await Preferences.get({ key: 'userData' });
-      if (value) {
-        const userData = JSON.parse(value);
-        
-        // Перевіряємо наявність та валідність токена
-        if (!userData.idToken) {
-          console.log('No valid token found');
-          this.currentUserSubject.next(null);
-          return null;
-        }
-
-        // Перевіряємо, чи не минув час дії токена
-        const tokenExpiration = userData.tokenExpiration;
-        if (tokenExpiration && new Date(tokenExpiration) < new Date()) {
-          console.log('Token has expired');
-          this.currentUserSubject.next(null);
-          return null;
-        }
-
-        this.currentUserSubject.next(userData);
-        return userData;
-      }
-      this.currentUserSubject.next(null);
-      return null;
-    } catch (error) {
-      console.error('Error getting current user:', error);
-      this.currentUserSubject.next(null);
-      return null;
-    }
-  }
-
-  async handleSuccessfulLogin(user: any) {
-    try {
-      const userData = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        photoURL: user.imageUrl,
-        accessToken: user.authentication.accessToken,
-        idToken: user.authentication.idToken,
-        tokenExpiration: new Date(Date.now() + 3600 * 1000).toISOString() // Токен діє 1 годину
-      };
-
-      console.log('User data to be saved:', userData);
-
-      // Автентифікація через Google в Firebase
-      try {
-        const firebaseUser = await this.firebaseService.signInWithGoogle(user.authentication.idToken);
-        console.log('Firebase user authenticated:', firebaseUser);
-      } catch (error) {
-        console.log('Firebase authentication error:', error);
-      }
-
-      // Перевіряємо, чи це перший вхід користувача
-      const { value: isFirstLogin } = await Preferences.get({ key: 'isFirstLogin' });
-      if (!isFirstLogin) {
-        // Якщо це перший вхід, встановлюємо прапорець
-        await Preferences.set({ key: 'isFirstLogin', value: 'true' });
-        
-        // Очищаємо всі активні челенджі
-        try {
-          await this.challengeService.deactivateAllChallenges();
-        } catch (error) {
-          console.error('Error deactivating challenges:', error);
-        }
-      }
-
-      // Зберігаємо дані користувача
-      await Preferences.set({
-        key: 'userData',
-        value: JSON.stringify(userData)
-      });
-
-      // Оновлюємо токен в конфігурації
-      appConfig.ID_TOKEN = user.authentication.idToken;
-
-      // Відстеження успішного входу
-      await this.analyticsService.logEvent('login_success', {
-        method: 'google',
-        user_id: userData.id
-      });
-
-      // Встановлення ID користувача для Analytics
-      await this.analyticsService.setUserId(userData.id);
-
-      // Встановлення властивостей користувача
-      await this.analyticsService.setUserProperty('email', userData.email);
-      await this.analyticsService.setUserProperty('display_name', userData.name);
-
-      // Оновлюємо стан користувача
-      this.currentUserSubject.next(userData);
-
-      // Зберігаємо дані в Firebase
-      try {
-        await this.storageService.set('users', userData);
-        console.log('User data saved to Firebase:', userData);
-      } catch (error) {
-        console.error('Error saving user data to Firebase:', error);
-      }
-
-      return userData;
-    } catch (error) {
-      console.error('Error handling successful login:', error);
-      throw error;
-    }
-  }
-
-  async signOut() {
-    try {
-      // Очищаємо дані користувача
-      await Preferences.remove({ key: 'userData' });
-      await Preferences.remove({ key: 'isFirstLogin' });
-      
-      // Очищаємо токен в конфігурації
-      appConfig.ID_TOKEN = null;
-      
-      // Оновлюємо стан користувача
-      this.currentUserSubject.next(null);
-
-      // Виходимо з Google Auth
-      if (Capacitor.isNativePlatform()) {
-        await GoogleAuth.signOut();
-      }
-
-      // Перенаправляємо на сторінку автентифікації
-      await this.router.navigate(['/auth']);
-
-      // Відстеження виходу
-      await this.analyticsService.logEvent('logout');
-      
-      // Очищення ID користувача
-      await this.analyticsService.setUserId('');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      // Навіть якщо виникла помилка, все одно очищаємо дані
-      await Preferences.remove({ key: 'userData' });
-      await Preferences.remove({ key: 'isFirstLogin' });
-      appConfig.ID_TOKEN = null;
-      this.currentUserSubject.next(null);
-      await this.router.navigate(['/auth']);
-    }
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
   }
 
   async updateUserPoints(points: number): Promise<void> {
-    try {
-      const user = await this.getCurrentUser();
-      if (!user) return;
-
-      const currentPoints = user.points || 0;
-      const newPoints = currentPoints + points;
-
-      // Оновлюємо бали користувача в Preferences
-      await Preferences.set({ key: 'userPoints', value: newPoints.toString() });
-
-      // Оновлюємо бали в поточному об'єкті користувача
-      user.points = newPoints;
-      this.currentUserSubject.next(user);
-
-      // Оновлюємо бали в базі даних
-      await this.storageService.set('userPoints', newPoints);
-    } catch (error) {
-      console.error('Error updating user points:', error);
+    const user = this.getCurrentUser();
+    if (user) {
+      const updatedUser = {
+        ...user,
+        points: (user.points || 0) + points
+      };
+      this.currentUserSubject.next(updatedUser);
     }
   }
 
-  async signInWithGoogle() {
+  async signInWithGoogle(): Promise<User> {
     try {
-      const auth = this.firebaseService.getAuthInstance();
-      const provider = new GoogleAuthProvider();
-      
-      const result = await signInWithPopup(auth, provider);
-      if (!result || !result.user) {
-        throw new Error('Не вдалося увійти через Google');
+      const userCredential = await this.firebaseService.signInWithGoogle();
+      if (!userCredential.user) {
+        throw new Error('No user data received from Google');
       }
 
-      const idToken = await result.user.getIdToken();
-      const userData = {
-        id: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName,
-        photoURL: result.user.photoURL,
-        idToken: idToken,
-        tokenExpiration: Date.now() + 3600 * 1000
+      const user: User = {
+        uid: userCredential.user.uid,
+        email: userCredential.user.email || '',
+        displayName: userCredential.user.displayName || '',
+        photoURL: userCredential.user.photoURL || '',
+        emailVerified: userCredential.user.emailVerified,
+        idToken: await userCredential.user.getIdToken(),
+        tokenExpiration: Date.now() + 3600000, // 1 hour from now
+        points: 0,
+        level: 1,
+        challenges: [],
+        completedChallenges: [],
+        activeChallenge: null
       };
 
-      await this.handleSuccessfulLogin(userData);
-      return userData;
+      await this.firebaseService.saveData('users', user.uid, user);
+      return user;
     } catch (error) {
       console.error('Error signing in with Google:', error);
       throw error;
     }
+  }
+
+  async signOut(): Promise<void> {
+    await this.firebaseService.signOut();
+  }
+
+  isAuthenticated(): Observable<boolean> {
+    return this.currentUser$.pipe(
+      map(user => !!user && user.tokenExpiration > Date.now())
+    );
   }
 }

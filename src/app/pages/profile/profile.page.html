@@ -9,8 +9,8 @@
   <div class="profile-container">
     <div class="user-info">
       <ion-avatar>
-        <img *ngIf="userPhotoUrl" [src]="userPhotoUrl"  />
-        <img *ngIf="!userPhotoUrl" src="../../../assets/images/avatar/4.jpg" />
+        <img *ngIf="userPhotoUrl" [src]="userPhotoUrl" alt="Profile avatar" />
+        <img *ngIf="!userPhotoUrl" src="../../../assets/images/avatar/4.jpg" alt="Profile photo" />
       </ion-avatar>
       <h2>{{userName}}</h2>
       <div class="points-section">

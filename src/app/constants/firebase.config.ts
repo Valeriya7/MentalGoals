@@ -8,6 +8,24 @@ export const FIREBASE_CONFIG = {
   measurementId: "G-2KHN22K4QV"
 };
 
+export const GOOGLE_CLIENT_IDS = {
+  android: '316790340348-plk1ussjj7s4gkuqd5hhcocaes4kk4dv.apps.googleusercontent.com',
+  ios: '316790340348-3ssptcb7gfgm3l3snnds4ublmblkt4q4.apps.googleusercontent.com',
+  web: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com'
+};
+
+export const FIREBASE_API_KEYS = {
+  android: 'AIzaSyDUMfDuI6rV2rbM1Ti5hnxPlm-KEhYJPb8',
+  browser: 'AIzaSyAj3ZW-JBqax6JsjxKRnI28Rak-aw4VQ0k',
+  ios: 'AIzaSyANvFDBwXoD50P4NSpPt6ZVZaM2Ukc839I'
+};
+
+export const FIREBASE_APP_IDS = {
+  android: '1:316790340348:android:62ae21523953e240ac3579',
+  ios: '1:316790340348:ios:c3fc470f62b66137ac3579',
+  web: '1:316790340348:web:1b29c2c4355c0816ac3579'
+};
+
 export const GOOGLE_OAUTH_CONFIG = {
   android: {
     clientId: "316790340348-plk1ussjj7s4gkuqd5hhcocaes4kk4dv.apps.googleusercontent.com",

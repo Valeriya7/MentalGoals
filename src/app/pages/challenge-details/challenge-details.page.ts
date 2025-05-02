@@ -19,6 +19,7 @@ import {
   alertCircleOutline
 } from 'ionicons/icons';
 import { ToastController } from '@ionic/angular';
+import { TaskProgress } from '../../interfaces/task-progress.interface';
 
 @Component({
   selector: 'app-challenge-details',
@@ -28,9 +29,10 @@ import { ToastController } from '@ionic/angular';
   imports: [IonicModule, CommonModule, TranslateModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class ChallengeDetailsPage implements OnInit {
-  challenge: Challenge | undefined;
-  currentPhase: ChallengePhase | null | undefined;
+export class ChallengeDetailsPageComponent implements OnInit {
+  challenge: Challenge | null = null;
+  currentPhase: ChallengePhase | null = null;
+  taskProgress: TaskProgress[] = [];
   todayProgress: { [key: string]: boolean } = {};
   statistics = {
     completedDays: 0,
@@ -64,24 +66,26 @@ export class ChallengeDetailsPage implements OnInit {
     });
   }
 
-  async ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      await this.loadChallenge(id);
-      await this.calculateStatistics(id);
-      await this.loadProgress();
-    }
+  ngOnInit() {
+    this.loadChallenge();
   }
 
-  async loadChallenge(id: string) {
+  private async loadChallenge() {
     this.isLoading = true;
     this.error = null;
     try {
-      this.challenge = await this.challengeService.getChallenge(id);
-      if (this.challenge) {
-        this.currentPhase = await this.challengeService.getCurrentPhase(id);
-        this.todayProgress = await this.challengeService.getTodayProgress(id);
-        this.updateTasksStatus();
+      const challengeId = this.route.snapshot.paramMap.get('id');
+      if (challengeId) {
+        const loadedChallenge = await this.challengeService.getChallenge(challengeId);
+        if (loadedChallenge) {
+          this.challenge = loadedChallenge;
+          this.currentPhase = loadedChallenge.phases[0];
+          this.taskProgress = await this.challengeService.getTaskProgress(challengeId);
+          this.todayProgress = await this.challengeService.getTodayProgress(challengeId);
+          this.updateTasksStatus();
+          await this.calculateStatistics(challengeId);
+          await this.loadProgress();
+        }
       }
     } catch (error) {
       console.error('Error loading challenge:', error);
@@ -272,5 +276,30 @@ export class ChallengeDetailsPage implements OnInit {
       document.body.appendChild(alert);
       await alert.present();
     }
+  }
+
+  async toggleTaskCompletion(task: ChallengeTask) {
+    if (!this.challenge) return;
+
+    try {
+      const isCompleted = this.isTaskCompleted(task.id);
+      if (isCompleted) {
+        await this.challengeService.uncompleteTask(this.challenge.id, task.id);
+      } else {
+        await this.challengeService.completeTask(this.challenge.id, task.id);
+      }
+      await this.loadChallenge();
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+    }
+  }
+
+  isTaskCompleted(taskId: string): boolean {
+    return this.taskProgress.some(progress => progress.taskId === taskId && progress.completed);
+  }
+
+  getTaskCompletionDate(taskId: string): Date | undefined {
+    const progress = this.taskProgress.find(p => p.taskId === taskId);
+    return progress?.completedAt;
   }
 }

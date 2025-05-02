@@ -52,13 +52,20 @@
                 [attr.d]="createSegmentPath(j, level === area.value)"
                 [attr.class]="'segment ' + (level <= area.value ? 'active' : 'inactive')"
                 (click)="onSegmentClick(area, level)"
-                [attr.fill]="getSegmentColor(i, level <= area.value)"/>
+                [attr.fill]="getSegmentColor(i, level <= area.value)"
+                class="wheel-segment"
+                tabindex="0"
+                role="button"
+                (click)="onSegmentClick(area, level)"
+                (keyup.enter)="onSegmentClick(area, level)"
+                (keydown.enter)="onSegmentClick(area, level)">
+          </path>
 
           <!-- Іконки та підписи -->
           <g [attr.transform]="'rotate(' + (-i * 45 + 45 +45) + ', 210, 200)'">
             <image [attr.x]="getIconX(i)" [attr.y]="getIconY(i)" width="30" height="30"
                    [attr.href]="'assets/icons/' + area.icon + '.svg'"/>
-            <text [attr.x]="getLabelX(i,(area.key=='LIFE_WHEEL.AREAS.SOCIAL_LIFE')? 35:10)" [attr.y]="getLabelY(i, (area.key=='LIFE_WHEEL.AREAS.FINANCES' || 'LIFE_WHEEL.AREAS.FRIENDS')? 27:0)"
+            <text [attr.x]="getLabelX(i,(area.key==='LIFE_WHEEL.AREAS.SOCIAL_LIFE')? 35:10)" [attr.y]="getLabelY(i, (area.key==='LIFE_WHEEL.AREAS.FINANCES' || 'LIFE_WHEEL.AREAS.FRIENDS')? 27:0)"
                   [attr.text-anchor]="getLabelAnchor(i)" class="area-label">
               {{ area.key | translate }}
             </text>

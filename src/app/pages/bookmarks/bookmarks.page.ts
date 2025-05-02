@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
   imports: [IonicModule, CommonModule, TranslateModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class BookmarksPage implements OnInit, OnDestroy {
+export class BookmarksPageComponent implements OnInit, OnDestroy {
   bookmarks: Bookmark[] = [];
   isLoading = false;
   error: string | null = null;
