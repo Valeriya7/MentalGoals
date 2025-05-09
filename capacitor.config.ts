@@ -8,7 +8,6 @@ const config: CapacitorConfig = {
     androidScheme: 'https',
     iosScheme: 'https',
     cleartext: false,
-    url: 'https://localhost:4200',
     allowNavigation: [
       'localhost:*',
       'https://localhost:*',
@@ -70,19 +69,20 @@ const config: CapacitorConfig = {
     },
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      serverClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      androidClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      iosClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      webClientId: '316790340348-vj8r1hv5a7qmvtqk4v1f5h7qi5uf5g7q.apps.googleusercontent.com',
-      forceCodeForRefreshToken: true
-    },
-    FirebaseAnalytics: {
-      enabled: true,
-      collectionEnabled: true,
-      screenTrackingEnabled: true,
-      automaticScreenReports: true,
-      userPropertyTrackingEnabled: true
+      serverClientId: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com',
+      androidClientId: '316790340348-plk1ussjj7s4gkuqd5hhcocaes4kk4dv.apps.googleusercontent.com',
+      iosClientId: '316790340348-3ssptcb7gfgm3l3snnds4ublmblkt4q4.apps.googleusercontent.com',
+      webClientId: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true,
+      grantOfflineAccess: true
     }
+  },
+  ios: {
+    contentInset: 'always',
+    allowsLinkPreview: true,
+    scrollEnabled: true,
+    backgroundColor: '#ffffff',
+    limitsNavigationsToAppBoundDomains: true
   }
 };
 

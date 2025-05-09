@@ -8,7 +8,6 @@ import { RangeChangeEventDetail } from '@ionic/core';
 import { StorageService } from '../../services/storage.service';
 import {Router} from "@angular/router";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { AnalyticsService } from '../../services/analytics.service';
 import { DataService } from '../../services/data.service';
 
 interface LifeWheelArea {
@@ -48,7 +47,6 @@ export class LifeWheelPage implements OnInit {
     public translateService: TranslateService,
     private toastController: ToastController,
     private storageService: StorageService,
-    private analyticsService: AnalyticsService,
     private dataService: DataService
   ) {}
 
@@ -121,7 +119,6 @@ export class LifeWheelPage implements OnInit {
       const { value: firstCompletion } = await Preferences.get({ key: 'lifeWheelFirstCompletion' });
       if (!firstCompletion) {
         await Preferences.set({ key: 'lifeWheelFirstCompletion', value: 'true' });
-        await this.analyticsService.logEvent('life_wheel_first_completion');
         await this.dataService.savePoints(5); // Нараховуємо 5 балів за перше заповнення
       }
 
@@ -132,7 +129,6 @@ export class LifeWheelPage implements OnInit {
       
       if (!lastCompletionDate || (now.getTime() - lastCompletionDate.getTime()) >= 7 * 24 * 60 * 60 * 1000) {
         await Preferences.set({ key: 'lifeWheelLastCompletion', value: now.toISOString() });
-        await this.analyticsService.logEvent('life_wheel_weekly_completion');
         await this.dataService.savePoints(5); // Нараховуємо 5 балів за щотижневе заповнення
       }
 

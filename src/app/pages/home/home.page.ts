@@ -36,7 +36,7 @@ import {
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ToastController, ModalController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
-import { User } from '../../models/user.model';
+import { User } from '../../interfaces/user.interface';
 import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task.model';
 import { WishService } from '../../services/wish.service';

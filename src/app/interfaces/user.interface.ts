@@ -1,12 +1,9 @@
 export interface User {
   id: string;
   email: string;
-  displayName: string;
+  name: string;
   photoURL: string;
-  points: number;
-  level: number;
-  challenges: string[];
-  completedChallenges: string[];
-  activeChallenge: string | null;
-  lastLogin: string;
+  idToken: string;
+  tokenExpiration: string;
+  points?: number;
 } 

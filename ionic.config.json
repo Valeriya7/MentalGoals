@@ -1,7 +1,11 @@
 {
   "name": "MentalGoals",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {
+      "android": {
+        "projectId": "com.mentalgoals.app"
+      }
+    }
   },
   "type": "angular"
 }

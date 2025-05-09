@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Router } from '@angular/router';
 import { appConfig } from '../config/app.config';
 import { Capacitor } from '@capacitor/core';
 import { StorageService } from './storage.service';
-import { User } from '../models/user.model';
+import { User } from '../interfaces/user.interface';
 import { FirebaseService } from './firebase.service';
 import { ChallengeService } from '../services/challenge.service';
 import { ToastController } from '@ionic/angular';
 import { ModalService } from '../services/modal.service';
 import { Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { AnalyticsService } from './analytics.service';
+import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential } from 'firebase/auth';
+import { getGoogleConfig } from '../config/firebase.config';
+import { doc, setDoc } from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -31,8 +32,7 @@ export class AuthService {
     private toastController: ToastController,
     private modalService: ModalService,
     private platform: Platform,
-    private translate: TranslateService,
-    private analyticsService: AnalyticsService
+    private translate: TranslateService
   ) {
     this.loadStoredUser();
     this.initializeGoogleAuth();
@@ -41,12 +41,16 @@ export class AuthService {
   private async initializeGoogleAuth() {
     try {
       if (Capacitor.isNativePlatform()) {
+        const googleConfig = getGoogleConfig();
+
         await GoogleAuth.initialize({
-          clientId: appConfig.GOOGLE_CLIENT_ID,
+          clientId: googleConfig.clientId,
           scopes: ['profile', 'email'],
           grantOfflineAccess: true,
           forceCodeForRefreshToken: true
         });
+
+        console.log('Google Auth initialized successfully with clientId:', googleConfig.clientId);
       }
     } catch (error) {
       console.error('Error initializing Google Auth:', error);
@@ -65,22 +69,21 @@ export class AuthService {
     }
   }
 
-  async getCurrentUser(): Promise<any> {
+  async getCurrentUser(): Promise<User | null> {
     try {
       const { value } = await Preferences.get({ key: 'userData' });
       if (value) {
-        const userData = JSON.parse(value);
-        
-        // Перевіряємо наявність та валідність токена
+        const userData = JSON.parse(value) as User;
+        console.log('Loaded user data:', userData);
+
         if (!userData.idToken) {
           console.log('No valid token found');
           this.currentUserSubject.next(null);
           return null;
         }
 
-        // Перевіряємо, чи не минув час дії токена
-        const tokenExpiration = userData.tokenExpiration;
-        if (tokenExpiration && new Date(tokenExpiration) < new Date()) {
+        const tokenExpiration = new Date(userData.tokenExpiration);
+        if (tokenExpiration < new Date()) {
           console.log('Token has expired');
           this.currentUserSubject.next(null);
           return null;
@@ -100,35 +103,51 @@ export class AuthService {
 
   async handleSuccessfulLogin(user: any) {
     try {
-      const userData = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        photoURL: user.imageUrl,
-        accessToken: user.authentication.accessToken,
-        idToken: user.authentication.idToken,
-        tokenExpiration: new Date(Date.now() + 3600 * 1000).toISOString() // Токен діє 1 годину
-      };
+      console.log('Starting handleSuccessfulLogin with user data:', user);
 
-      console.log('User data to be saved:', userData);
+      let userData: User;
 
-      // Автентифікація через Google в Firebase
-      try {
-        const firebaseUser = await this.firebaseService.signInWithGoogle(user.authentication.idToken);
-        console.log('Firebase user authenticated:', firebaseUser);
-      } catch (error) {
-        console.log('Firebase authentication error:', error);
+      if (Capacitor.isNativePlatform()) {
+        if (!user.authentication || !user.authentication?.idToken) {
+          throw new Error('Invalid user data: missing token information');
+        }
+
+        userData = {
+          id: user.id,
+          email: user.email,
+          name: user.name || user.givenName || '',
+          photoURL: user.imageUrl || '',
+          idToken: user.authentication.idToken,
+          tokenExpiration: new Date(Date.now() + 3600 * 1000).toISOString() // Токен дійсний 1 годину
+        };
+        console.log('Native platform user data:', userData);
+      } else {
+        if (!user.authentication || !user.authentication?.idToken) {
+          throw new Error('Invalid user data: missing token information');
+        }
+
+        userData = {
+          id: user.id,
+          email: user.email,
+          name: user.name || user.givenName || '',
+          photoURL: user.imageUrl || '',
+          idToken: user.authentication.idToken,
+          tokenExpiration: new Date(Date.now() + 3600 * 1000).toISOString() // Токен дійсний 1 годину
+        };
+        console.log('Web platform user data:', userData);
       }
+
+      console.log('Processed user data for storage:', userData);
 
       // Перевіряємо, чи це перший вхід користувача
       const { value: isFirstLogin } = await Preferences.get({ key: 'isFirstLogin' });
       if (!isFirstLogin) {
-        // Якщо це перший вхід, встановлюємо прапорець
+        console.log('First login detected, setting up initial data...');
         await Preferences.set({ key: 'isFirstLogin', value: 'true' });
-        
-        // Очищаємо всі активні челенджі
+
         try {
           await this.challengeService.deactivateAllChallenges();
+          console.log('All challenges deactivated for first login');
         } catch (error) {
           console.error('Error deactivating challenges:', error);
         }
@@ -139,32 +158,57 @@ export class AuthService {
         key: 'userData',
         value: JSON.stringify(userData)
       });
+      console.log('User data saved to Preferences');
 
       // Оновлюємо токен в конфігурації
-      appConfig.ID_TOKEN = user.authentication.idToken;
-
-      // Відстеження успішного входу
-      await this.analyticsService.logEvent('login_success', {
-        method: 'google',
-        user_id: userData.id
-      });
-
-      // Встановлення ID користувача для Analytics
-      await this.analyticsService.setUserId(userData.id);
-
-      // Встановлення властивостей користувача
-      await this.analyticsService.setUserProperty('email', userData.email);
-      await this.analyticsService.setUserProperty('display_name', userData.name);
+      appConfig.ID_TOKEN = userData.idToken;
+      console.log('App config token updated');
 
       // Оновлюємо стан користувача
       this.currentUserSubject.next(userData);
+      console.log('User state updated');
 
       // Зберігаємо дані в Firebase
       try {
-        await this.storageService.set('users', userData);
-        console.log('User data saved to Firebase:', userData);
+        const userRef = doc(this.firebaseService.getFirestore(), 'users', userData.id);
+        await setDoc(userRef, {
+          ...userData,
+          lastLogin: new Date().toISOString()
+        }, { merge: true });
+        console.log('User data saved to Firebase');
       } catch (error) {
         console.error('Error saving user data to Firebase:', error);
+      }
+
+      // Перенаправляємо на домашню сторінку
+      console.log('Navigating to home page...');
+      
+      if (this.platform.is('ios')) {
+        console.log('iOS platform detected, using delayed navigation');
+        setTimeout(async () => {
+          try {
+            await this.router.navigate(['/tabs/home'], { 
+              replaceUrl: true,
+              skipLocationChange: false
+            });
+            console.log('Navigation completed');
+          } catch (error) {
+            console.error('Navigation error:', error);
+            // Спробуємо альтернативний метод навігації
+            window.location.href = '/tabs/home';
+          }
+        }, 1000); // Збільшуємо затримку для iOS
+      } else {
+        try {
+          await this.router.navigate(['/tabs/home'], { 
+            replaceUrl: true,
+            skipLocationChange: false
+          });
+          console.log('Navigation completed');
+        } catch (error) {
+          console.error('Navigation error:', error);
+          window.location.href = '/tabs/home';
+        }
       }
 
       return userData;
@@ -179,10 +223,10 @@ export class AuthService {
       // Очищаємо дані користувача
       await Preferences.remove({ key: 'userData' });
       await Preferences.remove({ key: 'isFirstLogin' });
-      
+
       // Очищаємо токен в конфігурації
       appConfig.ID_TOKEN = null;
-      
+
       // Оновлюємо стан користувача
       this.currentUserSubject.next(null);
 
@@ -193,12 +237,6 @@ export class AuthService {
 
       // Перенаправляємо на сторінку автентифікації
       await this.router.navigate(['/auth']);
-
-      // Відстеження виходу
-      await this.analyticsService.logEvent('logout');
-      
-      // Очищення ID користувача
-      await this.analyticsService.setUserId('');
     } catch (error) {
       console.error('Error signing out:', error);
       // Навіть якщо виникла помилка, все одно очищаємо дані
@@ -232,31 +270,75 @@ export class AuthService {
     }
   }
 
-  async signInWithGoogle() {
+  async signInWithGoogle(): Promise<User | null> {
     try {
-      const auth = this.firebaseService.getAuthInstance();
-      const provider = new GoogleAuthProvider();
-      
-      const result = await signInWithPopup(auth, provider);
+      console.log('Starting Google sign in process...');
+
+      const result = await this.firebaseService.signInWithGoogle();
+      console.log('Firebase sign in result:', result);
+
       if (!result || !result.user) {
-        throw new Error('Не вдалося увійти через Google');
+        console.error('No user data in sign in result:', result);
+        throw new Error('No user data in sign in result');
       }
 
+      console.log('Getting user ID token...');
       const idToken = await result.user.getIdToken();
-      const userData = {
+      console.log('ID token received:', idToken.substring(0, 10) + '...');
+
+      const userData: User = {
         id: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName,
-        photoURL: result.user.photoURL,
+        email: result.user.email || '',
+        name: result.user.displayName || '',
+        photoURL: result.user.photoURL || '',
         idToken: idToken,
-        tokenExpiration: Date.now() + 3600 * 1000
+        tokenExpiration: new Date(Date.now() + 3600 * 1000).toISOString() // Токен дійсний 1 годину
       };
 
-      await this.handleSuccessfulLogin(userData);
+      console.log('User data prepared:', userData);
+
+      // Зберігаємо дані користувача
+      await Preferences.set({
+        key: 'userData',
+        value: JSON.stringify(userData)
+      });
+      console.log('User data saved to preferences');
+
+      // Оновлюємо токен в конфігурації
+      appConfig.ID_TOKEN = userData.idToken;
+      console.log('App config token updated');
+
+      // Оновлюємо стан користувача
+      this.currentUserSubject.next(userData);
+      console.log('User state updated');
+
+      // Перенаправляємо на домашню сторінку
+      console.log('Navigating to home page...');
+      await this.router.navigate(['/tabs/home'], { replaceUrl: true });
+      console.log('Navigation complete');
+
       return userData;
     } catch (error) {
       console.error('Error signing in with Google:', error);
-      throw error;
+      let errorMessage = 'Failed to sign in with Google';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error('Detailed error:', errorMessage);
+      }
+
+      await this.showErrorToast(errorMessage);
+      return null;
     }
+  }
+
+  private async showErrorToast(message: string) {
+    const toast = await this.toastController.create({
+      message: this.translate.instant(message),
+      duration: 3000,
+      position: 'bottom',
+      color: 'danger'
+    });
+    await toast.present();
   }
 }
