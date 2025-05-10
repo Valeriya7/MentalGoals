@@ -7,9 +7,10 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
   onAuthStateChanged,
-  User,
+  User as FirebaseUser,
   signInWithPopup,
-  Auth
+  Auth,
+  UserCredential
 } from 'firebase/auth';
 import {
   getFirestore,
@@ -129,14 +130,23 @@ export class FirebaseService {
 
       // Initialize Google Auth for native platforms
       if (Capacitor.isNativePlatform()) {
-        const googleConfig = getGoogleConfig();
-        await GoogleAuth.initialize({
-          clientId: googleConfig.clientId,
-          scopes: ['profile', 'email'],
-          grantOfflineAccess: true,
-          forceCodeForRefreshToken: true
-        });
-        console.log('Google Auth initialized for native platform');
+        try {
+          const googleConfig = getGoogleConfig();
+          console.log('Initializing Google Auth with config:', googleConfig);
+          
+          // Ініціалізуємо Google Auth
+          await GoogleAuth.initialize({
+            clientId: googleConfig.clientId,
+            scopes: ['profile', 'email'],
+            grantOfflineAccess: true,
+            forceCodeForRefreshToken: true
+          });
+          this.googleAuthInitialized = true;
+          console.log('Google Auth initialized successfully for native platform');
+        } catch (error) {
+          console.error('Error initializing Google Auth:', error);
+          throw error;
+        }
       }
 
       this.isInitialized = true;
@@ -152,7 +162,7 @@ export class FirebaseService {
       console.log('Firebase app not initialized, initializing now...');
       await this.initializeFirebase();
     }
-    
+
     if (!this.firebaseReady.value) {
       console.log('Waiting for Firebase to be ready...');
       await firstValueFrom(this.firebaseReady.pipe(take(1)));
@@ -164,7 +174,7 @@ export class FirebaseService {
     return this._db;
   }
 
-  public get currentUser(): User | null {
+  public get currentUser(): FirebaseUser | null {
     return this.auth?.currentUser || null;
   }
 
@@ -172,47 +182,53 @@ export class FirebaseService {
     return !!this.auth?.currentUser;
   }
 
-  public async signInWithGoogle() {
+  public async signInWithGoogle(): Promise<FirebaseUser> {
     try {
       await this.ensureFirebaseInitialized();
 
       if (Capacitor.isNativePlatform()) {
         if (!this.googleAuthInitialized) {
-          console.log('Initializing Google Auth for native platform...');
-          const googleConfig = getGoogleConfig();
-          await GoogleAuth.initialize({
-            clientId: googleConfig.clientId,
-            scopes: ['profile', 'email'],
-            grantOfflineAccess: true,
-            forceCodeForRefreshToken: true
-          });
-          this.googleAuthInitialized = true;
-          console.log('Google Auth initialized successfully');
+          console.error('Google Auth not initialized');
+          throw new Error('Google Auth not initialized');
         }
 
         console.log('Starting native Google sign in...');
-        const googleUser = await GoogleAuth.signIn();
-        console.log('Google Auth response:', googleUser);
+        try {
+          const googleUser = await GoogleAuth.signIn();
+          console.log('Google Auth response:', googleUser);
 
-        if (!googleUser?.authentication?.idToken) {
-          console.error('No ID token in Google Auth response:', googleUser);
-          throw new Error('No ID token present in Google Auth response');
+          if (!googleUser?.authentication?.idToken) {
+            console.error('No ID token in Google Auth response:', googleUser);
+            throw new Error('No ID token in Google Auth response');
+          }
+
+          const credential = GoogleAuthProvider.credential(
+            googleUser.authentication.idToken,
+            googleUser.authentication.accessToken
+          );
+
+          console.log('Created credential, signing in with Firebase...');
+          const userCredential = await signInWithCredential(this.auth, credential);
+          console.log('Firebase sign in successful:', userCredential.user.uid);
+
+          return userCredential.user;
+        } catch (error: any) {
+          console.error('Error during Google sign in:', error);
+          if (error.code === '10') {
+            throw new Error('Google Sign-In failed. Please try again.');
+          }
+          throw error;
         }
-
-        console.log('Creating Firebase credential with token:', googleUser.authentication.idToken.substring(0, 10) + '...');
-        const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
-
-        console.log('Signing in to Firebase with credential...');
-        const result = await signInWithCredential(this.auth, credential);
-        console.log('Firebase sign in successful:', result);
-
-        return result;
       } else {
-        console.log('Using web Firebase Auth...');
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(this.auth, provider);
-        console.log('Firebase Auth result:', result);
-        return result;
+        console.log('Starting web Google sign in...');
+        try {
+          const result = await signInWithPopup(this.auth, this.googleAuthProvider);
+          console.log('Web Google sign in successful:', result.user.uid);
+          return result.user;
+        } catch (error: any) {
+          console.error('Error during web Google sign in:', error);
+          throw error;
+        }
       }
     } catch (error) {
       console.error('Error in signInWithGoogle:', error);
@@ -235,7 +251,7 @@ export class FirebaseService {
   }
 
   // Перевірка стану автентифікації
-  async checkAuthState(): Promise<User | null> {
+  async checkAuthState(): Promise<FirebaseUser | null> {
     return new Promise((resolve, reject) => {
       onAuthStateChanged(this.auth, async (user) => {
         if (user) {
@@ -356,7 +372,7 @@ export class FirebaseService {
     return this.isOnline.value;
   }
 
-  async updateUserData(userId: string, data: Partial<User>): Promise<void> {
+  async updateUserData(userId: string, data: Partial<FirebaseUser>): Promise<void> {
     try {
       const userRef = doc(this.firestore, 'users', userId);
       await updateDoc(userRef, data);
@@ -379,13 +395,13 @@ export class FirebaseService {
     }
   }
 
-  async getUserData(userId: string): Promise<User | null> {
+  async getUserData(userId: string): Promise<FirebaseUser | null> {
     try {
       const userRef = doc(this.firestore, 'users', userId);
       const docSnap = await getDoc(userRef);
 
       if (docSnap.exists()) {
-        return docSnap.data() as User;
+        return docSnap.data() as FirebaseUser;
       }
       return null;
     } catch (error) {
@@ -430,16 +446,16 @@ export class FirebaseService {
       } catch (error: any) {
         lastError = error;
         console.warn(`Operation failed (attempt ${attempt}/${maxRetries}):`, error);
-        
-        if (error.code === 'failed-precondition' || 
-            error.code === 'unavailable' || 
+
+        if (error.code === 'failed-precondition' ||
+            error.code === 'unavailable' ||
             error.code === 'resource-exhausted') {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
           console.log(`Retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
-        
+
         throw error;
       }
     }
@@ -449,19 +465,25 @@ export class FirebaseService {
   // Update the setDoc method to use retry logic
   async setDocument(collection: string, docId: string, data: any): Promise<void> {
     try {
+      console.log('Starting setDocument operation...');
       await this.ensureFirebaseInitialized();
-      
+      console.log('Firebase initialized successfully');
+
       const docRef = doc(this.firestore, collection, docId);
-      
+      console.log(`Document reference created for ${collection}/${docId}`);
+
       return await this.retryOperation(async () => {
         try {
-          // Перевіряємо підключення перед записом
-          if (!this.isOnline.value) {
-            console.log('Offline mode: saving data locally');
+          const networkStatus = await Network.getStatus();
+          console.log('Current network status:', networkStatus.connected);
+          
+          if (!networkStatus.connected) {
+            console.log('Device is offline, saving data locally');
             await this.saveOfflineData(collection, data, docId);
             return;
           }
 
+          console.log('Attempting to write document to Firestore...');
           await setDoc(docRef, {
             ...data,
             updatedAt: new Date().toISOString()
@@ -469,13 +491,25 @@ export class FirebaseService {
           console.log(`Document ${docId} successfully written to ${collection}`);
         } catch (error: any) {
           console.error(`Error writing document ${docId} to ${collection}:`, error);
+          console.error('Error details:', {
+            code: error.code,
+            message: error.message,
+            stack: error.stack
+          });
+          
           // Зберігаємо локально при помилці
           await this.saveOfflineData(collection, data, docId);
           throw error;
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in setDocument:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
+      
       // Зберігаємо дані локально у випадку помилки
       await this.saveOfflineData(collection, data, docId);
       throw error;
