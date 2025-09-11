@@ -6,7 +6,8 @@
     "BOOKMARKS": "Закладки",
     "CLOSE": "Закрити",
     "SETTINGS": "Налаштування",
-    "DAYS": "днів"
+    "DAYS": "днів",
+    "CHALLENGE_COMPLETED": "Челендж завершено на {{progress}}%. Нараховано {{points}} балів"
   },
   "WISHES": {
     "MORNING_PRODUCTIVITY": "Хей, ранок став початком чудового і продуктивного дня",
@@ -62,7 +63,11 @@
       "EMOTIONS_VALUE": "Значення емоцій",
       "EMOTIONS_ENERGY": "Енергія емоцій",
       "HABITS": "Звички"
-    }
+    },
+    "ALL_ACTIVE_TASKS": "Всі активні завдання",
+    "GO_TO_LIFE_WHEEL": "Перейти до колеса життя",
+    "GO_TO_CHALLENGE": "Перейти до поточного челенджу",
+    "GRATITUDE": "Подяка"
   },
   "CHALLENGES": {
     "TITLE": "Челенджі",
@@ -308,5 +313,6 @@
   "NOTIFICATIONS": {
     "OFFLINE_MODE": "Ви зараз офлайн. Деякі функції можуть бути обмежені.",
     "ONLINE_MODE": "Ви знову онлайн. Всі функції тепер доступні."
-  }
+  },
+  "EMPTY_SET": "Порожній набір"
 }

@@ -4,7 +4,8 @@
     "USER": "User",
     "NOTIFICATIONS": "Notifications",
     "BOOKMARKS": "Bookmarks",
-    "CLOSE": "Close"
+    "CLOSE": "Close",
+    "CHALLENGE_COMPLETED": "Challenge completed at {{progress}}%. Earned {{points}} points"
   },
   "LIFE_WHEEL": {
     "TITLE": "Life Balance Wheel",
@@ -80,7 +81,11 @@
       "LEVEL": "Level (1-10)",
       "STEPS_COUNT": "Steps Count",
       "ACTIVITY_STATS": "Activity Statistics"
-    }
+    },
+    "ALL_ACTIVE_TASKS": "All Active Tasks",
+    "GO_TO_LIFE_WHEEL": "Go to Life Wheel",
+    "GO_TO_CHALLENGE": "Go to Challenge",
+    "GRATITUDE": "Gratitude"
   },
   "CHALLENGES": {
     "TITLE": "Challenges 🎯",
@@ -335,5 +340,6 @@
   "NOTIFICATIONS": {
     "OFFLINE_MODE": "You are currently offline. Some features may be limited.",
     "ONLINE_MODE": "You are back online. All features are now available."
-  }
+  },
+  "EMPTY_SET": "Empty Set"
 }

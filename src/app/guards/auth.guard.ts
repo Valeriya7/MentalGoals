@@ -14,7 +14,10 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(route: ActivatedRouteSnapshot): Promise<boolean> {
     try {
+      console.log('=== AuthGuard: canActivate START ===');
       console.log('Auth guard - Checking authentication...');
+      console.log('Route path:', route.routeConfig?.path);
+      
       const user = await this.authService.getCurrentUser();
       console.log('Auth guard - Current user:', user);
       
@@ -23,15 +26,18 @@ export class AuthGuard implements CanActivate {
         const { value: isFirstLogin } = await Preferences.get({ key: 'isFirstLogin' });
         console.log('Auth guard - Is first login:', isFirstLogin);
         
-        if (isFirstLogin === null) {
-          // Якщо це перший вхід, встановлюємо прапорець та перенаправляємо на сторінку питань
-          await Preferences.set({ key: 'isFirstLogin', value: 'false' });
-          console.log('Auth guard - Redirecting to questions page');
-          await this.router.navigate(['/tabs/questions'], { replaceUrl: true });
-          return false;
+        if (isFirstLogin === 'true' || isFirstLogin === null) {
+          // Якщо це перший вхід і ми не на сторінці питань, перенаправляємо туди
+          if (route.routeConfig?.path !== 'questions') {
+            console.log('Auth guard - First login detected, redirecting to questions page');
+            await this.router.navigate(['/questions'], { replaceUrl: true });
+            console.log('=== AuthGuard: canActivate END (redirected to questions) ===');
+            return false;
+          }
         }
         
         console.log('Auth guard - User is authenticated');
+        console.log('=== AuthGuard: canActivate END (user authenticated) ===');
         return true;
       }
 
@@ -39,9 +45,11 @@ export class AuthGuard implements CanActivate {
       if (route.routeConfig?.path !== 'questions') {
         console.log('Auth guard - User is not authenticated, redirecting to auth page');
         await this.router.navigate(['/auth'], { replaceUrl: true });
+        console.log('=== AuthGuard: canActivate END (redirected to auth) ===');
         return false;
       }
 
+      console.log('=== AuthGuard: canActivate END (questions page allowed) ===');
       return true;
     } catch (error) {
       console.error('Auth guard error:', error);
@@ -49,8 +57,10 @@ export class AuthGuard implements CanActivate {
       if (route.routeConfig?.path !== 'questions') {
         console.log('Auth guard - Error occurred, redirecting to auth page');
         await this.router.navigate(['/auth'], { replaceUrl: true });
+        console.log('=== AuthGuard: canActivate END (error, redirected to auth) ===');
         return false;
       }
+      console.log('=== AuthGuard: canActivate END (error, questions page allowed) ===');
       return true;
     }
   }

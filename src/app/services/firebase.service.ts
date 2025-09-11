@@ -469,6 +469,15 @@ export class FirebaseService {
       await this.ensureFirebaseInitialized();
       console.log('Firebase initialized successfully');
 
+      // Перевіряємо, чи користувач авторизований
+      if (!this.auth.currentUser) {
+        console.warn('No authenticated user, saving locally only');
+        await this.saveOfflineData(collection, data, docId);
+        return;
+      }
+
+      console.log('User authenticated:', this.auth.currentUser.uid);
+
       const docRef = doc(this.firestore, collection, docId);
       console.log(`Document reference created for ${collection}/${docId}`);
 
@@ -483,11 +492,18 @@ export class FirebaseService {
             return;
           }
 
-          console.log('Attempting to write document to Firestore...');
-          await setDoc(docRef, {
+          // Додаємо метадані до документа
+          const documentData = {
             ...data,
+            userId: this.auth.currentUser?.uid,
+            createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
-          }, { merge: true });
+          };
+
+          console.log('Attempting to write document to Firestore...');
+          console.log('Document data:', documentData);
+          
+          await setDoc(docRef, documentData, { merge: true });
           console.log(`Document ${docId} successfully written to ${collection}`);
         } catch (error: any) {
           console.error(`Error writing document ${docId} to ${collection}:`, error);

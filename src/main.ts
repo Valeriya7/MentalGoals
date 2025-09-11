@@ -5,15 +5,6 @@ import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import './polyfills';
 import './zone-flags';
-import { Capacitor } from '@capacitor/core';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
-
-// Ініціалізація Google Auth для Android
-if (Capacitor.isNativePlatform()) {
-  GoogleAuth.initialize().catch((err: Error) => {
-    console.error('Error initializing Google Auth:', err);
-  });
-}
 
 if (environment.production) {
   enableProdMode();
