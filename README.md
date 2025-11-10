@@ -120,18 +120,121 @@ export const environment = {
 5. In the "SDK setup and configuration" section, select "Config"
 6. Copy the `firebaseConfig` values
 
-### 3. SSL Certificates (optional, for HTTPS in development)
+### 3. Firebase Platform Configuration
 
-#### Folder `ssl/`
-**Location:** `/ssl/` (project root)
+#### File `src/app/config/firebase.config.ts`
+**Location:** `src/app/config/firebase.config.ts`
 
-If you're using HTTPS for local development, create SSL certificates:
+This file contains Firebase configuration for all platforms (Web, iOS, Android) and Google OAuth client IDs.
 
-```bash
-mkdir ssl
-cd ssl
-openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+**Create the file with this structure:**
+
+```typescript
+import { Capacitor } from '@capacitor/core';
+
+export interface FirebaseConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  appId: string;
+  measurementId?: string;
+  google_app_id?: string;
+}
+
+export interface GoogleConfig {
+  clientId: string;
+}
+
+const WEB_CONFIG: FirebaseConfig = {
+  apiKey: "YOUR_WEB_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_WEB_APP_ID"
+};
+
+const IOS_CONFIG: FirebaseConfig = {
+  apiKey: "YOUR_IOS_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_IOS_APP_ID"
+};
+
+const ANDROID_CONFIG: FirebaseConfig = {
+  apiKey: "YOUR_ANDROID_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_ANDROID_APP_ID",
+  google_app_id: "YOUR_ANDROID_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
+};
+
+const WEB_GOOGLE_CONFIG: GoogleConfig = {
+  clientId: "YOUR_WEB_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+};
+
+const IOS_GOOGLE_CONFIG: GoogleConfig = {
+  clientId: "YOUR_IOS_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+};
+
+const ANDROID_GOOGLE_CONFIG: GoogleConfig = {
+  clientId: "YOUR_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+};
+
+export const getPlatformConfig = (): GoogleConfig => {
+  if (Capacitor.getPlatform() === 'ios') {
+    return IOS_GOOGLE_CONFIG;
+  } else if (Capacitor.getPlatform() === 'android') {
+    return ANDROID_GOOGLE_CONFIG;
+  }
+  return WEB_GOOGLE_CONFIG;
+};
+
+export const getFirebaseConfig = (): FirebaseConfig => {
+  if (Capacitor.getPlatform() === 'ios') {
+    return IOS_CONFIG;
+  } else if (Capacitor.getPlatform() === 'android') {
+    return ANDROID_CONFIG;
+  }
+  return WEB_CONFIG;
+};
+
+export const getGoogleConfig = (): GoogleConfig => {
+  if (Capacitor.getPlatform() === 'ios') {
+    return IOS_GOOGLE_CONFIG;
+  } else if (Capacitor.getPlatform() === 'android') {
+    return ANDROID_GOOGLE_CONFIG;
+  }
+  return WEB_GOOGLE_CONFIG;
+};
 ```
+
+**Where to get the data:**
+
+**Firebase App IDs and Config:**
+1. [Firebase Console](https://console.firebase.google.com/)
+2. Project Settings → General
+3. In "Your apps" section:
+   - **Web App**: Copy apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId
+   - **iOS App**: Same fields from iOS app config
+   - **Android App**: Same fields from Android app config + measurementId
+
+**Google OAuth Client IDs:**
+1. [Google Cloud Console](https://console.cloud.google.com/)
+2. Select your project
+3. Go to "APIs & Services" → "Credentials"
+4. Find OAuth 2.0 Client IDs for:
+   - **Web client** (Type: Web application)
+   - **iOS client** (Type: iOS)
+   - **Android client** (Type: Android)
+5. Copy the Client ID for each platform
 
 ## 🏃‍♂️ Running the Project
 
@@ -161,15 +264,15 @@ MentalGoals/
 │   │   ├── components/      # Reusable components
 │   │   ├── pages/           # Application pages
 │   │   ├── services/        # Services (Firebase, Auth, etc.)
-│   │   └── config/          # Configuration files
+│   │   └── config/
+│   │       └── firebase.config.ts  # Platform configs (NOT IN GIT)
 │   ├── assets/              # Static resources
 │   │   ├── data/            # JSON data (habits, challenges)
 │   │   ├── i18n/            # Translations
 │   │   └── images/          # Images
 │   └── environments/        # Environment configuration (NOT IN GIT)
 ├── GoogleService-Info.plist # iOS Firebase config (NOT IN GIT)
-├── google-services.json     # Android Firebase config (NOT IN GIT)
-└── ssl/                     # SSL certificates (NOT IN GIT)
+└── google-services.json     # Android Firebase config (NOT IN GIT)
 ```
 
 ## 🔒 Security
@@ -178,9 +281,9 @@ MentalGoals/
 - `GoogleService-Info.plist`
 - `google-services.json`
 - `src/environments/`
-- `ssl/`
+- `src/app/config/firebase.config.ts`
 
-These files are already added to `.gitignore`.
+These files are already added to `.gitignore` and contain sensitive API keys and configuration data.
 
 ## 🌍 Languages
 
