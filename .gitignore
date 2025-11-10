@@ -87,3 +87,4 @@ ssl/
 GoogleService-Info.plist
 google-services.json
 src/environments/
+src/app/config/firebase.config.ts
