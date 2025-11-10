@@ -7,6 +7,7 @@ import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';
 import { StorageService } from './storage.service';
 import { TranslateService } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,8 @@ export class ChallengeService {
   private storageReady = new BehaviorSubject<boolean>(false);
   private isLoading = new BehaviorSubject<boolean>(false);
   private readonly STORAGE_KEY = 'challenges';
+  private readonly CACHE_VERSION_KEY = 'challenges_cache_version';
+  private readonly CURRENT_CACHE_VERSION = '2.1'; // Increment this to force cache refresh
   private readonly ALLOWED_ORIGINS = ['localhost', 'mentalgoals.app'];
   private preferenceStorage = true;
   private progressCache = new Map<string, ChallengeProgress>();
@@ -27,7 +30,8 @@ export class ChallengeService {
     private modalService: ModalService,
     private storageService: StorageService,
     private platform: Platform,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private http: HttpClient
   ) {
     this.init();
     this.initializeActiveChallenge();
@@ -122,14 +126,32 @@ export class ChallengeService {
       // Визначаємо, чи можемо використовувати Preferences API
       this.preferenceStorage = this.platform.is('capacitor');
 
+      // Перевіряємо версію кешу
+      const { value: cacheVersion } = await Preferences.get({ key: this.CACHE_VERSION_KEY });
+      console.log('Current cache version:', cacheVersion, 'Expected:', this.CURRENT_CACHE_VERSION);
+      
       // Отримуємо дані
       const challenges = await this.getStorageData();
 
-      // Якщо челенджів немає, створюємо базові
-      if (!challenges || challenges.length === 0) {
-        const defaultChallenges = this.getDefaultChallenges();
+      // Якщо версія кешу не відповідає або челенджів немає, створюємо базові
+      if (!cacheVersion || cacheVersion !== this.CURRENT_CACHE_VERSION || !challenges || challenges.length === 0) {
+        const defaultChallenges = await this.getDefaultChallenges();
         await this.saveToAllStorages(defaultChallenges);
+        await Preferences.set({ key: this.CACHE_VERSION_KEY, value: this.CURRENT_CACHE_VERSION });
         console.log('Default challenges initialized');
+      } else {
+        // Якщо є кешовані дані, перевіряємо чи вони англійською
+        console.log('Found cached challenges:', challenges.length);
+        console.log('First cached challenge title:', challenges[0]?.title);
+        
+        // Якщо дані українською, перезавантажуємо з файлу
+        if (challenges[0]?.title && challenges[0].title.includes('Днів')) {
+          console.log('Cached data is in Ukrainian, reloading from file...');
+          const defaultChallenges = await this.getDefaultChallenges();
+          await this.saveToAllStorages(defaultChallenges);
+          await Preferences.set({ key: this.CACHE_VERSION_KEY, value: this.CURRENT_CACHE_VERSION });
+          console.log('Challenges reloaded from file');
+        }
       }
 
       this.storageReady.next(true);
@@ -143,7 +165,7 @@ export class ChallengeService {
         try {
           const { value } = await Preferences.get({ key: this.STORAGE_KEY });
           if (!value) {
-            const defaultChallenges = this.getDefaultChallenges();
+            const defaultChallenges = await this.getDefaultChallenges();
             await Preferences.set({
               key: this.STORAGE_KEY,
               value: JSON.stringify(defaultChallenges)
@@ -249,7 +271,22 @@ export class ChallengeService {
       for (const challenge of data) {
         // Перевіряємо обов'язкові поля
         if (!challenge.id || !challenge.title || !challenge.description || !challenge.status) {
-          console.error('Missing required fields in challenge:', challenge);
+          console.error('Missing required fields in challenge:', {
+            id: challenge.id,
+            title: challenge.title,
+            description: challenge.description,
+            status: challenge.status
+          });
+          return false;
+        }
+        
+        // Перевіряємо що title та description не порожні рядки
+        if (challenge.title === '' || challenge.description === '') {
+          console.error('Title or description is empty:', {
+            id: challenge.id,
+            title: challenge.title,
+            description: challenge.description
+          });
           return false;
         }
 
@@ -257,6 +294,18 @@ export class ChallengeService {
         const validStatuses = ['active', 'completed', 'failed', 'available'];
         if (!validStatuses.includes(challenge.status)) {
           console.error('Invalid challenge status:', challenge.status);
+          return false;
+        }
+        
+        // Перевіряємо phases
+        if (!challenge.phases || !Array.isArray(challenge.phases) || challenge.phases.length === 0) {
+          console.error('Missing or invalid phases in challenge:', challenge.id);
+          return false;
+        }
+        
+        // Перевіряємо tasks
+        if (!challenge.tasks || !Array.isArray(challenge.tasks) || challenge.tasks.length === 0) {
+          console.error('Missing or invalid tasks in challenge:', challenge.id);
           return false;
         }
 
@@ -657,15 +706,19 @@ export class ChallengeService {
       const storage = await this.ensureStorageReady();
       let challenges = await this.storageService.get(this.STORAGE_KEY) || [];
 
-      // Якщо немає челенджів, ініціалізуємо дефолтні
-      if (!challenges || challenges.length === 0) {
-        console.log('No challenges found, initializing defaults');
-        challenges = this.getDefaultChallenges();
+      // Перевіряємо версію кешу
+      const { value: cacheVersion } = await Preferences.get({ key: this.CACHE_VERSION_KEY });
+      
+      // Якщо версія кешу не відповідає або немає челенджів, ініціалізуємо дефолтні
+      if (!cacheVersion || cacheVersion !== this.CURRENT_CACHE_VERSION || !challenges || challenges.length === 0) {
+        console.log('No challenges found or cache version mismatch, initializing defaults');
+        challenges = await this.getDefaultChallenges();
         await this.saveToAllStorages(challenges);
+        await Preferences.set({ key: this.CACHE_VERSION_KEY, value: this.CURRENT_CACHE_VERSION });
       }
 
       // Перевіряємо наявність всіх дефолтних челенджів
-      const defaultChallenges = this.getDefaultChallenges();
+      const defaultChallenges = await this.getDefaultChallenges();
       const existingIds = new Set(challenges.map((c: Challenge) => c.id));
       const hasActiveChallenge = challenges.some((c: Challenge) => c.status === 'active');
 
@@ -930,28 +983,126 @@ export class ChallengeService {
     }
   }
 
-  private getDefaultChallenges(): Challenge[] {
+  private async getDefaultChallenges(): Promise<Challenge[]> {
+    try {
+      const data = await this.http.get<any>('./assets/data/challenges.json').toPromise();
+      
+      // Визначаємо поточну мову з більш надійною логікою
+      let currentLang = 'en'; // За замовчуванням англійська
+      
+      console.log('ChallengeService - translate.currentLang:', this.translate.currentLang);
+      console.log('ChallengeService - translate.defaultLang:', this.translate.defaultLang);
+      
+      if (this.translate.currentLang) {
+        currentLang = this.translate.currentLang;
+      } else if (this.translate.defaultLang) {
+        currentLang = this.translate.defaultLang;
+      }
+      
+      // Додаткова перевірка - якщо мова все ще не встановлена, чекаємо
+      if (!currentLang || currentLang === 'en') {
+        console.log('ChallengeService - Language not set, using English');
+        currentLang = 'en';
+      }
+      
+      console.log('getDefaultChallenges: Using language:', currentLang);
+      console.log('getDefaultChallenges: Available languages in data:', Object.keys(data.challenges[0].title || {}));
+      console.log('getDefaultChallenges: First challenge before translation:', data.challenges[0].title);
+      
+      const result = data.challenges.map((challenge: any) => ({
+        ...challenge,
+        title: challenge.title[currentLang] || challenge.title.en || challenge.title,
+        description: challenge.description[currentLang] || challenge.description.en || challenge.description,
+        tasks: challenge.tasks.map((task: any) => ({
+          ...task,
+          title: task.title[currentLang] || task.title.en || task.title,
+          description: task.description[currentLang] || task.description.en || task.description
+        })),
+        phases: challenge.phases ? challenge.phases.map((phase: any) => ({
+          ...phase,
+          title: phase.title[currentLang] || phase.title.en || phase.title,
+          tasks: phase.tasks.map((task: any) => ({
+            ...task,
+            title: task.title[currentLang] || task.title.en || task.title,
+            description: task.description[currentLang] || task.description.en || task.description
+          }))
+        })) : []
+      }));
+      
+      console.log('getDefaultChallenges: First challenge after translation:', result[0]?.title);
+      return result;
+    } catch (error) {
+      console.error('Error loading challenges from file:', error);
+      // Fallback to hardcoded English challenges
+      return await this.getFallbackChallenges();
+    }
+  }
+
+  private async getFallbackChallenges(): Promise<Challenge[]> {
+    try {
+      // Спробуємо завантажити з файлу знову (можливо, тимчасова проблема)
+      const data = await this.http.get<any>('./assets/data/challenges.json').toPromise();
+      
+      // Визначаємо поточну мову з більш надійною логікою
+      let currentLang = 'en'; // За замовчуванням англійська
+      
+      if (this.translate.currentLang) {
+        currentLang = this.translate.currentLang;
+      } else if (this.translate.defaultLang) {
+        currentLang = this.translate.defaultLang;
+      }
+      
+      console.log('getFallbackChallenges: Using language:', currentLang);
+      console.log('getFallbackChallenges: Available languages in data:', Object.keys(data.challenges[0].title || {}));
+      
+      return data.challenges.map((challenge: any) => ({
+        ...challenge,
+        title: challenge.title[currentLang] || challenge.title.en || challenge.title,
+        description: challenge.description[currentLang] || challenge.description.en || challenge.description,
+        tasks: challenge.tasks.map((task: any) => ({
+          ...task,
+          title: task.title[currentLang] || task.title.en || task.title,
+          description: task.description[currentLang] || task.description.en || task.description
+        })),
+        phases: challenge.phases ? challenge.phases.map((phase: any) => ({
+          ...phase,
+          title: phase.title[currentLang] || phase.title.en || phase.title,
+          tasks: phase.tasks.map((task: any) => ({
+            ...task,
+            title: task.title[currentLang] || task.title.en || task.title,
+            description: task.description[currentLang] || task.description.en || task.description
+          }))
+        })) : []
+      }));
+    } catch (error) {
+      console.error('Error loading challenges from file in fallback:', error);
+      // Якщо і fallback не спрацював, повертаємо хардкоджені англійські дані
+      return this.getHardcodedEnglishChallenges();
+    }
+  }
+
+  private getHardcodedEnglishChallenges(): Challenge[] {
     return [
       {
         id: 'challenge-default-1',
-        title: '40 Днів Здорових Звичок',
-        description: 'Покращіть своє здоров\'я за 40 днів, формуючи корисні звички',
+        title: '40 Days of Healthy Habits',
+        description: 'Improve your health over 40 days by forming healthy habits',
         duration: 40,
         difficulty: 'expert',
         difficultyLevel: 5,
         tasks: [
           {
             id: 'no-sweets',
-            title: 'Без солодкого',
-            description: 'Уникайте солодощів протягом дня',
+            title: 'No Sweets',
+            description: 'Avoid sweets throughout the day',
             icon: 'ice-cream-outline',
             completed: false,
             progress: 0
           },
           {
             id: 'no-coffee',
-            title: 'Без кави',
-            description: 'Замініть каву на здорові альтернативи',
+            title: 'No Coffee',
+            description: 'Replace coffee with healthy alternatives',
             icon: 'cafe-outline',
             completed: false,
             progress: 0
@@ -980,20 +1131,20 @@ export class ChallengeService {
         },
         phases: [{
           id: 'phase-1',
-          title: 'Основна фаза',
+          title: 'Main Phase',
           tasks: [
             {
               id: 'no-sweets',
-              title: 'Без солодкого',
-              description: 'Уникайте солодощів протягом дня',
+              title: 'No Sweets',
+              description: 'Avoid sweets throughout the day',
               icon: 'ice-cream-outline',
               completed: false,
               progress: 0
             },
             {
               id: 'no-coffee',
-              title: 'Без кави',
-              description: 'Замініть каву на здорові альтернативи',
+              title: 'No Coffee',
+              description: 'Replace coffee with healthy alternatives',
               icon: 'cafe-outline',
               completed: false,
               progress: 0
@@ -1005,16 +1156,16 @@ export class ChallengeService {
       },
       {
         id: 'challenge-gratitude',
-        title: 'Ранкова подяка',
-        description: 'Формування позитивного мислення та зменшення стресу через щоденну практику вдячності',
+        title: 'Morning Gratitude',
+        description: 'Forming positive thinking and reducing stress through daily gratitude practice',
         duration: 7,
         difficulty: 'beginner',
         difficultyLevel: 1,
         tasks: [
           {
             id: 'gratitude-list',
-            title: 'Список вдячності',
-            description: 'Запишіть 3 речі, за які ви вдячні сьогодні',
+            title: 'Gratitude List',
+            description: 'Write down 3 things you are grateful for today',
             icon: 'heart-outline',
             completed: false,
             progress: 0
@@ -1025,19 +1176,19 @@ export class ChallengeService {
           points: 10,
           discounts: [
             {
-              brand: 'Книгарня',
+              brand: 'Bookstore',
               amount: '10%'
             }
           ]
         },
         phases: [{
           id: 'phase-1',
-          title: 'Фаза вдячності',
+          title: 'Gratitude Phase',
           tasks: [
             {
               id: 'gratitude-list',
-              title: 'Список вдячності',
-              description: 'Запишіть 3 речі, за які ви вдячні сьогодні',
+              title: 'Gratitude List',
+              description: 'Write down 3 things you are grateful for today',
               icon: 'heart-outline',
               completed: false,
               progress: 0

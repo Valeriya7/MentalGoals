@@ -105,7 +105,7 @@
 
   <!-- All Active Tasks -->
   <div *ngIf="allDailyTasks.length > 0" class="all-tasks">
-    <h2>Всі активні завдання</h2>
+    <h2>{{ 'HOME.ALL_ACTIVE_TASKS' | translate }}</h2>
     <ion-list>
       <ion-item *ngFor="let task of allDailyTasks" [class.completed]="task.completed">
         <ion-checkbox
@@ -182,14 +182,14 @@
   <ion-grid>
     <ion-row>
       <ion-col size="6">
-        <ion-button expand="block" (click)="goToLifeWheel()" [attr.aria-label]="'Перейти до колеса життя'">
+        <ion-button expand="block" (click)="goToLifeWheel()" [attr.aria-label]="'HOME.GO_TO_LIFE_WHEEL' | translate">
           <ion-icon name="settings-outline" slot="start" [attr.aria-hidden]="true"></ion-icon>
           {{ 'HOME.LIFE_WHEEL' | translate }}
         </ion-button>
       </ion-col>
       <!--
       <ion-col size="6">
-        <ion-button expand="block" (click)="goToEmotionalCalendar()" [attr.aria-label]="'Перейти до поточного челенджу'">
+        <ion-button expand="block" (click)="goToEmotionalCalendar()" [attr.aria-label]="'HOME.GO_TO_CHALLENGE' | translate">
           <ion-icon name="calendar-outline" slot="start" [attr.aria-hidden]="true"></ion-icon>
           {{ 'HOME.CHALLENGE' | translate }}
         </ion-button>

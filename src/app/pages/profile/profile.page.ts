@@ -32,7 +32,7 @@ import { PointsService } from '../../services/points.service';
 })
 export class ProfilePage implements OnInit, OnDestroy {
   userName: string = '';
-  userPhotoUrl: string = '';
+  userPhotoUrl: string | null = null;
   totalPoints: number = 0;
   currentLanguage: string = 'en';
   availableLanguages = [
@@ -64,6 +64,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   stravaClientSecret: string = '';
 
   userPoints: number = 0;
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private router: Router,
@@ -78,9 +79,24 @@ export class ProfilePage implements OnInit, OnDestroy {
   async ngOnInit() {
     await this.loadUserData();
     this.subscribeToHealthData();
+    this.subscribeToLanguageChanges();
     await this.loadLanguageSettings();
     this.checkStravaConnection();
     this.userPoints = await this.pointsService.getPoints();
+
+    // Підписуємося на зміни користувача для синхронізації фото
+    this.subscriptions.push(
+      this.authService.currentUser$.subscribe(user => {
+        if (user) {
+          this.userName = user.name || this.translateService.instant('COMMON.USER');
+          this.userPhotoUrl = user.photoURL || null;
+          console.log('ProfilePage - User data updated:', {
+            name: this.userName,
+            photoURL: this.userPhotoUrl
+          });
+        }
+      })
+    );
 
     this.pointsService.points$.subscribe(points => {
       this.userPoints = points;
@@ -91,6 +107,8 @@ export class ProfilePage implements OnInit, OnDestroy {
     if (this.healthDataSubscription) {
       this.healthDataSubscription.unsubscribe();
     }
+    // Очищуємо всі підписки
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   private async loadLanguageSettings() {
@@ -108,11 +126,29 @@ export class ProfilePage implements OnInit, OnDestroy {
   async changeLanguage(event: any) {
     const newLang = event.detail.value;
     try {
+      console.log('Changing language to:', newLang);
       await this.translateService.setLanguage(newLang);
       this.currentLanguage = newLang;
-      window.location.reload();
+      
+      // Оновлюємо дані челенджів та звичок з новою мовою
+      await this.refreshDataForNewLanguage();
+      
+      console.log('Language changed successfully to:', newLang);
     } catch (error) {
       console.error('Error changing language:', error);
+    }
+  }
+
+  private async refreshDataForNewLanguage() {
+    try {
+      // Оновлюємо кеш версії для челенджів та звичок
+      // Це змусить їх перезавантажити дані з новою мовою
+      await Preferences.set({ key: 'challenges_cache_version', value: '2.1' });
+      await Preferences.set({ key: 'habits_cache_version', value: '2.1' });
+      
+      console.log('Data cache versions updated for new language');
+    } catch (error) {
+      console.error('Error refreshing data for new language:', error);
     }
   }
 
@@ -126,15 +162,23 @@ export class ProfilePage implements OnInit, OnDestroy {
       });
   }
 
+  private subscribeToLanguageChanges() {
+    this.translateService.getCurrentLang().subscribe(lang => {
+      this.currentLanguage = lang;
+      console.log('Profile page - Language changed to:', lang);
+    });
+  }
+
   async loadUserData() {
     const name = await Preferences.get({ key: 'name' });
     const points = await Preferences.get({ key: 'points' });
     const notif = await Preferences.get({ key: 'notifications' });
     const photoURL = await Preferences.get({key:'photoURL'});
-    console.log('photoURL: ',photoURL);
+    console.log('ProfilePage - loadUserData photoURL: ',photoURL);
 
+    // Завантажуємо тільки ті дані, які не синхронізуються з Firebase
     if (name && name.value) this.userName = name.value;
-    if (photoURL && photoURL.value) this.userPhotoUrl=photoURL.value;
+    // Не перезаписуємо userPhotoUrl - він буде завантажений з Firebase
     if (points && points.value) this.totalPoints = parseInt(points.value);
     if (notif && notif.value) this.notifications = JSON.parse(notif.value);
   }

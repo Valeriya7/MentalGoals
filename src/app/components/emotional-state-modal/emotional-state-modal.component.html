@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Мій емоційний стан</ion-title>
+    <ion-title>My Emotional State</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
         <ion-icon name="close"></ion-icon>
@@ -32,7 +32,7 @@
       <ion-item>
         <ion-textarea
           formControlName="note"
-          placeholder="Додайте нотатку (необов'язково)"
+          placeholder="Add a note (optional)"
           rows="4"
         ></ion-textarea>
       </ion-item>
@@ -47,7 +47,7 @@
       [disabled]="!emotionForm.valid"
       (click)="saveEmotion()"
     >
-      Зберегти
+      Save
     </ion-button>
   </ion-toolbar>
 </ion-footer> 

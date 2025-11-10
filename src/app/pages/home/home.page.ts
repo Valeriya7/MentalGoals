@@ -214,7 +214,7 @@ export class HomePage implements OnInit, OnDestroy {
       }),
       this.authService.currentUser$.subscribe(user => {
         if (user) {
-          this.userName = user.name || 'Користувач';
+          this.userName = user.name || this.translate.instant('COMMON.USER');
           this.userPhotoUrl = user.photoURL || null;
         }
       })
@@ -263,7 +263,10 @@ export class HomePage implements OnInit, OnDestroy {
 
             // Показуємо повідомлення про завершення
             const toast = await this.toastController.create({
-              message: `Челендж завершено на ${progressCheck.progress.toFixed(1)}%. Нараховано ${progressCheck.points} балів`,
+              message: this.translate.instant('COMMON.CHALLENGE_COMPLETED', {
+                progress: progressCheck.progress.toFixed(1),
+                points: progressCheck.points
+              }),
               duration: 5000,
               position: 'bottom',
               color: 'success'
@@ -633,7 +636,7 @@ export class HomePage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error navigating to challenge:', error);
       const toast = await this.toastController.create({
-        message: 'Сталася помилка. Спробуйте ще раз.',
+        message: this.translate.instant('COMMON.ERROR_TRY_AGAIN'),
         duration: 3000,
         position: 'bottom',
         color: 'danger'
@@ -1320,6 +1323,146 @@ export class HomePage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error checking notification state for new day:', error);
     }
+  }
+
+  // Тестовий метод для перевірки збереження активованої звички
+  async testHabitsSaveLoad(): Promise<void> {
+    console.log('=== TEST HABIT PERSISTENCE AFTER PAGE RELOAD ===');
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      console.log('Testing date:', today);
+      
+      // 1. Перевіряємо збереження в локальній БД
+      console.log('1️⃣ CHECKING LOCAL DB PERSISTENCE');
+      const { value } = await Preferences.get({ key: 'habits' });
+      
+      if (value) {
+        const allHabits = JSON.parse(value);
+        console.log('Total habits in DB:', allHabits.length);
+        
+        const activeHabits = allHabits.filter((habit: any) => habit.isActive === true);
+        console.log('Active habits in DB:', activeHabits.length);
+        
+        // Перевіряємо кожну активну звичку на сьогоднішній статус
+        activeHabits.forEach((habit: any, index: number) => {
+          const todayStatus = habit.completionStatus && habit.completionStatus[today];
+          console.log(`Active Habit ${index + 1}: "${habit.name}"`);
+          console.log(`  - isActive: ${habit.isActive}`);
+          console.log(`  - Today (${today}) status: ${todayStatus || 'not_completed'}`);
+          console.log(`  - completionStatus keys: ${habit.completionStatus ? Object.keys(habit.completionStatus).join(', ') : 'none'}`);
+          
+          if (todayStatus === 'completed') {
+            console.log(`  ✅ COMPLETED TODAY - Should appear in calendar and graph`);
+          } else {
+            console.log(`  ⚠️ NOT COMPLETED TODAY - Will not appear in calendar and graph`);
+          }
+        });
+        
+        // 2. Перевіряємо календар
+        console.log('2️⃣ CHECKING CALENDAR DISPLAY');
+        const completedToday = activeHabits.filter((habit: any) => 
+          habit.completionStatus && habit.completionStatus[today] === 'completed'
+        );
+        console.log(`Habits completed today: ${completedToday.length}`);
+        completedToday.forEach((habit: any) => {
+          console.log(`  ✅ "${habit.name}" completed today - should show in calendar`);
+        });
+        
+        // 3. Перевіряємо графік
+        console.log('3️⃣ CHECKING GRAPH DISPLAY');
+        console.log(`Expected habits data for graph: ${completedToday.length} completed habits`);
+        console.log(`Graph should show activity for date: ${today}`);
+        
+        // 4. Загальний результат
+        console.log('4️⃣ SUMMARY');
+        console.log(`✅ Total habits in DB: ${allHabits.length}`);
+        console.log(`✅ Active habits: ${activeHabits.length}`);
+        console.log(`✅ Completed today: ${completedToday.length}`);
+        console.log(`✅ Should display in calendar: ${completedToday.length > 0 ? 'YES' : 'NO'}`);
+        console.log(`✅ Should display in graph: ${completedToday.length > 0 ? 'YES' : 'NO'}`);
+        
+        if (completedToday.length === 0) {
+          console.log('⚠️ NO HABITS COMPLETED TODAY');
+          console.log('To test persistence:');
+          console.log('1. Go to Habits page');
+          console.log('2. Mark a habit as completed');
+          console.log('3. Reload the page');
+          console.log('4. Check calendar and graph');
+        }
+        
+      } else {
+        console.log('❌ No habits found in local DB');
+      }
+      
+    } catch (error) {
+      console.error('Error in testHabitsSaveLoad:', error);
+    }
+    
+    console.log('=== TEST HABIT PERSISTENCE END ===');
+  }
+
+  // Метод для примусового оновлення графіку
+  async forceUpdateChart(): Promise<void> {
+    console.log('=== FORCE UPDATE CHART ===');
+    
+    try {
+      console.log('Forcing chart update...');
+      
+      // Оновлюємо графік досягнень
+      await this.updateAchievementChart();
+      
+      console.log('Chart update completed');
+      
+    } catch (error) {
+      console.error('Error in forceUpdateChart:', error);
+    }
+    
+    console.log('=== FORCE UPDATE CHART END ===');
+  }
+
+  // Тестовий метод для симуляції активації звички
+  async simulateHabitCompletion(): Promise<void> {
+    console.log('=== SIMULATE HABIT COMPLETION ===');
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      console.log('Simulating habit completion for date:', today);
+      
+      // Отримуємо поточні звички
+      const { value } = await Preferences.get({ key: 'habits' });
+      if (value) {
+        const allHabits = JSON.parse(value);
+        const activeHabits = allHabits.filter((habit: any) => habit.isActive === true);
+        
+        if (activeHabits.length > 0) {
+          const habitToComplete = activeHabits[0]; // Беремо першу активну звичку
+          console.log(`Simulating completion of habit: "${habitToComplete.name}"`);
+          
+          // Встановлюємо статус completed для сьогодні
+          if (!habitToComplete.completionStatus) {
+            habitToComplete.completionStatus = {};
+          }
+          habitToComplete.completionStatus[today] = 'completed';
+          
+          // Зберігаємо зміни
+          await Preferences.set({ key: 'habits', value: JSON.stringify(allHabits) });
+          
+          console.log('✅ Habit completion simulated and saved');
+          console.log('Now reload the page and test persistence');
+          
+        } else {
+          console.log('❌ No active habits found to complete');
+        }
+      } else {
+        console.log('❌ No habits found in local DB');
+      }
+      
+    } catch (error) {
+      console.error('Error in simulateHabitCompletion:', error);
+    }
+    
+    console.log('=== SIMULATE HABIT COMPLETION END ===');
   }
 
 }

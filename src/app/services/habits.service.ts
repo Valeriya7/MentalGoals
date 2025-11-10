@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { Habit } from '../interfaces/habit.interface';
 import { Preferences } from '@capacitor/preferences';
+import { HttpClient } from '@angular/common/http';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -9,42 +11,198 @@ import { Preferences } from '@capacitor/preferences';
 export class HabitsService {
   private habits = new BehaviorSubject<Habit[]>([]);
   private readonly STORAGE_KEY = 'habits';
+  private readonly CACHE_VERSION_KEY = 'habits_cache_version';
+  private readonly CURRENT_CACHE_VERSION = '2.1';
 
-  constructor() {
+  constructor(
+    private http: HttpClient,
+    private translate: TranslateService
+  ) {
     this.loadHabits();
   }
 
   private async loadHabits() {
     try {
+      console.log('=== LOAD HABITS START ===');
+      
+      // Перевіряємо версію кешу
+      const { value: cacheVersion } = await Preferences.get({ key: this.CACHE_VERSION_KEY });
+      console.log('HabitsService - Cache version:', cacheVersion);
+      console.log('HabitsService - Current version:', this.CURRENT_CACHE_VERSION);
+      
       const { value } = await Preferences.get({ key: this.STORAGE_KEY });
-      console.log('loadHabits ', value);
-      if (value) {
-        this.habits.next(JSON.parse(value));
-      } else {
-        // Завантажуємо початковий список звичок
-        const initialHabits = this.getInitialHabits();
+      console.log('loadHabits - Raw value from storage:', value ? 'exists' : 'null');
+      console.log('loadHabits - Value length:', value?.length || 0);
+      
+      // Якщо кеш застарілий або відсутній, завантажуємо нові дані
+      if (!value || !cacheVersion || cacheVersion !== this.CURRENT_CACHE_VERSION) {
+        console.log('HabitsService - Cache outdated or missing, loading fresh data');
+        const initialHabits = await this.getInitialHabits();
+        console.log('Initial habits loaded:', initialHabits.length);
         this.habits.next(initialHabits);
         await this.saveHabits(initialHabits);
+        await Preferences.set({ key: this.CACHE_VERSION_KEY, value: this.CURRENT_CACHE_VERSION });
+      } else {
+        console.log('HabitsService - Using cached habits');
+        
+        // Перевіряємо чи дані українською мовою (ознака застарілого кешу)
+        const parsedHabits = JSON.parse(value);
+        console.log('Parsed habits count:', parsedHabits.length);
+        
+        if (parsedHabits.length > 0) {
+          console.log('First parsed habit:', {
+            id: parsedHabits[0].id,
+            name: parsedHabits[0].name,
+            isActive: parsedHabits[0].isActive,
+            completionStatus: parsedHabits[0].completionStatus
+          });
+        }
+        
+        if (parsedHabits.length > 0 && parsedHabits[0].name && parsedHabits[0].name.includes('Ранкова')) {
+          console.log('HabitsService - Detected Ukrainian cached data, forcing reload');
+          const initialHabits = await this.getInitialHabits();
+          this.habits.next(initialHabits);
+          await this.saveHabits(initialHabits);
+          await Preferences.set({ key: this.CACHE_VERSION_KEY, value: this.CURRENT_CACHE_VERSION });
+        } else {
+          console.log('HabitsService - Using cached habits (not Ukrainian)');
+          this.habits.next(parsedHabits);
+        }
       }
+      
+      console.log('=== LOAD HABITS END ===');
+      
     } catch (error) {
       console.error('Error loading habits:', error);
     }
   }
 
   private async saveHabits(habits: Habit[]) {
-    console.log('saveHabits: ', habits);
-    try {
-      await Preferences.set({
-        key: this.STORAGE_KEY,
-        value: JSON.stringify(habits)
+    console.log('=== SAVE HABITS START ===');
+    console.log('saveHabits called with habits:', habits.length);
+    console.log('Storage key:', this.STORAGE_KEY);
+    
+    if (habits.length > 0) {
+      console.log('First habit before save:', {
+        id: habits[0].id,
+        name: habits[0].name,
+        isActive: habits[0].isActive,
+        completionStatus: habits[0].completionStatus
       });
+    }
+    
+    try {
+      const habitsJson = JSON.stringify(habits);
+      console.log('Habits JSON length:', habitsJson.length);
+      
+      const result = await Preferences.set({
+        key: this.STORAGE_KEY,
+        value: habitsJson
+      });
+      console.log('Preferences.set result:', result);
+      
+      // Перевіряємо що збереглося
+      const { value: savedValue } = await Preferences.get({ key: this.STORAGE_KEY });
+      console.log('Verification - saved value exists:', !!savedValue);
+      console.log('Verification - saved value length:', savedValue?.length || 0);
+      
+      if (savedValue) {
+        const parsedSaved = JSON.parse(savedValue);
+        console.log('Verification - parsed habits count:', parsedSaved.length);
+        if (parsedSaved.length > 0) {
+          console.log('Verification - first saved habit:', {
+            id: parsedSaved[0].id,
+            name: parsedSaved[0].name,
+            isActive: parsedSaved[0].isActive,
+            completionStatus: parsedSaved[0].completionStatus
+          });
+        }
+      }
+      
     } catch (error) {
       console.error('Error saving habits:', error);
     }
+    console.log('=== SAVE HABITS END ===');
   }
 
   getHabits(): Observable<Habit[]> {
+    return new Observable(subscriber => {
+      this.habits.subscribe(habits => {
+        // Фільтруємо тільки активні звички (isActive == true)
+        const activeHabits = habits.filter(habit => habit.isActive === true);
+        console.log('getHabits - Total habits:', habits.length);
+        console.log('getHabits - Active habits:', activeHabits.length);
+        subscriber.next(activeHabits);
+      });
+    });
+  }
+
+  // Метод для отримання всіх звичок (включаючи неактивні)
+  getAllHabits(): Observable<Habit[]> {
     return this.habits.asObservable();
+  }
+
+  // Тестовий метод для перевірки збереження/завантаження
+  async testSaveAndLoad(): Promise<void> {
+    console.log('=== TEST SAVE AND LOAD ===');
+    
+    // Отримуємо всі звички
+    const allHabits = this.habits.value;
+    console.log('All habits count:', allHabits.length);
+    
+    // Отримуємо тільки активні звички
+    const activeHabits = allHabits.filter(habit => habit.isActive === true);
+    console.log('Active habits count:', activeHabits.length);
+    
+    // Показуємо деталі по кожній звичці
+    allHabits.forEach((habit, index) => {
+      console.log(`Habit ${index + 1}:`, {
+        id: habit.id,
+        name: habit.name,
+        isActive: habit.isActive,
+        completionStatus: habit.completionStatus
+      });
+    });
+    
+    // Зберігаємо
+    await this.saveHabits(allHabits);
+    
+    // Відразу завантажуємо
+    const { value } = await Preferences.get({ key: this.STORAGE_KEY });
+    console.log('Loaded value exists:', !!value);
+    
+    if (value) {
+      const loadedHabits = JSON.parse(value);
+      console.log('Loaded habits count:', loadedHabits.length);
+      
+      const loadedActiveHabits = loadedHabits.filter((habit: any) => habit.isActive === true);
+      console.log('Loaded active habits count:', loadedActiveHabits.length);
+      
+      if (loadedHabits.length > 0) {
+        console.log('First loaded habit:', {
+          id: loadedHabits[0].id,
+          name: loadedHabits[0].name,
+          isActive: loadedHabits[0].isActive,
+          completionStatus: loadedHabits[0].completionStatus
+        });
+      }
+      
+      // Порівнюємо
+      console.log('Comparison - Same total count:', allHabits.length === loadedHabits.length);
+      console.log('Comparison - Same active count:', activeHabits.length === loadedActiveHabits.length);
+      console.log('Comparison - Same first habit name:', allHabits.length > 0 && loadedHabits.length > 0 ? 
+        allHabits[0].name === loadedHabits[0].name : 'N/A');
+    }
+    
+    console.log('=== TEST SAVE AND LOAD END ===');
+  }
+
+  async refreshHabits(): Promise<void> {
+    console.log('HabitsService - Forcing refresh of habits data');
+    const initialHabits = await this.getInitialHabits();
+    this.habits.next(initialHabits);
+    await this.saveHabits(initialHabits);
+    await Preferences.set({ key: this.CACHE_VERSION_KEY, value: this.CURRENT_CACHE_VERSION });
   }
 
   getActiveHabits(): Observable<Habit[]> {
@@ -167,12 +325,40 @@ export class HabitsService {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  private getInitialHabits(): Habit[] {
+  private async getInitialHabits(): Promise<Habit[]> {
+    try {
+      const data = await this.http.get<any>('./assets/data/habits.json').toPromise();
+      
+      // Визначаємо поточну мову з більш надійною логікою
+      let currentLang = 'en'; // За замовчуванням англійська
+      
+      if (this.translate.currentLang) {
+        currentLang = this.translate.currentLang;
+      } else if (this.translate.defaultLang) {
+        currentLang = this.translate.defaultLang;
+      }
+      
+      console.log('getInitialHabits: Using language:', currentLang);
+      console.log('getInitialHabits: Available languages in data:', Object.keys(data.habits[0].name || {}));
+      
+      return data.habits.map((habit: any) => ({
+        ...habit,
+        name: habit.name[currentLang] || habit.name.en || habit.name,
+        description: habit.description[currentLang] || habit.description.en || habit.description
+      }));
+    } catch (error) {
+      console.error('Error loading habits from file:', error);
+      // Fallback to hardcoded English habits
+      return this.getFallbackHabits();
+    }
+  }
+
+  private getFallbackHabits(): Habit[] {
     return [
       {
         id: '1',
-        name: 'Ранкова медитація',
-        description: '10 хвилин медитації щодня',
+        name: 'Morning Meditation',
+        description: '10 minutes of meditation daily',
         icon: 'leaf-outline',
         category: 'mindfulness',
         difficulty: 'easy',
@@ -189,8 +375,8 @@ export class HabitsService {
       },
       {
         id: '2',
-        name: 'Дихальні вправи',
-        description: '5 хвилин дихальних вправ',
+        name: 'Breathing Exercises',
+        description: '5 minutes of breathing exercises',
         icon: 'heart-outline',
         category: 'mindfulness',
         difficulty: 'easy',
@@ -207,8 +393,8 @@ export class HabitsService {
       },
       {
         id: '3',
-        name: '8000 кроків',
-        description: 'Пройдіть мінімум 8000 кроків',
+        name: '8000 Steps',
+        description: 'Walk at least 8000 steps',
         icon: 'footsteps-outline',
         category: 'fitness',
         difficulty: 'medium',
@@ -225,8 +411,8 @@ export class HabitsService {
       },
       {
         id: '4',
-        name: 'Без солодкого',
-        description: 'Уникайте солодощів протягом дня',
+        name: 'No Sweets',
+        description: 'Avoid sweets throughout the day',
         icon: 'ice-cream-outline',
         category: 'nutrition',
         difficulty: 'hard',
@@ -243,8 +429,8 @@ export class HabitsService {
       },
       {
         id: '5',
-        name: '5 англійських слів',
-        description: 'Вивчіть нові слова',
+        name: '5 English Words',
+        description: 'Learn new words',
         icon: 'book-outline',
         category: 'learning',
         difficulty: 'easy',

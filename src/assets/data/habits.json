@@ -1,0 +1,135 @@
+{
+  "habits": [
+    {
+      "id": "1",
+      "name": {
+        "uk": "Ранкова медитація",
+        "en": "Morning Meditation",
+        "de": "Morgenmeditation"
+      },
+      "description": {
+        "uk": "10 хвилин медитації щодня",
+        "en": "10 minutes of meditation daily",
+        "de": "10 Minuten Meditation täglich"
+      },
+      "icon": "leaf-outline",
+      "category": "mindfulness",
+      "difficulty": "easy",
+      "points": 10,
+      "isActive": true,
+      "isChallengeHabit": false,
+      "isBaseHabit": true,
+      "completionStatus": {},
+      "streak": { "current": 0, "best": 0 },
+      "target": 10,
+      "unit": "minutes",
+      "frequency": "daily",
+      "progress": {}
+    },
+    {
+      "id": "2",
+      "name": {
+        "uk": "Дихальні вправи",
+        "en": "Breathing Exercises",
+        "de": "Atemübungen"
+      },
+      "description": {
+        "uk": "5 хвилин дихальних вправ",
+        "en": "5 minutes of breathing exercises",
+        "de": "5 Minuten Atemübungen"
+      },
+      "icon": "heart-outline",
+      "category": "mindfulness",
+      "difficulty": "easy",
+      "points": 5,
+      "isActive": true,
+      "isChallengeHabit": false,
+      "isBaseHabit": true,
+      "completionStatus": {},
+      "streak": { "current": 0, "best": 0 },
+      "target": 5,
+      "unit": "minutes",
+      "frequency": "daily",
+      "progress": {}
+    },
+    {
+      "id": "3",
+      "name": {
+        "uk": "8000 кроків",
+        "en": "8000 Steps",
+        "de": "8000 Schritte"
+      },
+      "description": {
+        "uk": "Пройдіть мінімум 8000 кроків",
+        "en": "Walk at least 8000 steps",
+        "de": "Gehen Sie mindestens 8000 Schritte"
+      },
+      "icon": "footsteps-outline",
+      "category": "fitness",
+      "difficulty": "medium",
+      "points": 15,
+      "isActive": false,
+      "isChallengeHabit": false,
+      "isBaseHabit": true,
+      "completionStatus": {},
+      "streak": { "current": 0, "best": 0 },
+      "target": 8000,
+      "unit": "steps",
+      "frequency": "daily",
+      "progress": {}
+    },
+    {
+      "id": "4",
+      "name": {
+        "uk": "Без солодкого",
+        "en": "No Sweets",
+        "de": "Keine Süßigkeiten"
+      },
+      "description": {
+        "uk": "Уникайте солодощів протягом дня",
+        "en": "Avoid sweets throughout the day",
+        "de": "Vermeiden Sie den ganzen Tag über Süßigkeiten"
+      },
+      "icon": "ice-cream-outline",
+      "category": "nutrition",
+      "difficulty": "hard",
+      "points": 20,
+      "isActive": false,
+      "isChallengeHabit": false,
+      "isBaseHabit": true,
+      "completionStatus": {},
+      "streak": { "current": 0, "best": 0 },
+      "target": 1,
+      "unit": "day",
+      "frequency": "daily",
+      "progress": {}
+    },
+    {
+      "id": "5",
+      "name": {
+        "uk": "5 англійських слів",
+        "en": "5 English Words",
+        "de": "5 englische Wörter"
+      },
+      "description": {
+        "uk": "Вивчіть нові слова",
+        "en": "Learn new words",
+        "de": "Lerne neue Wörter"
+      },
+      "icon": "book-outline",
+      "category": "learning",
+      "difficulty": "easy",
+      "points": 10,
+      "isActive": false,
+      "isChallengeHabit": false,
+      "isBaseHabit": true,
+      "completionStatus": {},
+      "streak": { "current": 0, "best": 0 },
+      "target": 5,
+      "unit": "words",
+      "frequency": "daily",
+      "progress": {}
+    }
+  ]
+}
+

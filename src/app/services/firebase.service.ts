@@ -77,23 +77,44 @@ export class FirebaseService {
     try {
       console.log('Initializing Firebase...');
       const config = getFirebaseConfig();
-      this.app = initializeApp(config);
-      console.log('Firebase app initialized');
+      
+      try {
+        this.app = initializeApp(config);
+        console.log('Firebase app initialized');
+      } catch (appError: any) {
+        if (appError.code === 'app/duplicate-app') {
+          console.log('Firebase app already initialized, getting existing instance');
+          this.app = getApp();
+        } else {
+          console.error('Error initializing Firebase app:', appError);
+          throw appError;
+        }
+      }
 
       // Initialize Auth
       this.auth = getAuth(this.app);
       console.log('Firebase Auth initialized');
 
       // Initialize Firestore with offline capabilities and better error handling
-      this.firestore = initializeFirestore(this.app, {
-        localCache: persistentLocalCache({
-          cacheSizeBytes: 50 * 1024 * 1024, // 50MB
-          tabManager: persistentMultipleTabManager()
-        }),
-        experimentalAutoDetectLongPolling: true,
-        ignoreUndefinedProperties: true
-      });
-      console.log('Firestore initialized with offline capabilities');
+      try {
+        this.firestore = initializeFirestore(this.app, {
+          localCache: persistentLocalCache({
+            cacheSizeBytes: 50 * 1024 * 1024, // 50MB
+            tabManager: persistentMultipleTabManager()
+          }),
+          experimentalAutoDetectLongPolling: true,
+          ignoreUndefinedProperties: true
+        });
+        console.log('Firestore initialized with offline capabilities');
+      } catch (firestoreError: any) {
+        if (firestoreError.code === 'firestore/already-initialized') {
+          console.log('Firestore already initialized, getting existing instance');
+          this.firestore = getFirestore(this.app);
+        } else {
+          console.error('Error initializing Firestore:', firestoreError);
+          throw firestoreError;
+        }
+      }
 
       // Set the db instance
       this._db = this.firestore;

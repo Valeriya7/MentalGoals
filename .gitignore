@@ -70,3 +70,15 @@ testem.log
 Thumbs.db
 android
 ios
+
+# Cursor IDE files
+.cursor/
+.cursorrules
+.cursorignore
+
+# Bitbucket files
+.bitbucket/
+bitbucket-pipelines.yml
+
+# SSL certificates
+ssl/

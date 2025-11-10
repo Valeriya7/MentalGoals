@@ -4,7 +4,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { EmotionService } from '../../services/emotion.service';
 import { Emotion } from '../../models/emotion.model';
 import { format } from 'date-fns';
-import { uk } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { EmotionalStateModalComponent } from '../../components/emotional-state-modal/emotional-state-modal.component';
 import { ToastService } from '../../services/toast.service';
 import { addIcons } from 'ionicons';
@@ -124,7 +124,7 @@ export class EmotionalCalendarPage implements OnInit, OnDestroy {
   }
 
   getMonthTitle(): string {
-    return format(this.currentDate, 'LLLL yyyy', { locale: uk });
+    return format(this.currentDate, 'LLLL yyyy', { locale: enUS });
   }
 
   getDaysInMonth(): Date[] {

@@ -18,13 +18,13 @@
   <div class="calendar">
     <!-- Дні тижня -->
     <div class="weekdays">
-      <div class="weekday">Нд</div>
-      <div class="weekday">Пн</div>
-      <div class="weekday">Вт</div>
-      <div class="weekday">Ср</div>
-      <div class="weekday">Чт</div>
-      <div class="weekday">Пт</div>
-      <div class="weekday">Сб</div>
+      <div class="weekday">Sun</div>
+      <div class="weekday">Mon</div>
+      <div class="weekday">Tue</div>
+      <div class="weekday">Wed</div>
+      <div class="weekday">Thu</div>
+      <div class="weekday">Fri</div>
+      <div class="weekday">Sat</div>
     </div>
 
     <!-- Дні місяця -->
@@ -55,7 +55,7 @@
   <div class="selected-day-details" *ngIf="selectedDate && getEmotionForDay(selectedDate) as emotion">
     <ion-card>
       <ion-card-header>
-        <ion-card-subtitle>{{ selectedDate | date:'fullDate':'':'uk' }}</ion-card-subtitle>
+        <ion-card-subtitle>{{ selectedDate | date:'fullDate':'':'en' }}</ion-card-subtitle>
         <ion-card-title>
           <ion-icon [name]="emotion.icon" [style.color]="emotion.color"></ion-icon>
           {{ emotion.type }}

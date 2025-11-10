@@ -6,6 +6,7 @@ import { Emotion } from '../../models/emotion.model';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { addIcons } from 'ionicons';
 import {
   happyOutline,
@@ -35,17 +36,18 @@ interface EmotionType {
     CommonModule,
     IonicModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TranslateModule
   ]
 })
 export class EmotionalStateModalComponent implements OnInit {
   emotions: EmotionType[] = [
-    { type: 'happy', icon: 'happy-outline', color: '#FFD93D', label: 'Щасливий', value: 8, energy: 8 },
-    { type: 'calm', icon: 'sunny-outline', color: '#98D8AA', label: 'Спокійний', value: 7, energy: 6 },
-    { type: 'tired', icon: 'bed-outline', color: '#B4E4FF', label: 'Втомлений', value: 4, energy: 3 },
-    { type: 'anxious', icon: 'alert-outline', color: '#CBC3E3', label: 'Тривожний', value: 3, energy: 7 },
-    { type: 'sad', icon: 'sad-outline', color: '#FF6B6B', label: 'Сумний', value: 2, energy: 4 },
-    { type: 'angry', icon: 'thunderstorm-outline', color: '#FF6B6B', label: 'Злий', value: 2, energy: 8 }
+    { type: 'happy', icon: 'happy-outline', color: '#FFD93D', label: 'Happy', value: 8, energy: 8 },
+    { type: 'calm', icon: 'sunny-outline', color: '#98D8AA', label: 'Calm', value: 7, energy: 6 },
+    { type: 'tired', icon: 'bed-outline', color: '#B4E4FF', label: 'Tired', value: 4, energy: 3 },
+    { type: 'anxious', icon: 'alert-outline', color: '#CBC3E3', label: 'Anxious', value: 3, energy: 7 },
+    { type: 'sad', icon: 'sad-outline', color: '#FF6B6B', label: 'Sad', value: 2, energy: 4 },
+    { type: 'angry', icon: 'thunderstorm-outline', color: '#FF6B6B', label: 'Angry', value: 2, energy: 8 }
   ];
 
   emotionForm: FormGroup;

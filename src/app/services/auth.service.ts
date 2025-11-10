@@ -419,18 +419,36 @@ export class AuthService {
 
   async signInWithGoogle(): Promise<void> {
     try {
-      console.log('Starting Google sign in...');
+      console.log('=== Starting Google sign in ===');
+      console.log('Platform:', this.platform.platforms());
+      console.log('Is native platform:', Capacitor.isNativePlatform());
       
       // Ініціалізуємо Google Auth тільки якщо ще не ініціалізовано
       if (!this.googleAuthInitialized) {
+        console.log('Google Auth not initialized, initializing...');
         await this.initializeGoogleAuth();
       }
       
       console.log('Google Auth initialized, proceeding with sign in...');
+      
+      // Додаємо додаткову перевірку для Android
+      if (Capacitor.isNativePlatform() && this.platform.is('android')) {
+        console.log('Android platform detected, checking Google Play Services...');
+        try {
+          // Перевіряємо, чи доступні Google Play Services
+          const { value: playServicesAvailable } = await Preferences.get({ key: 'googlePlayServicesAvailable' });
+          console.log('Google Play Services available:', playServicesAvailable);
+        } catch (playServicesError) {
+          console.warn('Could not check Google Play Services:', playServicesError);
+        }
+      }
+      
+      console.log('Calling GoogleAuth.signIn()...');
       const user = await GoogleAuth.signIn();
       console.log('Google Auth sign in response:', user);
       
       if (user && user.authentication?.idToken) {
+        console.log('Valid user data received, processing...');
         // Конвертуємо дані в правильний формат
         const userId = user.id || user.user?.id || user.authentication?.idToken;
         if (!userId || userId === '') {
@@ -445,30 +463,60 @@ export class AuthService {
           idToken: user.authentication.idToken
         };
         
+        console.log('Processed user data:', userData);
         await this.handleSuccessfulLogin(userData);
         console.log('Google Auth login success');
       } else {
         console.error('Google Auth: No user data or ID token received from Google');
+        console.error('User object:', user);
+        console.error('Authentication object:', user?.authentication);
         throw new Error('Не вдалося отримати дані користувача або токен автентифікації');
       }
     } catch (error: any) {
-      console.error('Google Auth: sign in error', {
-        error,
-        message: error?.message,
-        code: error?.code,
-        stack: error?.stack,
-        name: error?.name,
-        status: error?.status,
-        details: error?.details,
-        toString: error?.toString?.(),
-        platform: this.platform.platforms()
-      });
-      this.toastController.create({
-        message: `Помилка входу через Google: ${error?.message || error?.toString?.() || 'невідома помилка'}`,
-        duration: 3000,
+      console.error('=== Google Auth: sign in error ===');
+      console.error('Error object:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error code:', error?.code);
+      console.error('Error name:', error?.name);
+      console.error('Error status:', error?.status);
+      console.error('Error details:', error?.details);
+      console.error('Error stack:', error?.stack);
+      console.error('Platform:', this.platform.platforms());
+      console.error('Is native:', Capacitor.isNativePlatform());
+      
+      // Додаємо більш детальну обробку помилок
+      let errorMessage = 'Помилка входу через Google';
+      
+      if (error?.message) {
+        errorMessage += `: ${error.message}`;
+      } else if (error?.code) {
+        errorMessage += ` (код: ${error.code})`;
+      } else if (typeof error === 'string') {
+        errorMessage += `: ${error}`;
+      } else {
+        errorMessage += ': невідома помилка';
+      }
+      
+      // Спеціальна обробка для Android
+      if (Capacitor.isNativePlatform() && this.platform.is('android')) {
+        if (error?.message?.includes('Something went wrong')) {
+          errorMessage = 'Помилка налаштування Google Auth для Android. Перевірте конфігурацію.';
+        } else if (error?.code === 'SIGN_IN_CANCELLED') {
+          errorMessage = 'Вхід скасовано користувачем';
+        } else if (error?.code === 'SIGN_IN_REQUIRED') {
+          errorMessage = 'Потрібна повторна авторизація';
+        }
+      }
+      
+      console.error('Final error message:', errorMessage);
+      
+      await this.toastController.create({
+        message: errorMessage,
+        duration: 5000,
         position: 'bottom',
         color: 'danger'
       }).then(toast => toast.present());
+      
       throw error;
     }
   }

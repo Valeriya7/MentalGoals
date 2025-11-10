@@ -6,7 +6,7 @@ import { PlatformCheckService } from './services/platform-check.service';
 import { VersionCheckService } from './services/version-check.service';
 import './utils/icons'; // Імпортуємо централізовану реєстрацію іконок
 import { TranslateService } from './services/translate.service';
-import { TranslateModule } from '@ngx-translate/core';
+
 import { Preferences } from '@capacitor/preferences';
 import { FirebaseService } from './services/firebase.service';
 
@@ -14,7 +14,7 @@ import { FirebaseService } from './services/firebase.service';
   selector: 'app-root',
   template: '<ion-app><ion-router-outlet></ion-router-outlet></ion-app>',
   standalone: true,
-  imports: [IonicModule, TranslateModule]
+  imports: [IonicModule, CommonModule]
 })
 export class AppComponent {
   platformType: string = '';
@@ -33,7 +33,13 @@ export class AppComponent {
     try {
       // Ініціалізація мови буде автоматично перевіряти мову пристрою
       await this.translateService.loadSavedLanguage();
-      console.log('Translations initialized');
+      console.log('Translations initialized successfully');
+      
+      // Додаткова перевірка що переклади завантажилися
+      setTimeout(() => {
+        console.log('Current language:', this.translateService.currentLanguage);
+        console.log('Sample translation:', this.translateService.instant('COMMON.WELCOME'));
+      }, 1000);
     } catch (error) {
       console.error('Failed to initialize translations:', error);
     }

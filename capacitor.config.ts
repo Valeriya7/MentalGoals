@@ -21,12 +21,7 @@ const config: CapacitorConfig = {
       iosClientId: '316790340348-3ssptcb7gfgm3l3snnds4ublmblkt4q4.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
       grantOfflineAccess: true,
-      webClientId: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com',
-      android: {
-        signInOptions: {
-          serverClientId: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com'
-        }
-      }
+      webClientId: '316790340348-8ebvi6dun25a1h8l22pdeinl32tqkaj0.apps.googleusercontent.com'
     }
   },
   android: {

@@ -77,7 +77,9 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
     };
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    // Примусово оновлюємо звички щоб переконатися що вони англійською мовою
+    await this.habitsService.refreshHabits();
     this.loadHabits();
   }
 

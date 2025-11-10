@@ -88,10 +88,10 @@
 
           <ion-item *ngIf="showStravaCredentials">
           <ion-label>
-            <ion-input label="Client ID" [(ngModel)]="stravaClientId" placeholder="Введіть Client ID"></ion-input>
-            <ion-input label="Client Secret" [(ngModel)]="stravaClientSecret" type="password" placeholder="Введіть Client Secret"></ion-input>
-            <ion-button expand="block" (click)="connectStrava()">Підключити</ion-button>
-            <ion-button expand="block" fill="clear" (click)="toggleStravaCredentials()">Скасувати</ion-button>
+            <ion-input label="Client ID" [(ngModel)]="stravaClientId" placeholder="Enter Client ID"></ion-input>
+            <ion-input label="Client Secret" [(ngModel)]="stravaClientSecret" type="password" placeholder="Enter Client Secret"></ion-input>
+            <ion-button expand="block" (click)="connectStrava()">Connect</ion-button>
+            <ion-button expand="block" fill="clear" (click)="toggleStravaCredentials()">Cancel</ion-button>
           </ion-label>
         </ion-item>
 

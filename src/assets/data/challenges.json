@@ -15,6 +15,7 @@
       "duration": 40,
       "difficulty": "expert",
       "difficultyLevel": 5,
+      "status": "available",
       "tasks": [
         {
           "id": "no-sweets",
@@ -28,7 +29,9 @@
             "en": "Avoid sweets throughout the day",
             "de": "Vermeiden Sie den ganzen Tag über Süßigkeiten"
           },
-          "icon": "ice-cream-outline"
+          "icon": "ice-cream-outline",
+          "completed": false,
+          "progress": 0
         },
         {
           "id": "water-intake",
@@ -42,7 +45,9 @@
             "en": "Drink 2 liters of water throughout the day",
             "de": "Trinken Sie 2 Liter Wasser über den Tag verteilt"
           },
-          "icon": "water-outline"
+          "icon": "water-outline",
+          "completed": false,
+          "progress": 0
         }
       ],
       "rewards": {
@@ -57,7 +62,53 @@
             "amount": "15%"
           }
         ]
-      }
+      },
+      "phases": [
+        {
+          "id": "phase-1",
+          "title": {
+            "uk": "Основна фаза",
+            "en": "Main Phase",
+            "de": "Hauptphase"
+          },
+          "tasks": [
+            {
+              "id": "no-sweets",
+              "title": {
+                "uk": "Без солодкого",
+                "en": "No sweets",
+                "de": "Keine Süßigkeiten"
+              },
+              "description": {
+                "uk": "Уникайте солодощів протягом дня",
+                "en": "Avoid sweets throughout the day",
+                "de": "Vermeiden Sie den ganzen Tag über Süßigkeiten"
+              },
+              "icon": "ice-cream-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "water-intake",
+              "title": {
+                "uk": "Пити воду",
+                "en": "Drink water",
+                "de": "Wasser trinken"
+              },
+              "description": {
+                "uk": "Випийте 2 літри води протягом дня",
+                "en": "Drink 2 liters of water throughout the day",
+                "de": "Trinken Sie 2 Liter Wasser über den Tag verteilt"
+              },
+              "icon": "water-outline",
+              "completed": false,
+              "progress": 0
+            }
+          ],
+          "startDate": "",
+          "endDate": ""
+        }
+      ]
     },
     {
       "id": "challenge-gratitude",
@@ -68,12 +119,13 @@
       },
       "description": {
         "uk": "Формування позитивного мислення та зменшення стресу через щоденну практику вдячності",
-        "en": "Form positive thinking and reduce stress through daily gratitude practice",
-        "de": "Entwickeln Sie positives Denken und reduzieren Sie Stress durch tägliche Dankbarkeitspraxis"
+        "en": "Forming positive thinking and reducing stress through daily gratitude practice",
+        "de": "Positives Denken entwickeln und Stress durch tägliche Dankbarkeitspraxis reduzieren"
       },
       "duration": 7,
       "difficulty": "beginner",
       "difficultyLevel": 1,
+      "status": "available",
       "tasks": [
         {
           "id": "gratitude-list",
@@ -87,18 +139,584 @@
             "en": "Write down 3 things you are grateful for today",
             "de": "Schreiben Sie 3 Dinge auf, für die Sie heute dankbar sind"
           },
-          "icon": "heart-outline"
+          "icon": "heart-outline",
+          "completed": false,
+          "progress": 0
         }
       ],
       "rewards": {
-        "points": 10,
+        "points": 50,
         "discounts": [
           {
-            "brand": "Книгарня",
+            "brand": "Bookstore",
             "amount": "10%"
           }
         ]
-      }
+      },
+      "phases": [
+        {
+          "id": "phase-1",
+          "title": {
+            "uk": "Фаза вдячності",
+            "en": "Gratitude Phase",
+            "de": "Dankbarkeitsphase"
+          },
+          "tasks": [
+            {
+              "id": "gratitude-list",
+              "title": {
+                "uk": "Список вдячності",
+                "en": "Gratitude List",
+                "de": "Dankbarkeitsliste"
+              },
+              "description": {
+                "uk": "Запишіть 3 речі, за які ви вдячні сьогодні",
+                "en": "Write down 3 things you are grateful for today",
+                "de": "Schreiben Sie 3 Dinge auf, für die Sie heute dankbar sind"
+              },
+              "icon": "heart-outline",
+              "completed": false,
+              "progress": 0
+            }
+          ],
+          "startDate": "",
+          "endDate": ""
+        }
+      ]
+    },
+    {
+      "id": "challenge-fitness-beginner",
+      "title": {
+        "uk": "Фітнес для початківців",
+        "en": "Beginner Fitness Challenge",
+        "de": "Anfänger-Fitness-Herausforderung"
+      },
+      "description": {
+        "uk": "Почніть свій фітнес-шлях з простих вправ та прогулянок",
+        "en": "Start your fitness journey with simple exercises and walks",
+        "de": "Beginnen Sie Ihre Fitness-Reise mit einfachen Übungen und Spaziergängen"
+      },
+      "duration": 14,
+      "difficulty": "beginner",
+      "difficultyLevel": 1,
+      "status": "available",
+      "tasks": [
+        {
+          "id": "daily-walk",
+          "title": {
+            "uk": "Щоденна прогулянка",
+            "en": "Daily Walk",
+            "de": "Täglicher Spaziergang"
+          },
+          "description": {
+            "uk": "Прогуляйтеся мінімум 30 хвилин щодня",
+            "en": "Walk for at least 30 minutes daily",
+            "de": "Gehen Sie mindestens 30 Minuten täglich spazieren"
+          },
+          "icon": "walk-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "basic-stretching",
+          "title": {
+            "uk": "Базове розтягування",
+            "en": "Basic Stretching",
+            "de": "Grundlegendes Dehnen"
+          },
+          "description": {
+            "uk": "Виконуйте 10 хвилин розтягування щодня",
+            "en": "Do 10 minutes of stretching daily",
+            "de": "Machen Sie täglich 10 Minuten Dehnübungen"
+          },
+          "icon": "body-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "water-intake-basic",
+          "title": {
+            "uk": "Пиття води",
+            "en": "Water Intake",
+            "de": "Wasseraufnahme"
+          },
+          "description": {
+            "uk": "Випийте 1.5 літри води щодня",
+            "en": "Drink 1.5 liters of water daily",
+            "de": "Trinken Sie täglich 1,5 Liter Wasser"
+          },
+          "icon": "water-outline",
+          "completed": false,
+          "progress": 0
+        }
+      ],
+      "rewards": {
+        "points": 75,
+        "discounts": [
+          {
+            "brand": "Sports Store",
+            "amount": "15%"
+          },
+          {
+            "brand": "Fitness App",
+            "amount": "20%"
+          }
+        ]
+      },
+      "phases": [
+        {
+          "id": "phase-1",
+          "title": {
+            "uk": "Фаза розвитку",
+            "en": "Development Phase",
+            "de": "Entwicklungsphase"
+          },
+          "tasks": [
+            {
+              "id": "daily-walk",
+              "title": {
+                "uk": "Щоденна прогулянка",
+                "en": "Daily Walk",
+                "de": "Täglicher Spaziergang"
+              },
+              "description": {
+                "uk": "Прогуляйтеся мінімум 30 хвилин щодня",
+                "en": "Walk for at least 30 minutes daily",
+                "de": "Gehen Sie mindestens 30 Minuten täglich spazieren"
+              },
+              "icon": "walk-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "basic-stretching",
+              "title": {
+                "uk": "Базове розтягування",
+                "en": "Basic Stretching",
+                "de": "Grundlegendes Dehnen"
+              },
+              "description": {
+                "uk": "Виконуйте 10 хвилин розтягування щодня",
+                "en": "Do 10 minutes of stretching daily",
+                "de": "Machen Sie täglich 10 Minuten Dehnübungen"
+              },
+              "icon": "body-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "water-intake-basic",
+              "title": {
+                "uk": "Пиття води",
+                "en": "Water Intake",
+                "de": "Wasseraufnahme"
+              },
+              "description": {
+                "uk": "Випийте 1.5 літри води щодня",
+                "en": "Drink 1.5 liters of water daily",
+                "de": "Trinken Sie täglich 1,5 Liter Wasser"
+              },
+              "icon": "water-outline",
+              "completed": false,
+              "progress": 0
+            }
+          ],
+          "startDate": "",
+          "endDate": ""
+        }
+      ]
+    },
+    {
+      "id": "challenge-productivity-intermediate",
+      "title": {
+        "uk": "Підвищення продуктивності",
+        "en": "Productivity Boost Challenge",
+        "de": "Produktivitätssteigerungs-Herausforderung"
+      },
+      "description": {
+        "uk": "Покращіть свою продуктивність та організацію часу",
+        "en": "Improve your productivity and time organization",
+        "de": "Verbessern Sie Ihre Produktivität und Zeitorganisation"
+      },
+      "duration": 21,
+      "difficulty": "intermediate",
+      "difficultyLevel": 3,
+      "status": "available",
+      "tasks": [
+        {
+          "id": "morning-routine",
+          "title": {
+            "uk": "Ранкова рутина",
+            "en": "Morning Routine",
+            "de": "Morgenroutine"
+          },
+          "description": {
+            "uk": "Створіть та дотримуйтеся ранкової рутини",
+            "en": "Create and stick to a morning routine",
+            "de": "Erstellen und befolgen Sie eine Morgenroutine"
+          },
+          "icon": "sunny-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "task-planning",
+          "title": {
+            "uk": "Планування завдань",
+            "en": "Task Planning",
+            "de": "Aufgabenplanung"
+          },
+          "description": {
+            "uk": "Плануйте свої завдання на наступний день",
+            "en": "Plan your tasks for the next day",
+            "de": "Planen Sie Ihre Aufgaben für den nächsten Tag"
+          },
+          "icon": "list-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "focus-sessions",
+          "title": {
+            "uk": "Сесії фокусу",
+            "en": "Focus Sessions",
+            "de": "Fokussitzungen"
+          },
+          "description": {
+            "uk": "Працюйте 25 хвилин без відволікань",
+            "en": "Work for 25 minutes without distractions",
+            "de": "Arbeiten Sie 25 Minuten ohne Ablenkungen"
+          },
+          "icon": "timer-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "digital-detox",
+          "title": {
+            "uk": "Цифровий детокс",
+            "en": "Digital Detox",
+            "de": "Digitaler Detox"
+          },
+          "description": {
+            "uk": "Обмежте використання соцмереж до 30 хвилин",
+            "en": "Limit social media use to 30 minutes",
+            "de": "Begrenzen Sie die Nutzung sozialer Medien auf 30 Minuten"
+          },
+          "icon": "phone-portrait-outline",
+          "completed": false,
+          "progress": 0
+        }
+      ],
+      "rewards": {
+        "points": 150,
+        "discounts": [
+          {
+            "brand": "Productivity App",
+            "amount": "25%"
+          },
+          {
+            "brand": "Office Supplies",
+            "amount": "20%"
+          },
+          {
+            "brand": "Time Management Course",
+            "amount": "30%"
+          }
+        ]
+      },
+      "phases": [
+        {
+          "id": "phase-1",
+          "title": {
+            "uk": "Фаза організації",
+            "en": "Organization Phase",
+            "de": "Organisationsphase"
+          },
+          "tasks": [
+            {
+              "id": "morning-routine",
+              "title": {
+                "uk": "Ранкова рутина",
+                "en": "Morning Routine",
+                "de": "Morgenroutine"
+              },
+              "description": {
+                "uk": "Створіть та дотримуйтеся ранкової рутини",
+                "en": "Create and stick to a morning routine",
+                "de": "Erstellen und befolgen Sie eine Morgenroutine"
+              },
+              "icon": "sunny-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "task-planning",
+              "title": {
+                "uk": "Планування завдань",
+                "en": "Task Planning",
+                "de": "Aufgabenplanung"
+              },
+              "description": {
+                "uk": "Плануйте свої завдання на наступний день",
+                "en": "Plan your tasks for the next day",
+                "de": "Planen Sie Ihre Aufgaben für den nächsten Tag"
+              },
+              "icon": "list-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "focus-sessions",
+              "title": {
+                "uk": "Сесії фокусу",
+                "en": "Focus Sessions",
+                "de": "Fokussitzungen"
+              },
+              "description": {
+                "uk": "Працюйте 25 хвилин без відволікань",
+                "en": "Work for 25 minutes without distractions",
+                "de": "Arbeiten Sie 25 Minuten ohne Ablenkungen"
+              },
+              "icon": "timer-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "digital-detox",
+              "title": {
+                "uk": "Цифровий детокс",
+                "en": "Digital Detox",
+                "de": "Digitaler Detox"
+              },
+              "description": {
+                "uk": "Обмежте використання соцмереж до 30 хвилин",
+                "en": "Limit social media use to 30 minutes",
+                "de": "Begrenzen Sie die Nutzung sozialer Medien auf 30 Minuten"
+              },
+              "icon": "phone-portrait-outline",
+              "completed": false,
+              "progress": 0
+            }
+          ],
+          "startDate": "",
+          "endDate": ""
+        }
+      ]
+    },
+    {
+      "id": "challenge-mindfulness-advanced",
+      "title": {
+        "uk": "Медитація та самопізнання",
+        "en": "Meditation & Self-Discovery",
+        "de": "Meditation & Selbsterkenntnis"
+      },
+      "description": {
+        "uk": "Поглибте свою медитативну практику та самопізнання",
+        "en": "Deepen your meditation practice and self-discovery",
+        "de": "Vertiefen Sie Ihre Meditationspraxis und Selbsterkenntnis"
+      },
+      "duration": 30,
+      "difficulty": "advanced",
+      "difficultyLevel": 4,
+      "status": "available",
+      "tasks": [
+        {
+          "id": "morning-meditation",
+          "title": {
+            "uk": "Ранкова медитація",
+            "en": "Morning Meditation",
+            "de": "Morgenmeditation"
+          },
+          "description": {
+            "uk": "Медитуйте 20 хвилин щодня вранці",
+            "en": "Meditate for 20 minutes every morning",
+            "de": "Meditieren Sie jeden Morgen 20 Minuten"
+          },
+          "icon": "leaf-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "breathing-exercises",
+          "title": {
+            "uk": "Дихальні вправи",
+            "en": "Breathing Exercises",
+            "de": "Atemübungen"
+          },
+          "description": {
+            "uk": "Виконуйте дихальні вправи 3 рази на день",
+            "en": "Do breathing exercises 3 times a day",
+            "de": "Machen Sie 3-mal täglich Atemübungen"
+          },
+          "icon": "heart-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "journaling",
+          "title": {
+            "uk": "Ведення щоденника",
+            "en": "Journaling",
+            "de": "Tagebuch führen"
+          },
+          "description": {
+            "uk": "Ведіть щоденник щодня перед сном",
+            "en": "Keep a journal every day before bed",
+            "de": "Führen Sie jeden Abend vor dem Schlafen ein Tagebuch"
+          },
+          "icon": "book-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "nature-connection",
+          "title": {
+            "uk": "Зв'язок з природою",
+            "en": "Nature Connection",
+            "de": "Naturverbindung"
+          },
+          "description": {
+            "uk": "Проведіть час на природі щонайменше 30 хвилин",
+            "en": "Spend at least 30 minutes in nature",
+            "de": "Verbringen Sie mindestens 30 Minuten in der Natur"
+          },
+          "icon": "tree-outline",
+          "completed": false,
+          "progress": 0
+        },
+        {
+          "id": "mindful-eating",
+          "title": {
+            "uk": "Уважне харчування",
+            "en": "Mindful Eating",
+            "de": "Achtsames Essen"
+          },
+          "description": {
+            "uk": "Їжте уважно, без відволікань",
+            "en": "Eat mindfully without distractions",
+            "de": "Essen Sie achtsam ohne Ablenkungen"
+          },
+          "icon": "restaurant-outline",
+          "completed": false,
+          "progress": 0
+        }
+      ],
+      "rewards": {
+        "points": 250,
+        "discounts": [
+          {
+            "brand": "Meditation App Premium",
+            "amount": "40%"
+          },
+          {
+            "brand": "Wellness Retreat",
+            "amount": "25%"
+          },
+          {
+            "brand": "Mindfulness Books",
+            "amount": "30%"
+          },
+          {
+            "brand": "Yoga Studio",
+            "amount": "20%"
+          }
+        ]
+      },
+      "phases": [
+        {
+          "id": "phase-1",
+          "title": {
+            "uk": "Фаза заснування",
+            "en": "Foundation Phase",
+            "de": "Grundlagenphase"
+          },
+          "tasks": [
+            {
+              "id": "morning-meditation",
+              "title": {
+                "uk": "Ранкова медитація",
+                "en": "Morning Meditation",
+                "de": "Morgenmeditation"
+              },
+              "description": {
+                "uk": "Медитуйте 20 хвилин щодня вранці",
+                "en": "Meditate for 20 minutes every morning",
+                "de": "Meditieren Sie jeden Morgen 20 Minuten"
+              },
+              "icon": "leaf-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "breathing-exercises",
+              "title": {
+                "uk": "Дихальні вправи",
+                "en": "Breathing Exercises",
+                "de": "Atemübungen"
+              },
+              "description": {
+                "uk": "Виконуйте дихальні вправи 3 рази на день",
+                "en": "Do breathing exercises 3 times a day",
+                "de": "Machen Sie 3-mal täglich Atemübungen"
+              },
+              "icon": "heart-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "journaling",
+              "title": {
+                "uk": "Ведення щоденника",
+                "en": "Journaling",
+                "de": "Tagebuch führen"
+              },
+              "description": {
+                "uk": "Ведіть щоденник щодня перед сном",
+                "en": "Keep a journal every day before bed",
+                "de": "Führen Sie jeden Abend vor dem Schlafen ein Tagebuch"
+              },
+              "icon": "book-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "nature-connection",
+              "title": {
+                "uk": "Зв'язок з природою",
+                "en": "Nature Connection",
+                "de": "Naturverbindung"
+              },
+              "description": {
+                "uk": "Проведіть час на природі щонайменше 30 хвилин",
+                "en": "Spend at least 30 minutes in nature",
+                "de": "Verbringen Sie mindestens 30 Minuten in der Natur"
+              },
+              "icon": "tree-outline",
+              "completed": false,
+              "progress": 0
+            },
+            {
+              "id": "mindful-eating",
+              "title": {
+                "uk": "Уважне харчування",
+                "en": "Mindful Eating",
+                "de": "Achtsames Essen"
+              },
+              "description": {
+                "uk": "Їжте уважно, без відволікань",
+                "en": "Eat mindfully without distractions",
+                "de": "Essen Sie achtsam ohne Ablenkungen"
+              },
+              "icon": "restaurant-outline",
+              "completed": false,
+              "progress": 0
+            }
+          ],
+          "startDate": "",
+          "endDate": ""
+        }
+      ]
     }
   ]
 } 

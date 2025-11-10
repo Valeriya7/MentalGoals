@@ -150,8 +150,7 @@
           "TITLE": "5 English Words",
           "DESCRIPTION": "Learn new words"
         }
-      }
-    },
+      },
     "SERVICE": {
       "LOADING": "Loading...",
       "ERRORS": {
@@ -247,14 +246,7 @@
     "DEACTIVATED_SUCCESS": "Habit deactivated",
     "UPDATED_SUCCESS": "Habit updated successfully",
     "TARGET_REACHED": "Congratulations! You've reached the goal of the habit \"{{name}}\"! 🎉",
-    "TOGGLE_ERROR": "Error updating habit status",
-    "TASK_COMPLETED": "Task completed!",
-    "TASK_CANCELLED": "Task cancelled",
-    "HABIT_ACTIVATED": "Habit activated",
-    "HABIT_DEACTIVATED": "Habit deactivated",
-    "ACTIVATION_ERROR": "Error activating habit",
-    "DEACTIVATION_ERROR": "Error deactivating habit",
-    "DROP_ERROR": "Error moving habit"
+    "TOGGLE_ERROR": "Error updating habit status"
   },
   "PROFILE": {
     "TITLE": "Profile",

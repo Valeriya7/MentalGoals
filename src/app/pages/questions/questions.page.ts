@@ -35,14 +35,8 @@ export class QuestionsPage implements OnInit {
 
   async loadQuestions() {
     try {
-      const userLanguage = navigator.language;
-      let langFile = 'en.json';
-
-      if (userLanguage.startsWith('uk')) {
-        langFile = 'uk.json';
-      } else if (userLanguage.startsWith('de')) {
-        langFile = 'de.json';
-      }
+      // Завжди використовуємо англійську мову
+      const langFile = 'en.json';
       console.log('Loading questions from:', langFile);
 
       const response = await fetch(`assets/json/${langFile}`);
@@ -51,6 +45,7 @@ export class QuestionsPage implements OnInit {
       console.log('Questions loaded:', this.questions);
     } catch (error) {
       console.error('Error loading questions:', error);
+      // Якщо є помилка, все одно намагаємося завантажити англійські питання
       try {
         const response = await fetch('assets/json/en.json');
         const data = await response.json();
@@ -58,6 +53,7 @@ export class QuestionsPage implements OnInit {
         console.log('Fallback to English questions:', this.questions);
       } catch (error) {
         console.error('Error loading English questions:', error);
+        this.questions = []; // Встановлюємо пустий масив якщо не вдалося завантажити
       }
     }
   }
