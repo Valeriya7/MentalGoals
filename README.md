@@ -1,86 +1,86 @@
 # MentalGoals 🧠
 
-Ionic Angular додаток для підтримки психічного здоров'я з трекером звичок, емоційним календарем та викликами самовдосконалення.
+An Ionic Angular app for mental health support with a habit tracker, emotional calendar, and self-improvement challenges.
 
-## 📋 Опис
+## 📋 Description
 
-MentalGoals - це мобільний додаток, створений для підтримки ментального здоров'я користувачів через:
-- 📊 Трекер звичок
-- 📅 Емоційний календар
-- 🎯 Виклики самовдосконалення
-- 🔔 Нагадування та мотиваційні повідомлення
-- 👤 Профіль користувача з персоналізацією
+MentalGoals is a mobile application designed to support users' mental health through:
+- 📊 Habit Tracker
+- 📅 Emotional Calendar
+- 🎯 Self-improvement Challenges
+- 🔔 Reminders and Motivational Notifications
+- 👤 User Profile with Personalization
 
-## 🚀 Технології
+## 🚀 Technologies
 
-- **Ionic Framework** - гібридний мобільний фреймворк
-- **Angular** - фронтенд фреймворк
-- **Firebase** - backend-as-a-service (аутентифікація, база даних, сховище)
-- **Capacitor** - нативний рантайм для iOS та Android
+- **Ionic Framework** - hybrid mobile framework
+- **Angular** - frontend framework
+- **Firebase** - backend-as-a-service (authentication, database, storage)
+- **Capacitor** - native runtime for iOS and Android
 
-## ⚙️ Встановлення
+## ⚙️ Installation
 
-### Передумови
+### Prerequisites
 
 - Node.js (v16+)
-- npm або yarn
+- npm or yarn
 - Ionic CLI: `npm install -g @ionic/cli`
 
-### Кроки встановлення
+### Installation Steps
 
-1. Клонуйте репозиторій:
+1. Clone the repository:
 ```bash
 git clone https://github.com/Valeriya7/MentalGoals.git
 cd MentalGoals
 ```
 
-2. Встановіть залежності:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. **ВАЖЛИВО:** Налаштуйте конфігураційні файли (див. розділ нижче)
+3. **IMPORTANT:** Configure the configuration files (see section below)
 
-4. Запустіть додаток:
+4. Run the application:
 ```bash
 ionic serve
 ```
 
-## 🔐 Необхідні конфігураційні файли
+## 🔐 Required Configuration Files
 
-Для роботи додатку необхідно створити наступні файли, які **не включені в репозиторій з міркувань безпеки**:
+The following files are required for the app to work and are **not included in the repository for security reasons**:
 
 ### 1. Firebase Configuration Files
 
-#### `GoogleService-Info.plist` (для iOS)
-**Розташування:** `/GoogleService-Info.plist` (корінь проекту)
+#### `GoogleService-Info.plist` (for iOS)
+**Location:** `/GoogleService-Info.plist` (project root)
 
-**Де взяти:**
-1. Відкрийте [Firebase Console](https://console.firebase.google.com/)
-2. Виберіть ваш проект або створіть новий
-3. Перейдіть в **Project Settings** (⚙️ → Project settings)
-4. В розділі **Your apps** виберіть iOS додаток або створіть новий
-5. Натисніть кнопку **Download GoogleService-Info.plist**
-6. Помістіть файл у кореневу директорію проекту
+**Where to get it:**
+1. Open [Firebase Console](https://console.firebase.google.com/)
+2. Select your project or create a new one
+3. Go to **Project Settings** (⚙️ → Project settings)
+4. In the **Your apps** section, select the iOS app or create a new one
+5. Click the **Download GoogleService-Info.plist** button
+6. Place the file in the project root directory
 
-#### `google-services.json` (для Android)
-**Розташування:** `/google-services.json` (корінь проекту)
+#### `google-services.json` (for Android)
+**Location:** `/google-services.json` (project root)
 
-**Де взяти:**
-1. Відкрийте [Firebase Console](https://console.firebase.google.com/)
-2. Виберіть ваш проект
-3. Перейдіть в **Project Settings** (⚙️ → Project settings)
-4. В розділі **Your apps** виберіть Android додаток або створіть новий
-5. Натисніть кнопку **Download google-services.json**
-6. Помістіть файл у кореневу директорію проекту
+**Where to get it:**
+1. Open [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Go to **Project Settings** (⚙️ → Project settings)
+4. In the **Your apps** section, select the Android app or create a new one
+5. Click the **Download google-services.json** button
+6. Place the file in the project root directory
 
 ### 2. Environment Configuration
 
-#### Папка `src/environments/`
+#### Folder `src/environments/`
 
-**Створіть два файли:**
+**Create two files:**
 
-**`src/environments/environment.ts`** (для розробки):
+**`src/environments/environment.ts`** (for development):
 ```typescript
 export const environment = {
   production: false,
@@ -96,7 +96,7 @@ export const environment = {
 };
 ```
 
-**`src/environments/environment.prod.ts`** (для продакшену):
+**`src/environments/environment.prod.ts`** (for production):
 ```typescript
 export const environment = {
   production: true,
@@ -112,20 +112,20 @@ export const environment = {
 };
 ```
 
-**Де взяти дані для environment:**
+**Where to get environment data:**
 1. [Firebase Console](https://console.firebase.google.com/)
 2. Project Settings → General
-3. Scroll down до розділу "Your apps"
-4. Виберіть Web app або створіть новий
-5. У розділі "SDK setup and configuration" виберіть "Config"
-6. Скопіюйте значення `firebaseConfig`
+3. Scroll down to the "Your apps" section
+4. Select Web app or create a new one
+5. In the "SDK setup and configuration" section, select "Config"
+6. Copy the `firebaseConfig` values
 
-### 3. SSL Certificates (опційно, для HTTPS в development)
+### 3. SSL Certificates (optional, for HTTPS in development)
 
-#### Папка `ssl/`
-**Розташування:** `/ssl/` (корінь проекту)
+#### Folder `ssl/`
+**Location:** `/ssl/` (project root)
 
-Якщо ви використовуєте HTTPS для локальної розробки, створіть SSL сертифікати:
+If you're using HTTPS for local development, create SSL certificates:
 
 ```bash
 mkdir ssl
@@ -133,72 +133,72 @@ cd ssl
 openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
 ```
 
-## 🏃‍♂️ Запуск проекту
+## 🏃‍♂️ Running the Project
 
-### Веб-версія
+### Web Version
 ```bash
 ionic serve
 ```
 
-### iOS (потрібен macOS з Xcode)
+### iOS (requires macOS with Xcode)
 ```bash
 ionic cap build ios
 ionic cap open ios
 ```
 
-### Android (потрібен Android Studio)
+### Android (requires Android Studio)
 ```bash
 ionic cap build android
 ionic cap open android
 ```
 
-## 📱 Структура проекту
+## 📱 Project Structure
 
 ```
 MentalGoals/
 ├── src/
 │   ├── app/
-│   │   ├── components/      # Переміщувані компоненти
-│   │   ├── pages/           # Сторінки додатку
-│   │   ├── services/        # Сервіси (Firebase, Auth, тощо)
-│   │   └── config/          # Конфігураційні файли
-│   ├── assets/              # Статичні ресурси
-│   │   ├── data/            # JSON дані (звички, виклики)
-│   │   ├── i18n/            # Переклади
-│   │   └── images/          # Зображення
-│   └── environments/        # Environment конфігурація (НЕ В GIT)
-├── GoogleService-Info.plist # iOS Firebase config (НЕ В GIT)
-├── google-services.json     # Android Firebase config (НЕ В GIT)
-└── ssl/                     # SSL сертифікати (НЕ В GIT)
+│   │   ├── components/      # Reusable components
+│   │   ├── pages/           # Application pages
+│   │   ├── services/        # Services (Firebase, Auth, etc.)
+│   │   └── config/          # Configuration files
+│   ├── assets/              # Static resources
+│   │   ├── data/            # JSON data (habits, challenges)
+│   │   ├── i18n/            # Translations
+│   │   └── images/          # Images
+│   └── environments/        # Environment configuration (NOT IN GIT)
+├── GoogleService-Info.plist # iOS Firebase config (NOT IN GIT)
+├── google-services.json     # Android Firebase config (NOT IN GIT)
+└── ssl/                     # SSL certificates (NOT IN GIT)
 ```
 
-## 🔒 Безпека
+## 🔒 Security
 
-**УВАГА:** Ніколи не комітьте в git наступні файли:
+**WARNING:** Never commit the following files to git:
 - `GoogleService-Info.plist`
 - `google-services.json`
 - `src/environments/`
 - `ssl/`
 
-Ці файли вже додані в `.gitignore`.
+These files are already added to `.gitignore`.
 
-## 🌍 Мови
+## 🌍 Languages
 
-Додаток підтримує багатомовність:
-- Українська 🇺🇦
-- Англійська 🇬🇧
-- Німецька 🇩🇪
+The app supports multiple languages:
+- Ukrainian 🇺🇦
+- English 🇬🇧
+- German 🇩🇪
 
-Файли перекладів знаходяться в `src/assets/i18n/`.
+Translation files are located in `src/assets/i18n/`.
 
-## 📄 Ліцензія
+## 📄 License
 
-Цей проект є приватним. Всі права захищені.
+This project is private. All rights reserved.
 
-## 👥 Автор
+## 👥 Author
 
-Valeriya - [GitHub](https://github.com/Valeriya7)
+**Valeriya Melnyk** - [GitHub](https://github.com/Valeriya7)
 
-## 📧 Контакти
+## 📧 Contact
 
-Якщо у вас є питання чи пропозиції, будь ласка, створіть Issue в цьому репозиторії.
+If you have any questions or suggestions, please create an Issue in this repository.
