@@ -1,45 +1,204 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
+# MentalGoals 🧠
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+Ionic Angular додаток для підтримки психічного здоров'я з трекером звичок, емоційним календарем та викликами самовдосконалення.
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
+## 📋 Опис
 
----
+MentalGoals - це мобільний додаток, створений для підтримки ментального здоров'я користувачів через:
+- 📊 Трекер звичок
+- 📅 Емоційний календар
+- 🎯 Виклики самовдосконалення
+- 🔔 Нагадування та мотиваційні повідомлення
+- 👤 Профіль користувача з персоналізацією
 
-## Edit a file
+## 🚀 Технології
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
+- **Ionic Framework** - гібридний мобільний фреймворк
+- **Angular** - фронтенд фреймворк
+- **Firebase** - backend-as-a-service (аутентифікація, база даних, сховище)
+- **Capacitor** - нативний рантайм для iOS та Android
 
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
+## ⚙️ Встановлення
 
----
+### Передумови
 
-## Create a file
+- Node.js (v16+)
+- npm або yarn
+- Ionic CLI: `npm install -g @ionic/cli`
 
-Next, you’ll add a new file to this repository.
+### Кроки встановлення
 
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
+1. Клонуйте репозиторій:
+```bash
+git clone https://github.com/Valeriya7/MentalGoals.git
+cd MentalGoals
+```
 
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
+2. Встановіть залежності:
+```bash
+npm install
+```
 
----
+3. **ВАЖЛИВО:** Налаштуйте конфігураційні файли (див. розділ нижче)
 
-## Clone a repository
+4. Запустіть додаток:
+```bash
+ionic serve
+```
 
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
+## 🔐 Необхідні конфігураційні файли
 
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
+Для роботи додатку необхідно створити наступні файли, які **не включені в репозиторій з міркувань безпеки**:
 
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).
+### 1. Firebase Configuration Files
+
+#### `GoogleService-Info.plist` (для iOS)
+**Розташування:** `/GoogleService-Info.plist` (корінь проекту)
+
+**Де взяти:**
+1. Відкрийте [Firebase Console](https://console.firebase.google.com/)
+2. Виберіть ваш проект або створіть новий
+3. Перейдіть в **Project Settings** (⚙️ → Project settings)
+4. В розділі **Your apps** виберіть iOS додаток або створіть новий
+5. Натисніть кнопку **Download GoogleService-Info.plist**
+6. Помістіть файл у кореневу директорію проекту
+
+#### `google-services.json` (для Android)
+**Розташування:** `/google-services.json` (корінь проекту)
+
+**Де взяти:**
+1. Відкрийте [Firebase Console](https://console.firebase.google.com/)
+2. Виберіть ваш проект
+3. Перейдіть в **Project Settings** (⚙️ → Project settings)
+4. В розділі **Your apps** виберіть Android додаток або створіть новий
+5. Натисніть кнопку **Download google-services.json**
+6. Помістіть файл у кореневу директорію проекту
+
+### 2. Environment Configuration
+
+#### Папка `src/environments/`
+
+**Створіть два файли:**
+
+**`src/environments/environment.ts`** (для розробки):
+```typescript
+export const environment = {
+  production: false,
+  firebase: {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
+  }
+};
+```
+
+**`src/environments/environment.prod.ts`** (для продакшену):
+```typescript
+export const environment = {
+  production: true,
+  firebase: {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
+  }
+};
+```
+
+**Де взяти дані для environment:**
+1. [Firebase Console](https://console.firebase.google.com/)
+2. Project Settings → General
+3. Scroll down до розділу "Your apps"
+4. Виберіть Web app або створіть новий
+5. У розділі "SDK setup and configuration" виберіть "Config"
+6. Скопіюйте значення `firebaseConfig`
+
+### 3. SSL Certificates (опційно, для HTTPS в development)
+
+#### Папка `ssl/`
+**Розташування:** `/ssl/` (корінь проекту)
+
+Якщо ви використовуєте HTTPS для локальної розробки, створіть SSL сертифікати:
+
+```bash
+mkdir ssl
+cd ssl
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+```
+
+## 🏃‍♂️ Запуск проекту
+
+### Веб-версія
+```bash
+ionic serve
+```
+
+### iOS (потрібен macOS з Xcode)
+```bash
+ionic cap build ios
+ionic cap open ios
+```
+
+### Android (потрібен Android Studio)
+```bash
+ionic cap build android
+ionic cap open android
+```
+
+## 📱 Структура проекту
+
+```
+MentalGoals/
+├── src/
+│   ├── app/
+│   │   ├── components/      # Переміщувані компоненти
+│   │   ├── pages/           # Сторінки додатку
+│   │   ├── services/        # Сервіси (Firebase, Auth, тощо)
+│   │   └── config/          # Конфігураційні файли
+│   ├── assets/              # Статичні ресурси
+│   │   ├── data/            # JSON дані (звички, виклики)
+│   │   ├── i18n/            # Переклади
+│   │   └── images/          # Зображення
+│   └── environments/        # Environment конфігурація (НЕ В GIT)
+├── GoogleService-Info.plist # iOS Firebase config (НЕ В GIT)
+├── google-services.json     # Android Firebase config (НЕ В GIT)
+└── ssl/                     # SSL сертифікати (НЕ В GIT)
+```
+
+## 🔒 Безпека
+
+**УВАГА:** Ніколи не комітьте в git наступні файли:
+- `GoogleService-Info.plist`
+- `google-services.json`
+- `src/environments/`
+- `ssl/`
+
+Ці файли вже додані в `.gitignore`.
+
+## 🌍 Мови
+
+Додаток підтримує багатомовність:
+- Українська 🇺🇦
+- Англійська 🇬🇧
+- Німецька 🇩🇪
+
+Файли перекладів знаходяться в `src/assets/i18n/`.
+
+## 📄 Ліцензія
+
+Цей проект є приватним. Всі права захищені.
+
+## 👥 Автор
+
+Valeriya - [GitHub](https://github.com/Valeriya7)
+
+## 📧 Контакти
+
+Якщо у вас є питання чи пропозиції, будь ласка, створіть Issue в цьому репозиторії.
