@@ -82,3 +82,8 @@ bitbucket-pipelines.yml
 
 # SSL certificates
 ssl/
+
+# Firebase/Google configuration files
+GoogleService-Info.plist
+google-services.json
+src/environments/
