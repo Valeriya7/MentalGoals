@@ -88,3 +88,5 @@ GoogleService-Info.plist
 google-services.json
 src/environments/
 src/app/config/firebase.config.ts
+src/app/config/environment.ts
+src/app/config/config.ts
