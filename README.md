@@ -183,6 +183,21 @@ export const config = {
 };
 ```
 
+#### File `src/app/config/google-auth.config.ts`
+**Location:** `src/app/config/google-auth.config.ts`
+
+Simplified Google OAuth configuration for all platforms.
+
+**Create the file:**
+
+```typescript
+export const googleClientIds = {
+  ios: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
+  android: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+  web: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'
+};
+```
+
 ### 4. Firebase Platform Configuration
 
 #### File `src/app/config/firebase.config.ts`
@@ -347,6 +362,7 @@ MentalGoals/
 - `src/app/config/firebase.config.ts`
 - `src/app/config/environment.ts`
 - `src/app/config/config.ts`
+- `src/app/config/google-auth.config.ts`
 
 These files are already added to `.gitignore` and contain sensitive API keys and configuration data.
 
