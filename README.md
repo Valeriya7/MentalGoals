@@ -120,7 +120,70 @@ export const environment = {
 5. In the "SDK setup and configuration" section, select "Config"
 6. Copy the `firebaseConfig` values
 
-### 3. Firebase Platform Configuration
+### 3. Additional Configuration Files
+
+#### File `src/app/config/environment.ts`
+**Location:** `src/app/config/environment.ts`
+
+Simple environment configuration file with Firebase and Google Auth settings.
+
+**Create the file:**
+
+```typescript
+export const environment = {
+  production: false,
+  firebase: {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
+  },
+  googleAuth: {
+    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+    webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'
+  }
+};
+```
+
+#### File `src/app/config/config.ts`
+**Location:** `src/app/config/config.ts`
+
+General application configuration including API settings.
+
+**Create the file:**
+
+```typescript
+export const config = {
+  api: {
+    url: 'https://api.mentalgoals.com',
+    defaultLanguage: 'en'
+  },
+  firebase: {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
+  },
+  googleAuth: {
+    clientId: {
+      ios: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
+      android: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+      web: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'
+    },
+    scopes: ['profile', 'email']
+  },
+  version: '0.0.1'
+};
+```
+
+### 4. Firebase Platform Configuration
 
 #### File `src/app/config/firebase.config.ts`
 **Location:** `src/app/config/firebase.config.ts`
@@ -282,6 +345,8 @@ MentalGoals/
 - `google-services.json`
 - `src/environments/`
 - `src/app/config/firebase.config.ts`
+- `src/app/config/environment.ts`
+- `src/app/config/config.ts`
 
 These files are already added to `.gitignore` and contain sensitive API keys and configuration data.
 
