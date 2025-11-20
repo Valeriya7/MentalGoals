@@ -125,7 +125,37 @@ export const environment = {
 5. In the "SDK setup and configuration" section, select "Config"
 6. Copy the `firebaseConfig` values
 
-### 3. Additional Configuration Files
+### 3. Elasticsearch Configuration (Optional)
+
+If you want to use Elasticsearch AI features:
+
+1. **Copy the example environment file:**
+   ```bash
+   cp src/environments/environment.example.ts src/environments/environment.ts
+   ```
+
+2. **Get your Elasticsearch API key:**
+   - See detailed instructions in [ELASTICSEARCH_SETUP.md](./ELASTICSEARCH_SETUP.md)
+   - Or quick guide: [ELASTICSEARCH_API_KEY_GUIDE.md](./ELASTICSEARCH_API_KEY_GUIDE.md)
+
+3. **Configure in `src/environments/environment.ts`:**
+   ```typescript
+   elasticsearch: {
+     enabled: true,
+     url: '/elasticsearch', // For development with proxy
+     apiKey: 'YOUR_ELASTICSEARCH_API_KEY_HERE' // Replace with your API key
+   }
+   ```
+
+4. **Configure proxy (for development):**
+   ```bash
+   cp proxy.conf.example.json proxy.conf.json
+   # Edit proxy.conf.json with your endpoint and API key
+   ```
+
+**Note:** The `environment.ts` and `proxy.conf.json` files are already in `.gitignore`, so your API key won't be committed to Git.
+
+### 4. Additional Configuration Files
 
 #### File `src/app/config/environment.ts`
 **Location:** `src/app/config/environment.ts`
