@@ -40,12 +40,12 @@ Create proxy configuration in `proxy.conf.json`:
 ```json
 {
   "/elasticsearch": {
-    "target": "https://my-elasticsearch-project-a15fe8.es.us-central1.gcp.elastic.cloud:443",
+    "target": "https://YOUR_ELASTICSEARCH_ENDPOINT.es.us-central1.gcp.elastic.cloud:443",
     "secure": true,
     "changeOrigin": true,
     "logLevel": "debug",
     "headers": {
-      "Authorization": "ApiKey U1Itcm5ab0JRWGtJZWVTajQ3Slk6OFRncHFTenJDdUFtNW5Sa1VQNVhoZw=="
+      "Authorization": "ApiKey YOUR_ELASTICSEARCH_API_KEY_HERE"
     },
     "pathRewrite": {
       "^/elasticsearch": ""
@@ -53,6 +53,8 @@ Create proxy configuration in `proxy.conf.json`:
   }
 }
 ```
+
+**Important:** Replace `YOUR_ELASTICSEARCH_ENDPOINT` and `YOUR_ELASTICSEARCH_API_KEY_HERE` with your actual values. See [ELASTICSEARCH_API_KEY_GUIDE.md](./ELASTICSEARCH_API_KEY_GUIDE.md) for instructions.
 
 Then update `package.json`:
 ```json

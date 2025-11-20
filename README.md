@@ -39,7 +39,9 @@ cd MentalGoals
 npm install
 ```
 
-3. **IMPORTANT:** Configure the configuration files (see section below)
+3. **IMPORTANT:** Configure the configuration files (see sections below)
+   - Firebase configuration
+   - Elasticsearch API key (optional, see [ELASTICSEARCH_SETUP.md](./ELASTICSEARCH_SETUP.md))
 
 4. Run the application:
 ```bash
@@ -47,6 +49,9 @@ ionic serve
 ```
 
 ## 🔐 Required Configuration Files
+
+### Firebase Configuration
+
 
 The following files are required for the app to work and are **not included in the repository for security reasons**:
 

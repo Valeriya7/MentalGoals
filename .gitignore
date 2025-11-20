@@ -83,6 +83,12 @@ bitbucket-pipelines.yml
 # SSL certificates
 ssl/
 
+# Elasticsearch configuration with API keys
+proxy.conf.json
+.env
+.env.local
+.env.*.local
+
 # Firebase/Google configuration files
 GoogleService-Info.plist
 google-services.json

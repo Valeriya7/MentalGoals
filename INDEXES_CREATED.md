@@ -11,17 +11,21 @@
 You can check indexes via curl:
 
 ```bash
+# Set your API key first
+export ELASTICSEARCH_API_KEY="your-api-key-here"
+export ELASTICSEARCH_URL="https://your-endpoint.es.us-central1.gcp.elastic.cloud:443"
+
 # Check emotions index
-curl -H "Authorization: ApiKey U1Itcm5ab0JRWGtJZWVTajQ3Slk6OFRncHFTenJDdUFtNW5Sa1VQNVhoZw==" \
-  https://my-elasticsearch-project-a15fe8.es.us-central1.gcp.elastic.cloud:443/emotions
+curl -H "Authorization: ApiKey $ELASTICSEARCH_API_KEY" \
+  $ELASTICSEARCH_URL/emotions
 
 # Check habits index
-curl -H "Authorization: ApiKey U1Itcm5ab0JRWGtJZWVTajQ3Slk6OFRncHFTenJDdUFtNW5Sa1VQNVhoZw==" \
-  https://my-elasticsearch-project-a15fe8.es.us-central1.gcp.elastic.cloud:443/habits
+curl -H "Authorization: ApiKey $ELASTICSEARCH_API_KEY" \
+  $ELASTICSEARCH_URL/habits
 
 # Check challenges index
-curl -H "Authorization: ApiKey U1Itcm5ab0JRWGtJZWVTajQ3Slk6OFRncHFTenJDdUFtNW5Sa1VQNVhoZw==" \
-  https://my-elasticsearch-project-a15fe8.es.us-central1.gcp.elastic.cloud:443/challenges
+curl -H "Authorization: ApiKey $ELASTICSEARCH_API_KEY" \
+  $ELASTICSEARCH_URL/challenges
 ```
 
 ## 📝 Next Steps
