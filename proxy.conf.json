@@ -3,5 +3,17 @@
     "target": "http://localhost:3000",
     "secure": false,
     "changeOrigin": true
+  },
+  "/elasticsearch": {
+    "target": "https://my-elasticsearch-project-a15fe8.es.us-central1.gcp.elastic.cloud:443",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "headers": {
+      "Authorization": "ApiKey U1Itcm5ab0JRWGtJZWVTajQ3Slk6OFRncHFTenJDdUFtNW5Sa1VQNVhoZw=="
+    },
+    "pathRewrite": {
+      "^/elasticsearch": ""
+    }
   }
 } 

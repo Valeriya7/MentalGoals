@@ -1,0 +1,384 @@
+{
+  "indexes": {
+    "emotions": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "analysis": {
+          "analyzer": {
+            "ukrainian_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "ukrainian_stemmer"]
+            }
+          },
+          "filter": {
+            "ukrainian_stemmer": {
+              "type": "stemmer",
+              "language": "ukrainian"
+            }
+          }
+        }
+      },
+      "mappings": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "userId": {
+            "type": "keyword"
+          },
+          "emotion": {
+            "type": "keyword"
+          },
+          "value": {
+            "type": "float"
+          },
+          "energy": {
+            "type": "float"
+          },
+          "note": {
+            "type": "text",
+            "analyzer": "ukrainian_analyzer",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
+            }
+          },
+          "noteEmbedding": {
+            "type": "dense_vector",
+            "dims": 768,
+            "index": true,
+            "similarity": "cosine"
+          },
+          "sentiment": {
+            "properties": {
+              "prediction": {
+                "type": "keyword"
+              },
+              "confidence": {
+                "type": "float"
+              },
+              "score": {
+                "type": "float"
+              }
+            }
+          },
+          "date": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis"
+          },
+          "createdAt": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis"
+          }
+        }
+      }
+    },
+    "habits": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "analysis": {
+          "analyzer": {
+            "ukrainian_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "ukrainian_stemmer"]
+            }
+          },
+          "filter": {
+            "ukrainian_stemmer": {
+              "type": "stemmer",
+              "language": "ukrainian"
+            }
+          }
+        }
+      },
+      "mappings": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "userId": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "analyzer": "ukrainian_analyzer",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
+            }
+          },
+          "description": {
+            "type": "text",
+            "analyzer": "ukrainian_analyzer",
+            "fields": {
+              "embedding": {
+                "type": "dense_vector",
+                "dims": 768,
+                "index": true,
+                "similarity": "cosine"
+              }
+            }
+          },
+          "category": {
+            "type": "keyword"
+          },
+          "difficulty": {
+            "type": "keyword"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "completionTime": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis"
+          },
+          "date": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis"
+          },
+          "streak": {
+            "properties": {
+              "current": {
+                "type": "integer"
+              },
+              "best": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "challenges": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "analysis": {
+          "analyzer": {
+            "ukrainian_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "ukrainian_stemmer"]
+            },
+            "german_analyzer": {
+              "type": "custom",
+              "tokenizer": "standard",
+              "filter": ["lowercase", "german_stemmer"]
+            }
+          },
+          "filter": {
+            "ukrainian_stemmer": {
+              "type": "stemmer",
+              "language": "ukrainian"
+            },
+            "german_stemmer": {
+              "type": "stemmer",
+              "language": "german"
+            }
+          }
+        }
+      },
+      "mappings": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "title": {
+            "properties": {
+              "uk": {
+                "type": "text",
+                "analyzer": "ukrainian_analyzer"
+              },
+              "en": {
+                "type": "text",
+                "analyzer": "english"
+              },
+              "de": {
+                "type": "text",
+                "analyzer": "german_analyzer"
+              }
+            }
+          },
+          "description": {
+            "type": "text",
+            "analyzer": "ukrainian_analyzer",
+            "fields": {
+              "embedding": {
+                "type": "dense_vector",
+                "dims": 768,
+                "index": true,
+                "similarity": "cosine"
+              }
+            }
+          },
+          "difficulty": {
+            "type": "keyword"
+          },
+          "difficultyLevel": {
+            "type": "integer"
+          },
+          "category": {
+            "type": "keyword"
+          },
+          "duration": {
+            "type": "integer"
+          },
+          "rewards": {
+            "properties": {
+              "points": {
+                "type": "integer"
+              },
+              "discounts": {
+                "type": "nested",
+                "properties": {
+                  "brand": {
+                    "type": "keyword"
+                  },
+                  "amount": {
+                    "type": "keyword"
+                  }
+                }
+              }
+            }
+          },
+          "completedBy": {
+            "type": "keyword"
+          },
+          "status": {
+            "type": "keyword"
+          }
+        }
+      }
+    },
+    "user_profiles": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1
+      },
+      "mappings": {
+        "properties": {
+          "userId": {
+            "type": "keyword"
+          },
+          "profileEmbedding": {
+            "type": "dense_vector",
+            "dims": 768,
+            "index": true,
+            "similarity": "cosine"
+          },
+          "preferences": {
+            "properties": {
+              "categories": {
+                "type": "keyword"
+              },
+              "difficulty": {
+                "type": "keyword"
+              },
+              "languages": {
+                "type": "keyword"
+              }
+            }
+          },
+          "completedChallenges": {
+            "type": "keyword"
+          },
+          "activeHabits": {
+            "type": "keyword"
+          },
+          "lastUpdated": {
+            "type": "date",
+            "format": "strict_date_optional_time||epoch_millis"
+          }
+        }
+      }
+    }
+  },
+  "ml_jobs": {
+    "emotion_pattern_analysis": {
+      "job_id": "emotion_pattern_analysis",
+      "description": "Аналіз патернів у емоційних станах",
+      "analysis_config": {
+        "detectors": [
+          {
+            "function": "mean",
+            "field_name": "value",
+            "by_field_name": "emotion",
+            "detector_description": "Середнє значення емоції"
+          },
+          {
+            "function": "mean",
+            "field_name": "energy",
+            "detector_description": "Середня енергія"
+          }
+        ],
+        "bucket_span": "1d",
+        "influencers": ["userId", "date"]
+      },
+      "data_description": {
+        "time_field": "date",
+        "time_format": "epoch_millis"
+      }
+    },
+    "behavior_anomaly_detection": {
+      "job_id": "behavior_anomaly_detection",
+      "description": "Виявлення аномалій у поведінці",
+      "analysis_config": {
+        "detectors": [
+          {
+            "function": "count",
+            "by_field_name": "habit.id",
+            "detector_description": "Аномалія в кількості виконаних звичок"
+          },
+          {
+            "function": "mean",
+            "field_name": "habit.completed",
+            "detector_description": "Аномалія в середній кількості завершених звичок"
+          }
+        ],
+        "bucket_span": "1d",
+        "influencers": ["userId", "habit.category"]
+      },
+      "data_description": {
+        "time_field": "date",
+        "time_format": "epoch_millis"
+      }
+    }
+  },
+  "ingest_pipelines": {
+    "sentiment_analysis": {
+      "description": "Pipeline для аналізу тональності нотаток",
+      "processors": [
+        {
+          "inference": {
+            "model_id": "sentiment-analysis-model",
+            "field_map": {
+              "note": "text_field"
+            },
+            "target_field": "sentiment"
+          }
+        }
+      ]
+    },
+    "generate_embeddings": {
+      "description": "Pipeline для генерації embeddings",
+      "processors": [
+        {
+          "inference": {
+            "model_id": "text-embedding-model",
+            "field_map": {
+              "note": "text_field"
+            },
+            "target_field": "noteEmbedding"
+          }
+        }
+      ]
+    }
+  }
+}
+

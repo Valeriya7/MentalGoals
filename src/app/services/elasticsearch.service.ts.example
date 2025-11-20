@@ -1,0 +1,839 @@
+/**
+ * Приклад сервісу для інтеграції Elasticsearch AI
+ * 
+ * Цей файл демонструє, як можна інтегрувати Elasticsearch AI
+ * в проект MentalGoals. Для використання:
+ * 1. Встановіть @elastic/elasticsearch: npm install @elastic/elasticsearch
+ * 2. Перейменуйте файл на elasticsearch.service.ts
+ * 3. Додайте конфігурацію в environment.ts
+ * 4. Зареєструйте сервіс в app.module.ts
+ */
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, from, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+
+// Інтерфейси для типізації
+export interface ElasticsearchConfig {
+  node: string;
+  auth?: {
+    username: string;
+    password: string;
+  };
+  apiKey?: string;
+}
+
+export interface EmotionDocument {
+  id: string;
+  userId: string;
+  emotion: string;
+  value: number;
+  energy: number;
+  note?: string;
+  noteEmbedding?: number[];
+  date: string;
+  createdAt: string;
+}
+
+export interface HabitDocument {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  descriptionEmbedding?: number[];
+  category: string;
+  completed: boolean;
+  date: string;
+}
+
+export interface ChallengeDocument {
+  id: string;
+  title: {
+    uk: string;
+    en: string;
+    de: string;
+  };
+  description: string;
+  descriptionEmbedding?: number[];
+  difficulty: string;
+  category: string;
+}
+
+export interface SearchResult<T> {
+  hits: Array<{
+    _id: string;
+    _score: number;
+    _source: T;
+  }>;
+  total: {
+    value: number;
+  };
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ElasticsearchService {
+  private readonly baseUrl: string;
+  private readonly headers: HttpHeaders;
+
+  constructor(private http: HttpClient) {
+    // Конфігурація з environment
+    // this.baseUrl = environment.elasticsearch.url;
+    // this.headers = new HttpHeaders({
+    //   'Content-Type': 'application/json',
+    //   'Authorization': `ApiKey ${environment.elasticsearch.apiKey}`
+    // });
+    
+    // Приклад для локальної розробки
+    this.baseUrl = 'http://localhost:9200';
+    this.headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+  }
+
+  // ============================================
+  // 1. СЕМАНТИЧНИЙ ПОШУК У НОТАТКАХ
+  // ============================================
+
+  /**
+   * Семантичний пошук у нотатках про емоції
+   */
+  searchEmotionNotes(
+    userId: string,
+    query: string,
+    queryEmbedding: number[],
+    size: number = 10
+  ): Observable<SearchResult<EmotionDocument>> {
+    const searchQuery = {
+      knn: {
+        field: 'noteEmbedding',
+        query_vector: queryEmbedding,
+        k: size,
+        num_candidates: 100,
+        filter: {
+          term: { userId }
+        }
+      }
+    };
+
+    return this.http.post<{ hits: SearchResult<EmotionDocument> }>(
+      `${this.baseUrl}/emotions/_search`,
+      { query: searchQuery },
+      { headers: this.headers }
+    ).pipe(
+      map(response => response.hits),
+      catchError(error => {
+        console.error('Error searching emotion notes:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Гібридний пошук (keyword + semantic)
+   */
+  hybridSearchEmotions(
+    userId: string,
+    query: string,
+    queryEmbedding: number[],
+    size: number = 10
+  ): Observable<SearchResult<EmotionDocument>> {
+    const searchQuery = {
+      query: {
+        bool: {
+          must: [
+            {
+              term: { userId }
+            }
+          ],
+          should: [
+            {
+              match: {
+                note: {
+                  query,
+                  boost: 2.0
+                }
+              }
+            },
+            {
+              match: {
+                emotion: {
+                  query,
+                  boost: 1.5
+                }
+              }
+            }
+          ],
+          minimum_should_match: 1
+        }
+      },
+      knn: {
+        field: 'noteEmbedding',
+        query_vector: queryEmbedding,
+        k: size,
+        num_candidates: 100,
+        filter: {
+          term: { userId }
+        },
+        boost: 0.5
+      },
+      size
+    };
+
+    return this.http.post<{ hits: SearchResult<EmotionDocument> }>(
+      `${this.baseUrl}/emotions/_search`,
+      searchQuery,
+      { headers: this.headers }
+    ).pipe(
+      map(response => response.hits),
+      catchError(error => {
+        console.error('Error in hybrid search:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ============================================
+  // 2. АНАЛІЗ ЕМОЦІЙНИХ ПАТЕРНІВ
+  // ============================================
+
+  /**
+   * Отримання аномалій у емоційних станах
+   */
+  getEmotionAnomalies(
+    userId: string,
+    startDate: string,
+    endDate: string
+  ): Observable<any> {
+    const query = {
+      query: {
+        bool: {
+          must: [
+            {
+              term: { userId }
+            },
+            {
+              range: {
+                date: {
+                  gte: startDate,
+                  lte: endDate
+                }
+              }
+            },
+            {
+              range: {
+                anomaly_score: {
+                  gte: 75
+                }
+              }
+            }
+          ]
+        }
+      },
+      sort: [
+        {
+          timestamp: {
+            order: 'desc'
+          }
+        }
+      ]
+    };
+
+    return this.http.post(
+      `${this.baseUrl}/.ml-anomaly-detector-emotion-patterns/_search`,
+      query,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Error getting anomalies:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Кореляція між звичками та емоціями
+   */
+  getHabitEmotionCorrelation(
+    userId: string,
+    habitId: string,
+    days: number = 30
+  ): Observable<any> {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const query = {
+      query: {
+        bool: {
+          must: [
+            {
+              term: { userId }
+            },
+            {
+              range: {
+                date: {
+                  gte: startDate.toISOString(),
+                  lte: endDate.toISOString()
+                }
+              }
+            }
+          ]
+        }
+      },
+      aggs: {
+        habit_emotion_correlation: {
+          terms: {
+            field: 'habit.id',
+            include: [habitId]
+          },
+          aggs: {
+            avg_emotion: {
+              avg: {
+                field: 'emotion.value'
+              }
+            }
+          }
+        }
+      }
+    };
+
+    return this.http.post(
+      `${this.baseUrl}/emotions/_search`,
+      query,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Error getting correlation:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ============================================
+  // 3. РЕКОМЕНДАЦІЇ ВИКЛИКІВ
+  // ============================================
+
+  /**
+   * Персоналізовані рекомендації викликів
+   */
+  getChallengeRecommendations(
+    userId: string,
+    userProfileEmbedding: number[],
+    completedChallengeIds: string[],
+    size: number = 5
+  ): Observable<SearchResult<ChallengeDocument>> {
+    const query = {
+      query: {
+        bool: {
+          must_not: {
+            terms: {
+              id: completedChallengeIds
+            }
+          }
+        }
+      },
+      knn: {
+        field: 'descriptionEmbedding',
+        query_vector: userProfileEmbedding,
+        k: size,
+        num_candidates: 100
+      },
+      size
+    };
+
+    return this.http.post<{ hits: SearchResult<ChallengeDocument> }>(
+      `${this.baseUrl}/challenges/_search`,
+      query,
+      { headers: this.headers }
+    ).pipe(
+      map(response => response.hits),
+      catchError(error => {
+        console.error('Error getting recommendations:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Пошук схожих викликів
+   */
+  findSimilarChallenges(
+    challengeId: string,
+    size: number = 5
+  ): Observable<SearchResult<ChallengeDocument>> {
+    // Спочатку отримуємо embedding поточного виклику
+    return this.http.get<{ _source: ChallengeDocument }>(
+      `${this.baseUrl}/challenges/_doc/${challengeId}`,
+      { headers: this.headers }
+    ).pipe(
+      map(doc => doc._source.descriptionEmbedding!),
+      map(embedding => ({
+        knn: {
+          field: 'descriptionEmbedding',
+          query_vector: embedding,
+          k: size + 1, // +1 щоб виключити сам виклик
+          num_candidates: 100,
+          filter: {
+            bool: {
+              must_not: {
+                term: { id: challengeId }
+              }
+            }
+          }
+        },
+        size: size + 1
+      })),
+      map(query => this.http.post<{ hits: SearchResult<ChallengeDocument> }>(
+        `${this.baseUrl}/challenges/_search`,
+        query,
+        { headers: this.headers }
+      )),
+      // Flatten nested observable
+      map(obs => obs.pipe(
+        map(response => response.hits)
+      ))
+    ) as any; // Type assertion для спрощення
+  }
+
+  // ============================================
+  // 4. SENTIMENT ANALYSIS
+  // ============================================
+
+  /**
+   * Аналіз тональності нотатки
+   */
+  analyzeSentiment(note: string): Observable<any> {
+    const query = {
+      pipeline: {
+        processors: [
+          {
+            inference: {
+              model_id: 'sentiment-analysis-model',
+              field_map: {
+                note: 'text_field'
+              },
+              target_field: 'sentiment'
+            }
+          }
+        ]
+      },
+      docs: [
+        {
+          _source: {
+            note
+          }
+        }
+      ]
+    };
+
+    return this.http.post(
+      `${this.baseUrl}/_ingest/pipeline/_simulate`,
+      query,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Error analyzing sentiment:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Отримання тренду тональності
+   */
+  getSentimentTrend(
+    userId: string,
+    startDate: string,
+    endDate: string
+  ): Observable<any> {
+    const query = {
+      query: {
+        bool: {
+          must: [
+            {
+              term: { userId }
+            },
+            {
+              range: {
+                date: {
+                  gte: startDate,
+                  lte: endDate
+                }
+              }
+            },
+            {
+              exists: {
+                field: 'sentiment.score'
+              }
+            }
+          ]
+        }
+      },
+      aggs: {
+        sentiment_over_time: {
+          date_histogram: {
+            field: 'date',
+            calendar_interval: 'day'
+          },
+          aggs: {
+            avg_sentiment: {
+              avg: {
+                field: 'sentiment.score'
+              }
+            }
+          }
+        }
+      }
+    };
+
+    return this.http.post(
+      `${this.baseUrl}/emotions/_search`,
+      query,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Error getting sentiment trend:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ============================================
+  // 5. РОЗУМНИЙ ПОШУК ЗВИЧОК
+  // ============================================
+
+  /**
+   * Семантичний пошук звичок
+   */
+  searchHabits(
+    userId: string,
+    query: string,
+    queryEmbedding: number[],
+    size: number = 10
+  ): Observable<SearchResult<HabitDocument>> {
+    const searchQuery = {
+      query: {
+        bool: {
+          must: [
+            {
+              term: { userId }
+            }
+          ],
+          should: [
+            {
+              match: {
+                name: {
+                  query,
+                  boost: 2.0
+                }
+              }
+            },
+            {
+              match: {
+                description: {
+                  query,
+                  boost: 1.5
+                }
+              }
+            }
+          ],
+          minimum_should_match: 1
+        }
+      },
+      knn: {
+        field: 'descriptionEmbedding',
+        query_vector: queryEmbedding,
+        k: size,
+        num_candidates: 100,
+        filter: {
+          term: { userId }
+        },
+        boost: 1.0
+      },
+      size
+    };
+
+    return this.http.post<{ hits: SearchResult<HabitDocument> }>(
+      `${this.baseUrl}/habits/_search`,
+      searchQuery,
+      { headers: this.headers }
+    ).pipe(
+      map(response => response.hits),
+      catchError(error => {
+        console.error('Error searching habits:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ============================================
+  // 6. ВИЯВЛЕННЯ АНОМАЛІЙ
+  // ============================================
+
+  /**
+   * Отримання аномалій у поведінці
+   */
+  getBehaviorAnomalies(
+    userId: string,
+    startDate: string,
+    endDate: string
+  ): Observable<any> {
+    const query = {
+      query: {
+        bool: {
+          must: [
+            {
+              term: { userId }
+            },
+            {
+              range: {
+                date: {
+                  gte: startDate,
+                  lte: endDate
+                }
+              }
+            },
+            {
+              range: {
+                anomaly_score: {
+                  gte: 75
+                }
+              }
+            }
+          ]
+        }
+      },
+      sort: [
+        {
+          timestamp: {
+            order: 'desc'
+          }
+        }
+      ]
+    };
+
+    return this.http.post(
+      `${this.baseUrl}/.ml-anomaly-detector-behavior/_search`,
+      query,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Error getting behavior anomalies:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ============================================
+  // 7. БАГАТОМОВНИЙ ПОШУК
+  // ============================================
+
+  /**
+   * Багатомовний пошук викликів
+   */
+  multilingualSearchChallenges(
+    query: string,
+    language: 'uk' | 'en' | 'de' = 'uk',
+    size: number = 10
+  ): Observable<SearchResult<ChallengeDocument>> {
+    const searchQuery = {
+      query: {
+        multi_match: {
+          query,
+          fields: [
+            `title.${language}^2`,
+            `title.uk`,
+            `title.en`,
+            `title.de`,
+            'description'
+          ],
+          type: 'best_fields',
+          fuzziness: 'AUTO'
+        }
+      },
+      size
+    };
+
+    return this.http.post<{ hits: SearchResult<ChallengeDocument> }>(
+      `${this.baseUrl}/challenges/_search`,
+      searchQuery,
+      { headers: this.headers }
+    ).pipe(
+      map(response => response.hits),
+      catchError(error => {
+        console.error('Error in multilingual search:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ============================================
+  // 8. ІНТЕЛЕКТУАЛЬНІ СПОВІЩЕННЯ
+  // ============================================
+
+  /**
+   * Отримання оптимального часу для нагадувань
+   */
+  getOptimalNotificationTime(
+    userId: string,
+    habitId: string
+  ): Observable<any> {
+    const query = {
+      query: {
+        bool: {
+          must: [
+            {
+              term: { userId }
+            },
+            {
+              term: { 'habit.id': habitId }
+            }
+          ]
+        }
+      },
+      aggs: {
+        optimal_time: {
+          date_histogram: {
+            field: 'habit.completion_time',
+            calendar_interval: 'hour'
+          },
+          aggs: {
+            completion_rate: {
+              avg: {
+                field: 'habit.completed'
+              }
+            }
+          }
+        }
+      }
+    };
+
+    return this.http.post(
+      `${this.baseUrl}/habits/_search`,
+      query,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Error getting optimal time:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // ============================================
+  // ДОПОМІЖНІ МЕТОДИ
+  // ============================================
+
+  /**
+   * Індексування документа
+   */
+  indexDocument<T>(
+    index: string,
+    id: string,
+    document: T
+  ): Observable<any> {
+    return this.http.put(
+      `${this.baseUrl}/${index}/_doc/${id}`,
+      document,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error(`Error indexing document in ${index}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Оновлення документа
+   */
+  updateDocument<T>(
+    index: string,
+    id: string,
+    updates: Partial<T>
+  ): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/${index}/_update/${id}`,
+      { doc: updates },
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error(`Error updating document in ${index}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Видалення документа
+   */
+  deleteDocument(
+    index: string,
+    id: string
+  ): Observable<any> {
+    return this.http.delete(
+      `${this.baseUrl}/${index}/_doc/${id}`,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error(`Error deleting document from ${index}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Створення індексу з маппінгом
+   */
+  createIndex(
+    indexName: string,
+    mapping: any
+  ): Observable<any> {
+    return this.http.put(
+      `${this.baseUrl}/${indexName}`,
+      mapping,
+      { headers: this.headers }
+    ).pipe(
+      catchError(error => {
+        console.error(`Error creating index ${indexName}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+}
+
+/**
+ * Приклад використання в компоненті:
+ * 
+ * constructor(private elasticsearch: ElasticsearchService) {}
+ * 
+ * async searchEmotions() {
+ *   const query = "коли я відчував тривогу";
+ *   const embedding = await this.generateEmbedding(query);
+ *   
+ *   this.elasticsearch.searchEmotionNotes(
+ *     this.userId,
+ *     query,
+ *     embedding
+ *   ).subscribe(results => {
+ *     console.log('Found emotions:', results.hits);
+ *   });
+ * }
+ * 
+ * async getRecommendations() {
+ *   const userProfile = await this.buildUserProfile();
+ *   const completed = await this.getCompletedChallenges();
+ *   
+ *   this.elasticsearch.getChallengeRecommendations(
+ *     this.userId,
+ *     userProfile.embedding,
+ *     completed.map(c => c.id)
+ *   ).subscribe(recommendations => {
+ *     console.log('Recommended challenges:', recommendations.hits);
+ *   });
+ * }
+ */
+

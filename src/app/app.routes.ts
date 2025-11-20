@@ -71,6 +71,10 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'elasticsearch-test',
+    loadComponent: () => import('./pages/elasticsearch-test/elasticsearch-test.page').then(m => m.ElasticsearchTestPage)
+  },
+  {
     path: '**',
     redirectTo: 'auth'
   }

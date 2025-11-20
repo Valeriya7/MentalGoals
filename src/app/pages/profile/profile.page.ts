@@ -261,4 +261,8 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.stravaClientSecret = '';
     }
   }
+
+  async goToElasticsearchTest() {
+    await this.router.navigate(['/elasticsearch-test']);
+  }
 }

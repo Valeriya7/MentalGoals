@@ -301,7 +301,8 @@
     "NO_CHANGES": "No changes to save",
     "SAVE_SUCCESS": "Profile saved successfully",
     "SAVE_ERROR": "Error saving profile",
-    "LOAD_ERROR": "Error loading profile"
+    "LOAD_ERROR": "Error loading profile",
+    "DEVELOPMENT": "Development & Testing"
   },
   "STRAVA": {
     "CONNECTING": "Connecting to Strava...",
@@ -350,5 +351,66 @@
     "OFFLINE_MODE": "You are currently offline. Some features may be limited.",
     "ONLINE_MODE": "You are back online. All features are now available."
   },
-  "EMPTY_SET": "Empty Set"
+  "EMPTY_SET": "Empty Set",
+  "ELASTICSEARCH_TEST": {
+    "TITLE": "🔍 Elasticsearch AI Test",
+    "STATUS": "Status",
+    "MODE": "Mode",
+    "MOCK_MODE": "Mock mode (testing)",
+    "REAL_MODE": "Real Elasticsearch",
+    "CONNECTION": "Connection",
+    "CONNECTED": "✅ Connected to Elasticsearch",
+    "MOCK_CONNECTED": "⚠️ Mock mode (testing)",
+    "CHECKING": "Checking connection...",
+    "SEARCH_EMOTIONS": {
+      "TITLE": "1. Semantic Emotion Search",
+      "SUBTITLE": "Search in emotion notes",
+      "PLACEHOLDER": "For example: anxiety, stress, joy...",
+      "BUTTON": "Search",
+      "RESULTS": "Results"
+    },
+    "SEARCH_HABITS": {
+      "TITLE": "2. Smart Habit Search",
+      "SUBTITLE": "Semantic habit search",
+      "PLACEHOLDER": "For example: exercises, meditation...",
+      "BUTTON": "Search",
+      "RESULTS": "Results"
+    },
+    "RECOMMENDATIONS": {
+      "TITLE": "3. Personalized Recommendations",
+      "SUBTITLE": "Challenge recommendations based on profile",
+      "BUTTON": "Get Recommendations",
+      "RESULTS": "Recommendations"
+    },
+    "SENTIMENT": {
+      "TITLE": "4. Sentiment Analysis",
+      "SUBTITLE": "Determine text sentiment",
+      "PLACEHOLDER": "Enter text for sentiment analysis...",
+      "BUTTON": "Analyze",
+      "CONFIDENCE": "Confidence",
+      "SCORE": "Score"
+    },
+    "ANOMALIES": {
+      "TITLE": "5. Anomaly Detection",
+      "SUBTITLE": "Analysis of unusual patterns in emotional states",
+      "BUTTON": "Check Anomalies",
+      "FOUND": "Detected Anomalies",
+      "NONE": "No anomalies detected ✅",
+      "ANOMALY_DETECTED": "Anomaly detected",
+      "ANOMALY_SCORE": "Score"
+    },
+    "TOASTS": {
+      "ENTER_QUERY": "Enter search query",
+      "ENTER_TEXT": "Enter text for analysis",
+      "FOUND_RESULTS": "Found {{count}} results",
+      "FOUND_RECOMMENDATIONS": "Found {{count}} recommendations",
+      "ANOMALIES_FOUND": "Detected {{count}} anomalies",
+      "NO_ANOMALIES": "No anomalies detected",
+      "SEARCH_ERROR": "Search error",
+      "RECOMMENDATIONS_ERROR": "Error getting recommendations",
+      "SENTIMENT_ERROR": "Sentiment analysis error",
+      "ANOMALIES_ERROR": "Error getting anomalies"
+    },
+    "GO_TO_TEST": "Elasticsearch AI Test"
+  }
 }

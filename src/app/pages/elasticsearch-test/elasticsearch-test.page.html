@@ -1,0 +1,209 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      {{ 'ELASTICSEARCH_TEST.TITLE' | translate }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">{{ 'ELASTICSEARCH_TEST.TITLE' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <!-- Статус підключення -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'ELASTICSEARCH_TEST.STATUS' | translate }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>{{ 'ELASTICSEARCH_TEST.MODE' | translate }}:</strong> {{ isMockMode ? ('ELASTICSEARCH_TEST.MOCK_MODE' | translate) : ('ELASTICSEARCH_TEST.REAL_MODE' | translate) }}</p>
+        <p><strong>{{ 'ELASTICSEARCH_TEST.CONNECTION' | translate }}:</strong> {{ connectionStatus }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 1. Пошук емоцій -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'ELASTICSEARCH_TEST.SEARCH_EMOTIONS.TITLE' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{ 'ELASTICSEARCH_TEST.SEARCH_EMOTIONS.SUBTITLE' | translate }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-input
+            [(ngModel)]="emotionQuery"
+            [placeholder]="'ELASTICSEARCH_TEST.SEARCH_EMOTIONS.PLACEHOLDER' | translate"
+            (keyup.enter)="searchEmotions()"
+          ></ion-input>
+        </ion-item>
+        <ion-button expand="block" (click)="searchEmotions()" [disabled]="emotionLoading">
+          <ion-spinner *ngIf="emotionLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!emotionLoading">{{ 'ELASTICSEARCH_TEST.SEARCH_EMOTIONS.BUTTON' | translate }}</span>
+        </ion-button>
+
+        <div *ngIf="emotionResults" class="results-container">
+          <h3>{{ 'ELASTICSEARCH_TEST.SEARCH_EMOTIONS.RESULTS' | translate }} ({{ emotionResults.total.value }})</h3>
+          <ion-list>
+            <ion-item *ngFor="let hit of emotionResults.hits">
+              <ion-label>
+                <h2>{{ hit._source.type }} ({{ hit._source.value }}/10)</h2>
+                <p>{{ hit._source.note }}</p>
+                <p><small>{{ hit._source.date | date:'short' }}</small></p>
+                <ion-badge *ngIf="hit._source.sentiment" [color]="getSentimentColor(hit._source.sentiment.prediction)">
+                  {{ hit._source.sentiment.prediction }}
+                </ion-badge>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 2. Пошук звичок -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'ELASTICSEARCH_TEST.SEARCH_HABITS.TITLE' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{ 'ELASTICSEARCH_TEST.SEARCH_HABITS.SUBTITLE' | translate }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-input
+            [(ngModel)]="habitQuery"
+            [placeholder]="'ELASTICSEARCH_TEST.SEARCH_HABITS.PLACEHOLDER' | translate"
+            (keyup.enter)="searchHabits()"
+          ></ion-input>
+        </ion-item>
+        <ion-button expand="block" (click)="searchHabits()" [disabled]="habitLoading">
+          <ion-spinner *ngIf="habitLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!habitLoading">{{ 'ELASTICSEARCH_TEST.SEARCH_HABITS.BUTTON' | translate }}</span>
+        </ion-button>
+
+        <div *ngIf="habitResults" class="results-container">
+          <h3>{{ 'ELASTICSEARCH_TEST.SEARCH_HABITS.RESULTS' | translate }} ({{ habitResults.total.value }})</h3>
+          <ion-list>
+            <ion-item *ngFor="let hit of habitResults.hits">
+              <ion-label>
+                <h2>{{ hit._source.name }}</h2>
+                <p>{{ hit._source.description }}</p>
+                <p><small>Категорія: {{ hit._source.category }} | Складність: {{ hit._source.difficulty }}</small></p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 3. Рекомендації викликів -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'ELASTICSEARCH_TEST.RECOMMENDATIONS.TITLE' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{ 'ELASTICSEARCH_TEST.RECOMMENDATIONS.SUBTITLE' | translate }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" (click)="getRecommendations()" [disabled]="recommendationsLoading">
+          <ion-spinner *ngIf="recommendationsLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!recommendationsLoading">{{ 'ELASTICSEARCH_TEST.RECOMMENDATIONS.BUTTON' | translate }}</span>
+        </ion-button>
+
+        <div *ngIf="challengeRecommendations" class="results-container">
+          <h3>{{ 'ELASTICSEARCH_TEST.RECOMMENDATIONS.RESULTS' | translate }} ({{ challengeRecommendations.total.value }})</h3>
+          <ion-list>
+            <ion-item *ngFor="let hit of challengeRecommendations.hits">
+              <ion-label>
+                <h2>{{ hit._source.title }}</h2>
+                <p>{{ hit._source.description }}</p>
+                <p><small>Тривалість: {{ hit._source.duration }} днів | Складність: {{ hit._source.difficulty }}</small></p>
+                <ion-badge color="primary">{{ hit._source.rewards.points }} балів</ion-badge>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 4. Sentiment Analysis -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'ELASTICSEARCH_TEST.SENTIMENT.TITLE' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{ 'ELASTICSEARCH_TEST.SENTIMENT.SUBTITLE' | translate }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-textarea
+            [(ngModel)]="sentimentText"
+            [placeholder]="'ELASTICSEARCH_TEST.SENTIMENT.PLACEHOLDER' | translate"
+            rows="4"
+          ></ion-textarea>
+        </ion-item>
+        <ion-button expand="block" (click)="analyzeSentiment()" [disabled]="sentimentLoading">
+          <ion-spinner *ngIf="sentimentLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!sentimentLoading">{{ 'ELASTICSEARCH_TEST.SENTIMENT.BUTTON' | translate }}</span>
+        </ion-button>
+
+        <div *ngIf="sentimentResult" class="results-container">
+          <ion-item *ngIf="sentimentResult.docs?.[0]?.doc?._source?.sentiment">
+            <ion-label>
+              <h2>
+                <ion-icon [name]="getSentimentIcon(sentimentResult.docs[0].doc._source.sentiment.prediction)" slot="start"></ion-icon>
+                {{ sentimentResult.docs[0].doc._source.sentiment.prediction | uppercase }}
+              </h2>
+              <p>{{ 'ELASTICSEARCH_TEST.SENTIMENT.CONFIDENCE' | translate }}: {{ (sentimentResult.docs[0].doc._source.sentiment.confidence * 100).toFixed(1) }}%</p>
+              <p>{{ 'ELASTICSEARCH_TEST.SENTIMENT.SCORE' | translate }}: {{ sentimentResult.docs[0].doc._source.sentiment.score.toFixed(2) }}</p>
+            </ion-label>
+            <ion-badge [color]="getSentimentColor(sentimentResult.docs[0].doc._source.sentiment.prediction)">
+              {{ sentimentResult.docs[0].doc._source.sentiment.prediction }}
+            </ion-badge>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- 5. Аномалії -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'ELASTICSEARCH_TEST.ANOMALIES.TITLE' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{ 'ELASTICSEARCH_TEST.ANOMALIES.SUBTITLE' | translate }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" (click)="getAnomalies()" [disabled]="anomaliesLoading">
+          <ion-spinner *ngIf="anomaliesLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!anomaliesLoading">{{ 'ELASTICSEARCH_TEST.ANOMALIES.BUTTON' | translate }}</span>
+        </ion-button>
+
+        <div *ngIf="anomalies" class="results-container">
+          <h3>{{ 'ELASTICSEARCH_TEST.ANOMALIES.FOUND' | translate }} ({{ anomalies.hits?.length || 0 }})</h3>
+          <ion-list *ngIf="anomalies.hits && anomalies.hits.length > 0">
+            <ion-item *ngFor="let hit of anomalies.hits">
+              <ion-label>
+                <h2>{{ 'ELASTICSEARCH_TEST.ANOMALIES.ANOMALY_DETECTED' | translate }}</h2>
+                <p>Емоція: {{ hit._source.type }} ({{ hit._source.value }}/10)</p>
+                <p>{{ hit._source.note }}</p>
+                <p><small>{{ hit._source.date | date:'short' }}</small></p>
+              </ion-label>
+              <ion-badge color="warning">{{ 'ELASTICSEARCH_TEST.ANOMALIES.ANOMALY_SCORE' | translate }}: {{ hit._source.anomaly_score }}</ion-badge>
+            </ion-item>
+          </ion-list>
+          <p *ngIf="!anomalies.hits || anomalies.hits.length === 0" class="ion-text-center">
+            {{ 'ELASTICSEARCH_TEST.ANOMALIES.NONE' | translate }}
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<style scoped>
+.results-container {
+  margin-top: 16px;
+}
+
+.results-container h3 {
+  margin-bottom: 12px;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+</style>
+

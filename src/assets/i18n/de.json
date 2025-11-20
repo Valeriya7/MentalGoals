@@ -262,7 +262,8 @@
     "NO_CHANGES": "Keine Änderungen zum Speichern",
     "SAVE_SUCCESS": "Profil erfolgreich gespeichert",
     "SAVE_ERROR": "Fehler beim Speichern des Profils",
-    "LOAD_ERROR": "Fehler beim Laden des Profils"
+    "LOAD_ERROR": "Fehler beim Laden des Profils",
+    "DEVELOPMENT": "Entwicklung & Testing"
   },
   "TASKS": {
     "TITLE": "Aufgaben",
@@ -275,5 +276,66 @@
   },
   "POINTS": {
     "EARNED": "Herzlichen Glückwunsch! Sie haben {{points}} Punkte verdient! 🎉"
+  },
+  "ELASTICSEARCH_TEST": {
+    "TITLE": "🔍 Elasticsearch AI Test",
+    "STATUS": "Status",
+    "MODE": "Modus",
+    "MOCK_MODE": "Mock-Modus (Test)",
+    "REAL_MODE": "Echter Elasticsearch",
+    "CONNECTION": "Verbindung",
+    "CONNECTED": "✅ Mit Elasticsearch verbunden",
+    "MOCK_CONNECTED": "⚠️ Mock-Modus (Test)",
+    "CHECKING": "Verbindung wird überprüft...",
+    "SEARCH_EMOTIONS": {
+      "TITLE": "1. Semantische Emotionssuche",
+      "SUBTITLE": "Suche in Emotionsnotizen",
+      "PLACEHOLDER": "Zum Beispiel: Angst, Stress, Freude...",
+      "BUTTON": "Suchen",
+      "RESULTS": "Ergebnisse"
+    },
+    "SEARCH_HABITS": {
+      "TITLE": "2. Intelligente Gewohnheitssuche",
+      "SUBTITLE": "Semantische Gewohnheitssuche",
+      "PLACEHOLDER": "Zum Beispiel: Übungen, Meditation...",
+      "BUTTON": "Suchen",
+      "RESULTS": "Ergebnisse"
+    },
+    "RECOMMENDATIONS": {
+      "TITLE": "3. Personalisierte Empfehlungen",
+      "SUBTITLE": "Herausforderungsempfehlungen basierend auf Profil",
+      "BUTTON": "Empfehlungen abrufen",
+      "RESULTS": "Empfehlungen"
+    },
+    "SENTIMENT": {
+      "TITLE": "4. Stimmungsanalyse",
+      "SUBTITLE": "Textstimmung bestimmen",
+      "PLACEHOLDER": "Text für Stimmungsanalyse eingeben...",
+      "BUTTON": "Analysieren",
+      "CONFIDENCE": "Vertrauen",
+      "SCORE": "Bewertung"
+    },
+    "ANOMALIES": {
+      "TITLE": "5. Anomalieerkennung",
+      "SUBTITLE": "Analyse ungewöhnlicher Muster in emotionalen Zuständen",
+      "BUTTON": "Anomalien überprüfen",
+      "FOUND": "Erkannte Anomalien",
+      "NONE": "Keine Anomalien erkannt ✅",
+      "ANOMALY_DETECTED": "Anomalie erkannt",
+      "ANOMALY_SCORE": "Bewertung"
+    },
+    "TOASTS": {
+      "ENTER_QUERY": "Suchanfrage eingeben",
+      "ENTER_TEXT": "Text zur Analyse eingeben",
+      "FOUND_RESULTS": "{{count}} Ergebnisse gefunden",
+      "FOUND_RECOMMENDATIONS": "{{count}} Empfehlungen gefunden",
+      "ANOMALIES_FOUND": "{{count}} Anomalien erkannt",
+      "NO_ANOMALIES": "Keine Anomalien erkannt",
+      "SEARCH_ERROR": "Suchfehler",
+      "RECOMMENDATIONS_ERROR": "Fehler beim Abrufen von Empfehlungen",
+      "SENTIMENT_ERROR": "Fehler bei der Stimmungsanalyse",
+      "ANOMALIES_ERROR": "Fehler beim Abrufen von Anomalien"
+    },
+    "GO_TO_TEST": "Elasticsearch AI Test"
   }
 }
