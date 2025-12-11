@@ -320,6 +320,9 @@
     "SAVE": "Save Results",
     "SAVE_SUCCESS": "Results saved successfully",
     "SAVE_ERROR": "Error saving results",
+    "NOT_ALL_RATED": "Please rate all areas of life",
+    "RESET_SUCCESS": "Data reset successfully",
+    "RESET_ERROR": "Error resetting data",
     "EDIT": "Edit",
     "RESET": "Reset",
     "BACK": "Back",
@@ -331,7 +334,10 @@
       "RELATIONSHIPS": "Relationships",
       "PERSONAL_GROWTH": "Personal Growth",
       "FUN": "Fun",
-      "ENVIRONMENT": "Environment"
+      "ENVIRONMENT": "Environment",
+      "SOCIAL_LIFE": "Social Life",
+      "FRIENDS": "Friends",
+      "SPIRITUALITY": "Spirituality"
     }
   },
   "TASKS": {

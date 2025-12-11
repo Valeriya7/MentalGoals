@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, Renderer2 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -54,7 +54,9 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
     private habitsService: HabitsService,
     private translateService: TranslateService,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private renderer: Renderer2,
+    private el: ElementRef
   ) {
     this.generateCalendarDays();
     this.editingHabit = {
@@ -81,6 +83,23 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
     // Примусово оновлюємо звички щоб переконатися що вони англійською мовою
     await this.habitsService.refreshHabits();
     this.loadHabits();
+    this.setupDragAndDropListeners();
+  }
+
+  private setupDragAndDropListeners() {
+    // Встановлюємо обробники подій з passive: false для dragover
+    setTimeout(() => {
+      const habitItems = this.el.nativeElement.querySelectorAll('.habit-item');
+      habitItems.forEach((item: HTMLElement) => {
+        // Використовуємо addEventListener напряму з passive: false
+        item.addEventListener('dragover', (event: DragEvent) => {
+          event.preventDefault();
+          if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+          }
+        }, { passive: false });
+      });
+    }, 100);
   }
 
   ngOnDestroy() {
@@ -411,10 +430,14 @@ export class HabitTrackerPage implements OnInit, OnDestroy {
   }
 
   onDragOver(event: DragEvent) {
-    event.preventDefault();
+    // Перевіряємо, чи можна викликати preventDefault
+    if (event.cancelable) {
+      event.preventDefault();
+    }
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
     }
+    return false; // Додаткова перевірка для старих браузерів
   }
 
   async onDrop(event: DragEvent, targetList: 'active' | 'available', targetHabit: Habit) {
